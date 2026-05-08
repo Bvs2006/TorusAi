@@ -9,8 +9,8 @@ export const createClient = (request: NextRequest) => {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   const hasSupabaseConfig = Boolean(configuredSupabaseUrl && configuredSupabaseKey)
   const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build"
-  const supabaseUrl = configuredSupabaseUrl || "https://placeholder.supabase.co"
-  const supabaseKey = configuredSupabaseKey || "placeholder-publishable-key"
+  const supabaseUrl = configuredSupabaseUrl || "http://missing-supabase-url.invalid"
+  const supabaseKey = configuredSupabaseKey || "missing-supabase-key"
 
   if (!hasSupabaseConfig && !isBuildPhase) {
     throw new Error(
