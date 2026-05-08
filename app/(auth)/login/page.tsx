@@ -42,7 +42,7 @@ export default function LoginPage() {
               Torus<span style={{ color: '#5aa0a4' }}>AI</span>
             </div>
           </Link>
-          <p style={{ color: '#607276', fontSize: '14px', marginTop: '8px' }}>Welcome back. Let's build.</p>
+          <p style={{ color: '#607276', fontSize: '14px', marginTop: '8px' }}>Welcome back. Let&rsquo;s build.</p>
         </div>
 
         <div style={{ background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '16px', padding: '28px' }}>
@@ -135,7 +135,7 @@ export default function LoginPage() {
           </form>
 
           <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#607276' }}>
-            Don't have an account?{' '}
+            Don&rsquo;t have an account?{' '}
             <Link href="/signup" style={{ color: '#5aa0a4', textDecoration: 'none', fontWeight: 600 }}>
               Sign up free
             </Link>

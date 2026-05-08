@@ -177,7 +177,7 @@ function renderOrganisationDashboard({ greeting, username, projects, org, orgMem
             <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '32px', fontWeight: 800, color: '#172326', margin: 0, textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
               {org?.name || 'Your Team'}
             </h1>
-            <p style={{ color: '#607276', fontSize: '14px', marginTop: '8px' }}>{greeting}, {username}. Here's what's happening.</p>
+            <p style={{ color: '#607276', fontSize: '14px', marginTop: '8px' }}>{greeting}, {username}. Here&rsquo;s what&rsquo;s happening.</p>
           </div>
           <div style={{ display: 'flex', gap: '16px' }}>
             <Link href="/planner" style={{

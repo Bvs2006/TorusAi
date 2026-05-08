@@ -3,8 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
-
 :root {
   --bg: #eef3f4;
   --bg-2: #e4ebed;
@@ -29,6 +27,9 @@
   --text-3: #8a9a9d;
   --shadow-soft: 0 24px 70px rgba(46,70,74,0.12);
   --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.84);
+  --font-display: "Avenir Next", "Segoe UI", Arial, sans-serif;
+  --font-body: Inter, "Segoe UI", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,7 +39,7 @@ body {
     radial-gradient(900px 460px at 78% 9%, rgba(114,169,164,0.28), transparent 64%),
     linear-gradient(140deg, #f6f8f7 0%, #e9f0f1 46%, #dfe9eb 100%);
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
 }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -46,8 +47,8 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 2px; }
 
 /* Utility classes */
-.font-display { font-family: 'Syne', sans-serif; }
-.font-mono { font-family: 'DM Mono', monospace; }
+.font-display { font-family: var(--font-display); }
+.font-mono { font-family: var(--font-mono); }
 
 .card,
 .glass-card,
@@ -116,7 +117,7 @@ body {
   border: none;
   border-radius: 999px;
   padding: 10px 20px;
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -145,7 +146,7 @@ body {
   border-radius: 10px;
   padding: 10px 14px;
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;

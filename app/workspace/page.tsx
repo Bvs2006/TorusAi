@@ -366,7 +366,7 @@ function WorkspaceContent() {
               <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff' }}>Robot Fixer</div>
             </div>
             <p style={{ fontSize: '12px', color: '#607276', marginBottom: '16px' }}>
-              Hit a snag? Paste your error code below and I'll generate a recovery prompt for {selectedTool}.
+              Hit a snag? Paste your error code below and I&rsquo;ll generate a recovery prompt for {selectedTool}.
             </p>
             <textarea
               value={errorLog} onChange={e => setErrorLog(e.target.value)}

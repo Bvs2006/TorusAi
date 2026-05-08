@@ -83,7 +83,7 @@ export default function PlannerPage() {
     }}>
       <div style={{ textAlign: 'center', marginBottom: '40px', animation: 'fadeIn 0.5s ease' }}>
         <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, color: '#fff', marginBottom: '16px' }}>
-          Let's build something.
+          Let&rsquo;s build something.
         </h1>
         <p style={{ color: '#607276', fontSize: '16px' }}>
           Describe your idea. Torus AI will design the perfect architecture.
