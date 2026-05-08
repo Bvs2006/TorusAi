@@ -3,11 +3,20 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export const createClient = (request: NextRequest) => {
   let supabaseResponse = NextResponse.next({ request })
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co"
-  const supabaseKey =
+  const configuredSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const configuredSupabaseKey =
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    "placeholder-publishable-key"
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  const hasSupabaseConfig = Boolean(configuredSupabaseUrl && configuredSupabaseKey)
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build"
+  const supabaseUrl = configuredSupabaseUrl || "https://placeholder.supabase.co"
+  const supabaseKey = configuredSupabaseKey || "placeholder-publishable-key"
+
+  if (!hasSupabaseConfig && !isBuildPhase) {
+    throw new Error(
+      "Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY before handling requests."
+    )
+  }
 
   const supabase = createServerClient(
     supabaseUrl,

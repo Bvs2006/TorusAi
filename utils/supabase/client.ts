@@ -1,13 +1,22 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseKey =
+const configuredSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const configuredSupabaseKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  "placeholder-publishable-key";
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const hasSupabaseConfig = Boolean(configuredSupabaseUrl && configuredSupabaseKey);
+const supabaseUrl = configuredSupabaseUrl || "https://placeholder.supabase.co";
+const supabaseKey = configuredSupabaseKey || "placeholder-publishable-key";
 
-export const createClient = () =>
-  createBrowserClient(
-    supabaseUrl!,
-    supabaseKey!,
+export const createClient = () => {
+  if (!hasSupabaseConfig && typeof window !== "undefined") {
+    throw new Error(
+      "Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY before running the app."
+    );
+  }
+
+  return createBrowserClient(
+    supabaseUrl,
+    supabaseKey,
   );
+};
