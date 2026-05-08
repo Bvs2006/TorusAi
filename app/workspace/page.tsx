@@ -1,8 +1,8 @@
 'use client'
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, query, where } from 'firebase/firestore'
+import { auth, db } from '@/utils/firebase/client'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
-const supabase = createClient()
 import { showToast } from '@/components/ui'
 import { Copy, Check, RefreshCw, Zap, Bot, ArrowRight, Folder, Database, CheckCircle2, FileCode, CheckSquare, Wrench, HelpCircle, LogOut } from 'lucide-react'
 import type { Project, Phase } from '@/types'
@@ -35,16 +35,18 @@ function WorkspaceContent() {
   }, [projectId])
 
   async function loadData() {
-    const [{ data: proj }, { data: phaseData }] = await Promise.all([
-      supabase.from('projects').select('*').eq('id', projectId).single(),
-      supabase.from('phases').select('*').eq('project_id', projectId).order('phase_number')
+    const [projSnap, phasesSnap] = await Promise.all([
+      getDoc(doc(db as any, 'projects', projectId!)),
+      getDocs(query(collection(db as any, 'phases'), where('project_id', '==', projectId)))
     ])
-    if (!proj) { router.push('/dashboard'); return }
-    setProject(proj)
-    setPhases(phaseData || [])
+    if (!projSnap.exists()) { router.push('/dashboard'); return }
+    const proj = { id: projSnap.id, ...projSnap.data() as any }
+    const phaseData = phasesSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })).sort((a: any, b: any) => a.phase_number - b.phase_number)
+    setProject(proj as any)
+    setPhases(phaseData as any)
     if (phaseData && phaseData.length > 0) {
-      if (phaseData[0].prompt) setPrompt(phaseData[0].prompt)
-      else generatePrompt(proj, phaseData[0], 'Cursor')
+      if ((phaseData[0] as any).prompt) setPrompt((phaseData[0] as any).prompt)
+      else generatePrompt(proj as any, phaseData[0] as any, 'Cursor')
     }
     setLoading(false)
   }
@@ -52,7 +54,8 @@ function WorkspaceContent() {
   async function generatePrompt(proj: Project, phase: Phase, tool: string) {
     setGenerating(true)
     try {
-      const features = await supabase.from('features').select('name').eq('project_id', proj.id)
+      const featSnap = await getDocs(query(collection(db as any, 'features'), where('project_id', '==', proj.id)))
+      const features = featSnap.docs.map((d: any) => d.data())
       const res = await fetch('/api/ai/prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -60,14 +63,14 @@ function WorkspaceContent() {
           phase, tool,
           stack: proj.stack,
           projectIdea: proj.idea,
-          features: features.data?.map(f => f.name) || [],
+          features: features.map((f: any) => f.name) || [],
           experience: proj.experience
         })
       })
       const data = await res.json()
       setPrompt(data.prompt || '')
       setTips(data.tips || [])
-      await supabase.from('phases').update({ prompt: data.prompt }).eq('id', phase.id)
+      await updateDoc(doc(db as any, 'phases', phase.id), { prompt: data.prompt })
     } catch (err) {
       showToast('Failed to generate prompt. Try again.')
     }
@@ -102,7 +105,7 @@ function WorkspaceContent() {
 
   async function markDone() {
     const phaseId = phases[activePhase].id
-    await supabase.from('phases').update({ status: 'done', completed_at: new Date().toISOString() }).eq('id', phaseId)
+    await updateDoc(doc(db as any, 'phases', phaseId), { status: 'done', completed_at: new Date().toISOString() })
     setPhases(prev => prev.map(p => p.id === phaseId ? { ...p, status: 'done' } : p))
     showToast('🎉 Milestone verified & saved!')
     if (activePhase < phases.length - 1) selectPhase(activePhase + 1)

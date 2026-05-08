@@ -1,33 +1,32 @@
 // app/(app)/layout.tsx
-import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { adminAuth, adminDb } from '@/utils/firebase/admin'
 import Navbar from '@/components/Navbar'
 import Sidebar from '@/components/Sidebar'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies()
-  const supabase = createClient(cookieStore)
-  const { data: { session } } = await supabase.auth.getSession()
+  const session = cookieStore.get('fb_session')?.value
+  if (!session) redirect('/login')
 
-  if (!session) {
+  let uid: string
+  try {
+    const decoded = await adminAuth.verifySessionCookie(session, true)
+    uid = decoded.uid
+  } catch {
     redirect('/login')
   }
 
-  // Get profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('username, full_name, account_type')
-    .eq('id', session.user.id)
-    .single()
+  const profileSnap = await adminDb.collection('profiles').doc(uid).get()
+  const profile = profileSnap.exists ? profileSnap.data() : null
 
-  if (!profile?.account_type) {
-    redirect('/onboarding')
-  }
+  if (!profile?.account_type) redirect('/onboarding')
 
   const user = {
-    email: session.user.email,
-    username: profile?.username || session.user.email?.split('@')[0],
+    uid,
+    email: profile?.email || '',
+    username: profile?.username || '',
     account_type: profile?.account_type,
   }
 

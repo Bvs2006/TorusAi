@@ -1,8 +1,8 @@
 'use client'
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, query, where } from 'firebase/firestore'
+import { auth, db } from '@/utils/firebase/client'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
-const supabase = createClient()
 import { StepIndicator, showToast } from '@/components/ui'
 import { ArrowRight, Box, Cpu, Settings2, Download, Trash2, MousePointer2, Link2, LayoutDashboard, ImageDown, Info } from 'lucide-react'
 import ReactFlow, {
@@ -44,8 +44,7 @@ function ArchitecturePage() {
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
-    supabase.from('projects').select('*').eq('id', projectId).single()
-      .then(({ data }) => { if (data) setProject(data); setLoading(false) })
+    getDoc(doc(db as any, 'projects', projectId)).then(s => { if (s.exists()) setProject({ id: s.id, ...s.data() as any }); setLoading(false) })
   }, [projectId])
 
   const onConnect = useCallback((params: any) =>

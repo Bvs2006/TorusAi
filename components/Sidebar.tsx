@@ -2,9 +2,10 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { signOut } from 'firebase/auth'
+import { auth } from '@/utils/firebase/client'
 import {
-  Home, PlusSquare, Clock, Trophy, Settings, User, PanelLeftClose, PanelLeftOpen, LogOut,
+  Home, PlusSquare, Clock, Trophy, Settings, PanelLeftClose, PanelLeftOpen, LogOut,
   Users, FolderOpen, FileText, Briefcase
 } from 'lucide-react'
 
@@ -15,7 +16,7 @@ interface SidebarProps {
 export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
+
   const [isCollapsed, setIsCollapsed] = useState(true)
 
   const isOrg = user?.account_type === 'organisation'
@@ -35,15 +36,16 @@ export default function Sidebar({ user }: SidebarProps) {
   ]
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    await signOut(auth)
+    await fetch('/api/auth/session', { method: 'DELETE' })
     router.push('/login')
   }
 
   return (
     <aside style={{
       width: isCollapsed ? '64px' : '220px',
-      background: 'rgba(246,249,249,.62)',
-      borderRight: '1px solid rgba(38,69,72,.1)',
+      background: 'rgba(255,255,255,.62)',
+      borderRight: '1px solid rgba(24,45,56,.1)',
       backdropFilter: 'blur(26px) saturate(140%)',
       display: 'flex', flexDirection: 'column', alignItems: isCollapsed ? 'center' : 'flex-start',
       padding: '20px 0', flexShrink: 0,
@@ -54,7 +56,7 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Top Logo / Workspace switcher */}
       <div style={{
         width: '36px', height: '36px', borderRadius: '10px',
-        background: 'linear-gradient(145deg, #365f62, #83b9bd)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(145deg, #0f766e, #0891b2 58%, #f97316)', display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#fff', fontWeight: 800, fontSize: '18px', cursor: 'pointer', marginBottom: '8px',
         alignSelf: isCollapsed ? 'auto' : 'flex-start', marginLeft: isCollapsed ? '0' : '20px'
       }} title="Torus Workspace">
@@ -70,14 +72,14 @@ export default function Sidebar({ user }: SidebarProps) {
             <Link key={item.href} href={item.href} title={isCollapsed ? item.label : undefined} style={{
               display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'flex-start', gap: '12px',
               height: '40px', borderRadius: '12px', padding: isCollapsed ? '0' : '0 16px',
-              color: active ? '#172326' : '#607276',
-              background: active ? 'rgba(255,255,255,.72)' : 'transparent',
-              boxShadow: active ? '0 14px 36px rgba(42,77,80,.1), inset 0 1px 0 rgba(255,255,255,.84)' : 'none',
+              color: active ? '#182d38' : '#526977',
+              background: active ? 'rgba(255,255,255,.82)' : 'transparent',
+              boxShadow: active ? '0 14px 36px rgba(24,45,56,.1), inset 0 1px 0 rgba(255,255,255,.84)' : 'none',
               transition: 'all 0.2s', textDecoration: 'none',
               width: isCollapsed ? '40px' : '100%', margin: isCollapsed ? '0 auto' : '0'
             }}
-              onMouseOver={e => { if (!active) { e.currentTarget.style.color = '#172326'; e.currentTarget.style.background = 'rgba(255,255,255,.42)' } }}
-              onMouseOut={e => { if (!active) { e.currentTarget.style.color = '#607276'; e.currentTarget.style.background = 'transparent' } }}
+              onMouseOver={e => { if (!active) { e.currentTarget.style.color = '#182d38'; e.currentTarget.style.background = 'rgba(255,255,255,.56)' } }}
+              onMouseOut={e => { if (!active) { e.currentTarget.style.color = '#526977'; e.currentTarget.style.background = 'transparent' } }}
             >
               <Icon size={20} strokeWidth={active ? 2.5 : 2} style={{ flexShrink: 0 }} />
               {!isCollapsed && <span style={{ fontSize: '13px', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap' }}>{item.label}</span>}
@@ -91,7 +93,7 @@ export default function Sidebar({ user }: SidebarProps) {
         <Link href="/settings" title={isCollapsed ? "Profile" : undefined} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px', width: '100%', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
           <div style={{
             width: '32px', height: '32px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, #365f62, #83b9bd)',
+            background: 'linear-gradient(135deg, #0f766e, #0891b2 58%, #f97316)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '13px', fontWeight: 700, color: '#fff', cursor: 'pointer',
             border: '2px solid transparent', transition: 'border 0.2s', flexShrink: 0
@@ -103,19 +105,19 @@ export default function Sidebar({ user }: SidebarProps) {
           </div>
           {!isCollapsed && (
             <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: '#172326', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{user?.username || 'User'}</div>
-              <div style={{ fontSize: '10px', color: '#8a9a9d', whiteSpace: 'nowrap' }}>Personal · Free</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#182d38', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{user?.username || 'User'}</div>
+              <div style={{ fontSize: '10px', color: '#81919a', whiteSpace: 'nowrap' }}>Personal · Free</div>
             </div>
           )}
         </Link>
         
         <button onClick={() => setIsCollapsed(!isCollapsed)} style={{
-          background: 'transparent', border: 'none', cursor: 'pointer', color: '#8a9a9d',
+          background: 'transparent', border: 'none', cursor: 'pointer', color: '#81919a',
           display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'flex-start', gap: '12px',
           padding: isCollapsed ? '0' : '0', width: '100%', transition: 'color 0.2s'
         }}
-          onMouseOver={e => e.currentTarget.style.color = '#607276'}
-          onMouseOut={e => e.currentTarget.style.color = '#8a9a9d'}
+          onMouseOver={e => e.currentTarget.style.color = '#526977'}
+          onMouseOut={e => e.currentTarget.style.color = '#81919a'}
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           {isCollapsed ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> <span style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>Collapse</span></>}

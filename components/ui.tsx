@@ -16,7 +16,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
     const base = 'inline-flex items-center justify-center gap-2 font-display font-bold rounded-full transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none'
     const variants = {
-      primary: 'bg-violet-DEFAULT text-white shadow-lg shadow-violet-dim hover:bg-violet-2 hover:-translate-y-0.5',
+      primary: 'bg-gradient-to-r from-teal-700 via-cyan-600 to-orange-500 text-white shadow-lg shadow-violet-dim hover:-translate-y-0.5',
       ghost: 'border border-surface-2 text-text-2 hover:border-violet-DEFAULT hover:text-text bg-white/40 backdrop-blur-xl',
       danger: 'border border-red-500/30 text-red-400 hover:bg-red-500/10 bg-transparent',
       success: 'border border-green-500/30 text-green-400 hover:bg-green-500/10 bg-transparent',
@@ -174,7 +174,7 @@ export function Select({ label, options, className, ...props }: SelectProps) {
       {label && <label className="block text-xs font-mono text-text-2 uppercase tracking-wider">{label}</label>}
       <select
         className={cn(
-          'w-full bg-surface border border-surface-2 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none transition-all',
+          'w-full bg-white/70 border border-surface-2 rounded-xl px-3.5 py-2.5 text-sm text-text outline-none transition-all',
           'focus:border-violet-DEFAULT focus:ring-2 focus:ring-violet-dim',
           className
         )}

@@ -1,8 +1,8 @@
 'use client'
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, query, where } from 'firebase/firestore'
+import { auth, db } from '@/utils/firebase/client'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
-const supabase = createClient()
 import { StepIndicator, showToast } from '@/components/ui'
 import { GripVertical, Trash2, Plus, ArrowRight, Layers, Cpu, Star, Sparkles, CheckCircle2, Circle } from 'lucide-react'
 import type { Feature, Project } from '@/types'
@@ -44,12 +44,15 @@ export default function FeaturesPage() {
   }, [projectId])
 
   async function loadData() {
-    const [{ data: proj }, { data: feats }] = await Promise.all([
-      supabase.from('projects').select('*').eq('id', projectId).single(),
-      supabase.from('features').select('*').eq('project_id', projectId).order('sort_order')
+    const [projSnap, featsSnap] = await Promise.all([
+      getDoc(doc(db as any, 'projects', projectId!)),
+      getDocs(query(collection(db as any, 'features'), where('project_id', '==', projectId)))
     ])
+    const proj = projSnap.exists() ? { id: projSnap.id, ...projSnap.data() as any } : null
+    const feats = featsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }))
+
     if (!proj) { router.push('/dashboard'); return }
-    setProject(proj)
+    setProject(proj as any)
     if (!feats?.length) {
       const defaults = [
         { name: 'User Authentication', description: 'Sign up, login, OAuth, password reset', priority: 'must' as const, complexity: 'medium' as const, sort_order: 0 },
@@ -61,32 +64,36 @@ export default function FeaturesPage() {
         { name: 'Search & Filter', description: 'Search and filter data throughout the app', priority: 'nice' as const, complexity: 'low' as const, sort_order: 6 },
         { name: 'Responsive Design', description: 'Mobile-friendly UI across all screens', priority: 'must' as const, complexity: 'low' as const, sort_order: 7 },
       ]
-      const { data: inserted } = await supabase.from('features').insert(
-        defaults.map(f => ({ ...f, project_id: projectId }))
-      ).select()
-      setFeatures(inserted || [])
+      const insertedRefs = await Promise.all(defaults.map((f: any) => addDoc(collection(db as any, 'features'), { ...f, project_id: projectId })))
+      const inserted = insertedRefs.map((r: any, i: number) => ({ id: r.id, ...defaults[i], project_id: projectId }))
+      setFeatures(inserted as any)
     } else {
-      setFeatures(feats)
+      setFeatures(feats as any)
     }
     setLoading(false)
   }
 
   async function addFeature() {
     if (!newFeature.name.trim() || !projectId) return
-    const { data } = await supabase.from('features').insert({ project_id: projectId, ...newFeature, sort_order: features.length }).select().single()
-    if (data) { setFeatures(p => [...p, data]); setNewFeature({ name: '', description: '', priority: 'must', complexity: 'medium' }); setShowAdd(false); showToast('Feature added') }
+    const ref = await addDoc(collection(db as any, 'features'), { project_id: projectId, ...newFeature, sort_order: features.length })
+    const data = { id: ref.id, project_id: projectId, ...newFeature, sort_order: features.length }
+    setFeatures((p: any) => [...p, data])
+    setNewFeature({ name: '', description: '', priority: 'must', complexity: 'medium' })
+    setShowAdd(false)
+    showToast('Feature added')
   }
 
   async function deleteFeature(id: string) {
-    await supabase.from('features').delete().eq('id', id)
-    setFeatures(p => p.filter(f => f.id !== id))
+    await deleteDoc(doc(db as any, 'features', id))
+    setFeatures((p: any) => p.filter((f: any) => f.id !== id))
   }
 
   async function togglePriority(f: Feature) {
     const np = f.priority === 'must' ? 'nice' : 'must'
-    await supabase.from('features').update({ priority: np }).eq('id', f.id)
-    setFeatures(p => p.map(x => x.id === f.id ? { ...x, priority: np } : x))
+    await updateDoc(doc(db as any, 'features', f.id), { priority: np })
+    setFeatures((p: any) => p.map((x: any) => x.id === f.id ? { ...x, priority: np } : x))
   }
+
 
   function onDragStart(i: number) { setDragIdx(i) }
   function onDragOver(e: React.DragEvent, i: number) {
@@ -97,7 +104,7 @@ export default function FeaturesPage() {
   }
   async function onDragEnd() {
     setDragIdx(null)
-    await Promise.all(features.map((f, i) => supabase.from('features').update({ sort_order: i }).eq('id', f.id)))
+    await Promise.all(features.map((f: any, i: number) => updateDoc(doc(db as any, 'features', f.id), { sort_order: i })))
   }
 
   const must = features.filter(f => f.priority === 'must')

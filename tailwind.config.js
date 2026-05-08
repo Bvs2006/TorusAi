@@ -8,20 +8,25 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: '#eef3f4',
-        'bg-2': '#e4ebed',
-        'bg-3': '#d9e5e7',
-        surface: 'rgba(255,255,255,0.62)',
-        'surface-2': 'rgba(43,69,72,0.12)',
+        bg: '#f7f3ea',
+        'bg-2': '#eee7d8',
+        'bg-3': '#e3d8c1',
+        surface: 'rgba(255,255,255,0.72)',
+        'surface-2': 'rgba(24,45,56,0.12)',
         violet: {
-          DEFAULT: '#427f83',
-          2: '#5aa0a4',
-          3: '#83b9bd',
-          dim: 'rgba(66,127,131,0.16)',
+          DEFAULT: '#0f766e',
+          2: '#0891b2',
+          3: '#f97316',
+          dim: 'rgba(15,118,110,0.16)',
         },
         brand: {
-          DEFAULT: '#427f83',
-          light: '#83b9bd',
+          DEFAULT: '#0f766e',
+          light: '#f97316',
+        },
+        text: {
+          DEFAULT: '#182d38',
+          2: '#526977',
+          3: '#81919a',
         },
       },
       fontFamily: {

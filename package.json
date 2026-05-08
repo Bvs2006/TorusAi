@@ -12,6 +12,8 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.3",
     "clsx": "^2.1.1",
+    "firebase": "^12.13.0",
+    "firebase-admin": "^13.9.0",
     "groq-sdk": "^0.7.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",

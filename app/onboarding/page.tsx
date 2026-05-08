@@ -1,11 +1,10 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
+import { auth, db } from '@/utils/firebase/client'
+import { doc, setDoc } from 'firebase/firestore'
 import { Code2, Building2, ArrowRight } from 'lucide-react'
 import { showToast } from '@/components/ui'
-
-const supabase = createClient()
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -16,27 +15,21 @@ export default function OnboardingPage() {
   async function handleComplete() {
     if (!type) return
     setLoading(true)
-    
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/login')
-        return
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          account_type: type,
-          company_details: type === 'organisation' ? details : null
-        })
-        .eq('id', user.id)
-
-      if (error) throw error
-
+      const user = auth.currentUser
+      if (!user) { router.push('/login'); return }
+      await setDoc(doc(db, 'profiles', user.uid), {
+        username: user.displayName || user.email?.split('@')[0] || 'User',
+        email: user.email,
+        full_name: user.displayName || user.email?.split('@')[0] || 'User',
+        account_type: type,
+        company_details: type === 'organisation' ? details : null,
+        streak_count: 0,
+        badges: [],
+        updated_at: new Date().toISOString()
+      }, { merge: true })
       showToast('Welcome to Torus AI!')
       window.location.href = '/dashboard'
-      
     } catch (err: any) {
       showToast(err.message || 'Error updating profile')
       setLoading(false)

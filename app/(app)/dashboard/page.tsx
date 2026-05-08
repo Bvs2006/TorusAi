@@ -1,9 +1,9 @@
 // app/(app)/dashboard/page.tsx
-import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ProgressBar } from '@/components/ui'
+import { adminAuth, adminDb } from '@/utils/firebase/admin'
 import { Plus, Zap, ArrowRight, Trophy, Flame, Clock, Layers, Sparkles, Users, FolderOpen, FileText, Briefcase, Building } from 'lucide-react'
 
 const getPhaseProgress = (project: any) => {
@@ -14,63 +14,62 @@ const getPhaseProgress = (project: any) => {
 
 export default async function DashboardPage({ searchParams }: { searchParams: { tab?: string } }) {
   const cookieStore = await cookies()
-  const supabase = createClient(cookieStore)
-  const { data: { session } } = await supabase.auth.getSession()
+  const session = cookieStore.get('fb_session')?.value
   if (!session) redirect('/login')
+
+  let uid: string
+  try {
+    const decoded = await adminAuth.verifySessionCookie(session!, true)
+    uid = decoded.uid
+  } catch { redirect('/login') as never }
 
   const tab = searchParams.tab
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single()
+  const profileSnap = await adminDb.collection('profiles').doc(uid!).get()
+  const profile = profileSnap.exists ? profileSnap.data() : {}
   const isOrg = profile?.account_type === 'organisation'
 
   let projects: any[] = []
   let allPhases: any[] = []
-  
   let org: any = null
-  let orgMembers = []
-  let clientPortals = []
-  let proposals = []
+  let orgMembers: any[] = []
+  let clientPortals: any[] = []
+  let proposals: any[] = []
 
-  // Fetch projects (common for both)
-  const { data: userProjects } = await supabase.from('projects').select('*, phases(*)').eq('user_id', session.user.id).order('created_at', { ascending: false }).limit(tab === 'recent' ? 50 : 10)
-  projects = userProjects || []
+  // Fetch projects
+  const projectsSnap = await adminDb.collection('projects')
+    .where('user_id', '==', uid!)
+    .limit(tab === 'recent' ? 50 : 10)
+    .get()
+  projects = projectsSnap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
 
   if (isOrg) {
-    const { data: existingOrg } = await supabase.from('organisations').select('*').eq('owner_id', session.user.id).single()
-    org = existingOrg
-    if (!org) {
-       // auto-create org if missing
-       const { data: newOrg } = await supabase.from('organisations').insert({
-         name: profile.company_details || `${profile.username || 'User'}'s Team`,
-         owner_id: session.user.id
-       }).select().single()
-       org = newOrg
-       if (org) {
-         await supabase.from('org_members').insert({
-           org_id: org.id,
-           user_id: session.user.id,
-           role: 'owner'
-         })
-       }
+    const orgSnap = await adminDb.collection('organisations').where('owner_id', '==', uid!).limit(1).get()
+    if (!orgSnap.empty) {
+      org = { id: orgSnap.docs[0].id, ...orgSnap.docs[0].data() }
+    } else {
+      const newOrgRef = await adminDb.collection('organisations').add({
+        name: profile?.company_details || `${profile?.username || 'User'}'s Team`,
+        owner_id: uid!, created_at: new Date().toISOString()
+      })
+      org = { id: newOrgRef.id }
+      await adminDb.collection('org_members').add({ org_id: newOrgRef.id, user_id: uid!, role: 'owner' })
     }
-
     if (org) {
-      const [{ data: members }, { data: portals }, { data: props }] = await Promise.all([
-        supabase.from('org_members').select('*').eq('org_id', org.id),
-        supabase.from('client_portals').select('*').eq('org_id', org.id),
-        supabase.from('proposals').select('*').eq('org_id', org.id)
+      const [mSnap, pSnap, prSnap] = await Promise.all([
+        adminDb.collection('org_members').where('org_id', '==', org.id).get(),
+        adminDb.collection('client_portals').where('org_id', '==', org.id).get(),
+        adminDb.collection('proposals').where('org_id', '==', org.id).get(),
       ])
-      orgMembers = members || []
-      clientPortals = portals || []
-      proposals = props || []
+      orgMembers = mSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+      clientPortals = pSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+      proposals = prSnap.docs.map(d => ({ id: d.id, ...d.data() }))
     }
-  } else {
-    // Fetch phases for developer
-    const { data: p } = await supabase.from('phases').select('project_id, status').in('project_id', projects.map((p: any) => p.id))
-    allPhases = p || []
   }
 
-  const username = profile?.username || session.user.email?.split('@')[0] || 'User'
+  const username = profile?.username || 'User'
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
@@ -174,7 +173,7 @@ function renderOrganisationDashboard({ greeting, username, projects, org, orgMem
             <div style={{ fontSize: '12px', fontFamily: 'DM Mono, monospace', color: '#06b6d4', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>
               Organisation Workspace
             </div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '32px', fontWeight: 800, color: '#172326', margin: 0, textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '32px', fontWeight: 800, color: '#172326', margin: 0 }}>
               {org?.name || 'Your Team'}
             </h1>
             <p style={{ color: '#607276', fontSize: '14px', marginTop: '8px' }}>{greeting}, {username}. Here's what's happening.</p>
@@ -328,12 +327,12 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
             <div style={{ fontSize: '12px', fontFamily: 'DM Mono, monospace', color: '#06b6d4', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>
               Workspace Overview
             </div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '32px', fontWeight: 800, color: '#172326', margin: 0, textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '32px', fontWeight: 800, color: '#172326', margin: 0 }}>
               {greeting}, {username} 👋
             </h1>
           </div>
           <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ padding: '10px 16px', background: 'rgba(26,23,48,0.6)', backdropFilter: 'blur(12px)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '12px', fontSize: '13px', color: '#607276' }}>
+            <div style={{ padding: '10px 16px', background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(12px)', border: '1px solid rgba(24,45,56,.1)', borderRadius: '12px', fontSize: '13px', color: '#607276', boxShadow: '0 12px 32px rgba(24,45,56,.08)' }}>
               <span style={{ color: '#172326', fontWeight: 700 }}>{projects?.filter((p: any) => p.status === 'active').length || 0}</span> Active Projects
             </div>
             <Link href="/planner" style={{

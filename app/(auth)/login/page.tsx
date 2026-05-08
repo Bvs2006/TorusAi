@@ -1,10 +1,9 @@
 'use client'
-// app/(auth)/login/page.tsx
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/utils/supabase/client'
-const supabase = createClient()
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { auth } from '@/utils/firebase/client'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -15,27 +14,33 @@ export default function LoginPage() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
-    setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) { setError(error.message); setLoading(false) }
-    else router.push('/dashboard')
+    setLoading(true); setError('')
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password)
+      const token = await cred.user.getIdToken()
+      await fetch('/api/auth/session', { method: 'POST', body: JSON.stringify({ token }), headers: { 'Content-Type': 'application/json' } })
+      router.push('/dashboard')
+    } catch (err: any) {
+      setError(err.message?.replace('Firebase: ', '') || 'Login failed')
+      setLoading(false)
+    }
   }
 
   async function handleGoogle() {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${location.origin}/api/auth/callback` }
-    })
+    try {
+      const provider = new GoogleAuthProvider()
+      const cred = await signInWithPopup(auth, provider)
+      const token = await cred.user.getIdToken()
+      await fetch('/api/auth/session', { method: 'POST', body: JSON.stringify({ token }), headers: { 'Content-Type': 'application/json' } })
+      router.push('/dashboard')
+    } catch (err: any) {
+      setError(err.message?.replace('Firebase: ', '') || 'Google sign-in failed')
+    }
   }
 
   return (
-    <div style={{
-      minHeight: '100vh', background: '#eef3f4',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-    }}>
+    <div style={{ minHeight: '100vh', background: '#eef3f4', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div style={{ width: '100%', maxWidth: '400px' }}>
-        {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
             <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '28px', letterSpacing: '-1px', color: '#172326' }}>
@@ -46,17 +51,7 @@ export default function LoginPage() {
         </div>
 
         <div style={{ background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '16px', padding: '28px' }}>
-          {/* Google OAuth */}
-          <button onClick={handleGoogle} style={{
-            width: '100%', padding: '11px', background: '#fff', border: 'none',
-            borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', gap: '10px', marginBottom: '20px',
-            fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 700, color: 'rgba(255,255,255,.62)',
-            transition: 'opacity 0.2s'
-          }}
-            onMouseOver={e => (e.currentTarget.style.opacity = '0.9')}
-            onMouseOut={e => (e.currentTarget.style.opacity = '1')}
-          >
+          <button onClick={handleGoogle} style={{ width: '100%', padding: '11px', background: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px', fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 700, color: '#172326' }}>
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -74,71 +69,34 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: '14px' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#607276', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '6px' }}>
-                Email
-              </label>
-              <input
-                type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                placeholder="you@example.com"
-                style={{
-                  width: '100%', background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)',
-                  borderRadius: '10px', padding: '10px 14px', color: '#172326', fontSize: '14px',
-                  outline: 'none', fontFamily: 'DM Sans, sans-serif', transition: 'border-color 0.15s'
-                }}
+              <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#607276', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '6px' }}>Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com"
+                style={{ width: '100%', background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '10px', padding: '10px 14px', color: '#172326', fontSize: '14px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
                 onFocus={e => (e.target.style.borderColor = '#427f83')}
                 onBlur={e => (e.target.style.borderColor = 'rgba(38,69,72,.12)')}
               />
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <label style={{ fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#607276', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
-                  Password
-                </label>
-                <Link href="/forgot-password" style={{ fontSize: '11px', color: '#5aa0a4', textDecoration: 'none', fontFamily: 'DM Mono, monospace' }}>
-                  Forgot?
-                </Link>
+                <label style={{ fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#607276', letterSpacing: '0.8px', textTransform: 'uppercase' }}>Password</label>
+                <Link href="/forgot-password" style={{ fontSize: '11px', color: '#5aa0a4', textDecoration: 'none', fontFamily: 'DM Mono, monospace' }}>Forgot?</Link>
               </div>
-              <input
-                type="password" value={password} onChange={e => setPassword(e.target.value)} required
-                placeholder="••••••••"
-                style={{
-                  width: '100%', background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)',
-                  borderRadius: '10px', padding: '10px 14px', color: '#172326', fontSize: '14px',
-                  outline: 'none', fontFamily: 'DM Sans, sans-serif', transition: 'border-color 0.15s'
-                }}
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••"
+                style={{ width: '100%', background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '10px', padding: '10px 14px', color: '#172326', fontSize: '14px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
                 onFocus={e => (e.target.style.borderColor = '#427f83')}
                 onBlur={e => (e.target.style.borderColor = 'rgba(38,69,72,.12)')}
               />
             </div>
 
-            {error && (
-              <div style={{ background: 'rgba(244,63,94,.1)', border: '1px solid rgba(244,63,94,.3)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '13px', color: '#f43f5e' }}>
-                {error}
-              </div>
-            )}
+            {error && <div style={{ background: 'rgba(244,63,94,.1)', border: '1px solid rgba(244,63,94,.3)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '13px', color: '#f43f5e' }}>{error}</div>}
 
-            <button type="submit" disabled={loading} style={{
-              width: '100%', padding: '12px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none',
-              borderRadius: '10px', color: '#fff', fontFamily: 'Syne, sans-serif',
-              fontSize: '14px', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.6 : 1, transition: 'all 0.2s', display: 'flex',
-              alignItems: 'center', justifyContent: 'center', gap: '8px'
-            }}>
-              {loading ? (
-                <>
-                  <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                  Signing in...
-                </>
-              ) : 'Sign In →'}
+            <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none', borderRadius: '10px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {loading ? <><div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Signing in...</> : 'Sign In →'}
             </button>
           </form>
 
           <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#607276' }}>
-            Don't have an account?{' '}
-            <Link href="/signup" style={{ color: '#5aa0a4', textDecoration: 'none', fontWeight: 600 }}>
-              Sign up free
-            </Link>
+            Don't have an account?{' '}<Link href="/signup" style={{ color: '#5aa0a4', textDecoration: 'none', fontWeight: 600 }}>Sign up free</Link>
           </p>
         </div>
       </div>
