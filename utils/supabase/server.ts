@@ -13,7 +13,7 @@ const supabaseKey = configuredSupabaseKey || "placeholder-publishable-key";
 export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) => {
   if (!hasSupabaseConfig && !isBuildPhase) {
     throw new Error(
-      "Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY before handling requests."
+      "Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL and either NEXT_PUBLIC_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY before handling requests."
     );
   }
 

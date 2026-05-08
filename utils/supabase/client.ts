@@ -11,7 +11,7 @@ const supabaseKey = configuredSupabaseKey || "placeholder-publishable-key";
 export const createClient = () => {
   if (!hasSupabaseConfig && typeof window !== "undefined") {
     throw new Error(
-      "Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY before running the app."
+      "Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL and either NEXT_PUBLIC_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY before running the app."
     );
   }
 
