@@ -1,7 +1,0 @@
-{
-  "/onboarding/page": "app/onboarding/page.js",
-  "/(app)/planner/features/page": "app/(app)/planner/features/page.js",
-  "/(auth)/signup/page": "app/(auth)/signup/page.js",
-  "/(app)/planner/page": "app/(app)/planner/page.js",
-  "/(app)/dashboard/page": "app/(app)/dashboard/page.js"
-}
