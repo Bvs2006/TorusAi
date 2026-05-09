@@ -45,6 +45,8 @@ function ArchitecturePage() {
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
     getDoc(doc(db as any, 'projects', projectId)).then(s => { if (s.exists()) setProject({ id: s.id, ...s.data() as any }); setLoading(false) })
+    // Save current step when visiting architecture page
+    updateDoc(doc(db as any, 'projects', projectId!), { current_step: 'architecture' }).catch(() => {})
   }, [projectId])
 
   const onConnect = useCallback((params: any) =>

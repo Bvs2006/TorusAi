@@ -11,6 +11,45 @@ const getPhaseProgress = (project: any) => {
   return Math.round((phases.filter((p: any) => p.status === 'done').length / phases.length) * 100)
 }
 
+const getResumeStep = (project: any) => {
+  // First check if current_step is explicitly set
+  if (project.current_step) return project.current_step
+  
+  // Fallback: determine from phases
+  const phases = project.phases || []
+  if (!phases.length) return 'features' // default
+  
+  const stepMap: { [key: string]: string } = {
+    'features': 'features',
+    'architecture': 'architecture',
+    'prompts': 'architecture', // prompts are part of architecture
+    'blueprint': 'blueprint',
+    'deploy': 'deploy'
+  }
+  
+  // Find the highest completed phase and resume from next step
+  let lastCompletedPhase = -1
+  for (let i = 0; i < phases.length; i++) {
+    if (phases[i].status === 'done') {
+      lastCompletedPhase = i
+    }
+  }
+  
+  // If first phase (features) is done, move to architecture
+  if (lastCompletedPhase >= 0 && phases[lastCompletedPhase].name?.toLowerCase().includes('feature')) {
+    return 'architecture'
+  }
+  if (lastCompletedPhase >= 1 && phases[lastCompletedPhase].name?.toLowerCase().includes('architecture')) {
+    return 'blueprint'
+  }
+  if (lastCompletedPhase >= 2 && phases[lastCompletedPhase].name?.toLowerCase().includes('blueprint')) {
+    return 'deploy'
+  }
+  
+  // Default to features if nothing is done
+  return 'features'
+}
+
 export default async function DashboardPage({ searchParams }: { searchParams: { tab?: string } }) {
   const cookieStore = await cookies()
   const session = cookieStore.get('fb_session')?.value
@@ -38,14 +77,17 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
     .map(d => ({ id: d.id, ...d.data() }))
     .sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
 
-  // Fetch phases for all projects
-  for (const proj of projects) {
-    const phasesSnap = await adminDb.collection('phases')
-      .where('project_id', '==', proj.id)
-      .get()
-    const phases = phasesSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-    allPhases.push(...phases)
-  }
+  // Fetch phases for all projects to determine resume step
+  const projectsWithPhases = await Promise.all(
+    projects.map(async (proj: any) => {
+      const phasesSnap = await adminDb.collection('phases')
+        .where('project_id', '==', proj.id)
+        .get()
+      const phases = phasesSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+      return { ...proj, phases }
+    })
+  )
+  projects = projectsWithPhases
 
   const username = profile?.username || 'User'
   const hour = new Date().getHours()
@@ -193,15 +235,21 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {projects.filter((p: any) => p.status === 'active').length > 0 ? (
-                projects.filter((p: any) => p.status === 'active').map((proj: any) => (
-                  <div key={proj.id} style={{ padding: '14px 16px', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.2)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326' }}>{proj.name || 'Untitled Project'}</div>
-                      <div style={{ fontSize: '11px', color: '#8a9a9d', marginTop: '3px' }}>{proj.idea?.substring(0, 50) || 'No description'}...</div>
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#5aa0a4', fontWeight: 600, padding: '4px 10px', background: 'rgba(90,160,164,.1)', borderRadius: '6px' }}>{getPhaseProgress(proj)}%</div>
-                  </div>
-                ))
+                projects.filter((p: any) => p.status === 'active').map((proj: any) => {
+                  const resumeStep = getResumeStep(proj)
+                  const stepPath = `/planner/${resumeStep}?project=${proj.id}`
+                  return (
+                    <Link key={proj.id} href={stepPath} style={{ textDecoration: 'none' }}>
+                      <div style={{ padding: '14px 16px', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.2)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.15)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.4)' }} onMouseOut={e => { e.currentTarget.style.background = 'rgba(66,127,131,.08)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.2)' }}>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326' }}>{proj.name || 'Untitled Project'}</div>
+                          <div style={{ fontSize: '11px', color: '#8a9a9d', marginTop: '3px' }}>{proj.idea?.substring(0, 50) || 'No description'}...</div>
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#5aa0a4', fontWeight: 600, padding: '4px 10px', background: 'rgba(90,160,164,.1)', borderRadius: '6px' }}>{getPhaseProgress(proj)}%</div>
+                      </div>
+                    </Link>
+                  )
+                })
               ) : (
                 <div style={{ textAlign: 'center', padding: '40px 0' }}>
                   <div style={{ color: '#607276', fontSize: '14px' }}>No active projects. Time to build!</div>

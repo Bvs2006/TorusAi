@@ -42,6 +42,8 @@ export default function FeaturesPage() {
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
     loadData()
+    // Save current step when visiting features page
+    updateDoc(doc(db as any, 'projects', projectId), { current_step: 'features' }).catch(() => {})
   }, [projectId])
 
   async function loadData() {

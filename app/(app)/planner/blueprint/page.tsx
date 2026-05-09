@@ -22,6 +22,8 @@ export default function BlueprintPage() {
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
     getDoc(doc(db as any, 'projects', projectId!)).then(s => { if (s.exists()) setProject({ id: s.id, ...s.data() as any }); setLoading(false) })
+    // Save current step when visiting blueprint page
+    updateDoc(doc(db as any, 'projects', projectId!), { current_step: 'blueprint' }).catch(() => {})
   }, [projectId])
 
   async function copy(text: string, key: string) {
