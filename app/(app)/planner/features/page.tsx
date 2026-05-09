@@ -38,6 +38,10 @@ export default function FeaturesPage() {
   const [newFeature, setNewFeature] = useState({ name: '', description: '', priority: 'must' as 'must'|'nice', complexity: 'medium' as 'low'|'medium'|'high' })
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [deleteNote, setDeleteNote] = useState<string | null>(null)
+  const [validationResult, setValidationResult] = useState<any>(null)
+  const [validating, setValidating] = useState(false)
+  const [validationResult, setValidationResult] = useState<any>(null)
+  const [validating, setValidating] = useState(false)
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
@@ -102,13 +106,57 @@ export default function FeaturesPage() {
   }
 
   async function addFeature() {
-    if (!newFeature.name.trim() || !projectId) return
-    const ref = await addDoc(collection(db as any, 'features'), { project_id: projectId, ...newFeature, sort_order: features.length, why_important: '' })
-    const data = { id: ref.id, project_id: projectId, ...newFeature, sort_order: features.length }
-    setFeatures((p: any) => [...p, data])
-    setNewFeature({ name: '', description: '', priority: 'must', complexity: 'medium' })
-    setShowAdd(false)
-    showToast('Feature added')
+    if (!newFeature.name.trim() || !projectId || !project) return
+    
+    // Validate feature with AI
+    setValidating(true)
+    try {
+      const res = await fetch('/api/ai/validate-feature', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          featureName: newFeature.name,
+          featureDescription: newFeature.description,
+          projectIdea: project.idea,
+          platform: project.platform,
+          stack: project.stack
+        })
+      })
+      const validation = await res.json()
+      setValidationResult(validation)
+      
+      if (!validation.suitable) {
+        showToast('⚠️ Feature might not be suitable for this idea')
+        setValidating(false)
+        return
+      }
+      
+      // Add feature since it's suitable
+      const ref = await addDoc(collection(db as any, 'features'), {
+        project_id: projectId,
+        ...newFeature,
+        sort_order: features.length,
+        why_important: validation.reason,
+        suitability_score: validation.suitabilityScore
+      })
+      const data = {
+        id: ref.id,
+        project_id: projectId,
+        ...newFeature,
+        sort_order: features.length,
+        why_important: validation.reason,
+        suitability_score: validation.suitabilityScore
+      }
+      setFeatures((p: any) => [...p, data])
+      setNewFeature({ name: '', description: '', priority: 'must', complexity: 'medium' })
+      setShowAdd(false)
+      setValidationResult(null)
+      showToast('✓ Feature added (Suitable score: ' + validation.suitabilityScore + '%)')
+    } catch (err) {
+      console.error('Validation error:', err)
+      showToast('Error validating feature')
+    }
+    setValidating(false)
   }
 
   async function deleteFeature(f: Feature) {
@@ -277,7 +325,7 @@ export default function FeaturesPage() {
                     border: `1px solid ${newFeature.priority === p ? '#427f83' : 'rgba(38,69,72,.12)'}`,
                     background: newFeature.priority === p ? 'rgba(66,127,131,.2)' : 'transparent',
                     color: newFeature.priority === p ? '#83b9bd' : '#8a9a9d'
-                  }}>{p === 'must' ? '★ Must Have' : '◇ Nice to Have'}</button>
+                  }}>★ Must Have</button>
                 ))}
                 {(['low', 'medium', 'high'] as const).map(c => (
                   <button key={c} onClick={() => setNewFeature({ ...newFeature, complexity: c })} style={{
@@ -288,9 +336,27 @@ export default function FeaturesPage() {
                   }}>{c}</button>
                 ))}
               </div>
+              {validationResult && (
+                <div style={{
+                  background: validationResult.suitable ? 'rgba(16,185,129,.1)' : 'rgba(244,63,94,.1)',
+                  border: `1px solid ${validationResult.suitable ? 'rgba(16,185,129,.3)' : 'rgba(244,63,94,.3)'}`,
+                  borderRadius: '8px',
+                  padding: '12px',
+                  marginBottom: '12px',
+                  fontSize: '12px'
+                }}>
+                  <div style={{ color: validationResult.suitable ? '#059669' : '#f43f5e', fontWeight: 600, marginBottom: '6px' }}>
+                    {validationResult.suitable ? '✓ Suitable for idea' : '✗ Not suitable for idea'} ({validationResult.suitabilityScore}%)
+                  </div>
+                  <div style={{ color: '#607276', marginBottom: '8px' }}>{validationResult.reason}</div>
+                  {validationResult.suggestion && (
+                    <div style={{ color: '#8a9a9d', fontSize: '11px', fontStyle: 'italic' }}>💡 {validationResult.suggestion}</div>
+                  )}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={addFeature} style={{ padding: '8px 18px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none', borderRadius: '8px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>Add Block</button>
-                <button onClick={() => setShowAdd(false)} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid rgba(38,69,72,.12)', borderRadius: '8px', color: '#607276', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={addFeature} disabled={validating || (validationResult && !validationResult.suitable)} style={{ padding: '8px 18px', background: validating || (validationResult && !validationResult.suitable) ? 'rgba(66,127,131,.4)' : 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none', borderRadius: '8px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 700, cursor: validating || (validationResult && !validationResult.suitable) ? 'not-allowed' : 'pointer', opacity: validating || (validationResult && !validationResult.suitable) ? 0.6 : 1 }}>{validating ? 'Validating...' : 'Add Feature'}</button>
+                <button onClick={() => { setShowAdd(false); setValidationResult(null) }} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid rgba(38,69,72,.12)', borderRadius: '8px', color: '#607276', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
               </div>
             </div>
           ) : (
