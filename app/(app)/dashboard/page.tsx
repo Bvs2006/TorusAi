@@ -38,6 +38,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
     .map(d => ({ id: d.id, ...d.data() }))
     .sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
 
+  // Fetch phases for all projects
+  for (const proj of projects) {
+    const phasesSnap = await adminDb.collection('phases')
+      .where('project_id', '==', proj.id)
+      .get()
+    const phases = phasesSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+    allPhases.push(...phases)
+  }
+
   const username = profile?.username || 'User'
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
@@ -117,6 +126,7 @@ function renderRecentProjects({ projects }: { projects: any[] }) {
 function renderDeveloperDashboard({ greeting, username, projects, allPhases, profile }: any) {
   const totalProjects = projects?.length || 0
   const completedProjects = projects?.filter((p: any) => p.status === 'completed').length || 0
+  const activeProjects = projects?.filter((p: any) => p.status === 'active').length || 0
   const totalPhasesDone = allPhases?.filter((p: any) => p.status === 'done').length || 0
   const streak = profile?.streak_count || 0
   const badges = profile?.badges || []
@@ -182,9 +192,21 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <div style={{ color: '#607276', fontSize: '14px' }}>No active projects. Time to build!</div>
-              </div>
+              {projects.filter((p: any) => p.status === 'active').length > 0 ? (
+                projects.filter((p: any) => p.status === 'active').map((proj: any) => (
+                  <div key={proj.id} style={{ padding: '14px 16px', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.2)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326' }}>{proj.name || 'Untitled Project'}</div>
+                      <div style={{ fontSize: '11px', color: '#8a9a9d', marginTop: '3px' }}>{proj.idea?.substring(0, 50) || 'No description'}...</div>
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#5aa0a4', fontWeight: 600, padding: '4px 10px', background: 'rgba(90,160,164,.1)', borderRadius: '6px' }}>{getPhaseProgress(proj)}%</div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <div style={{ color: '#607276', fontSize: '14px' }}>No active projects. Time to build!</div>
+                </div>
+              )}
             </div>
           </div>
 
