@@ -36,8 +36,8 @@ export default function BlueprintPage() {
 
   const stack = project.stack
   const fe = stack?.frontend?.name || 'Next.js'
-  const db = stack?.database?.name || 'Supabase'
-  const auth = stack?.auth?.name || 'Supabase Auth'
+  const dbName = stack?.database?.name || 'Supabase'
+  const authName = stack?.auth?.name || 'Supabase Auth'
   const slg = project.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 
   const fileStructure = `${slg}/
@@ -104,7 +104,7 @@ CREATE POLICY "Users own data"
 
   const envVars = `# ${project.name} — Environment Variables
 
-# ${db}
+# ${dbName}
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...

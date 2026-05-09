@@ -5,12 +5,11 @@ import { useState } from 'react'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/utils/firebase/client'
 import {
-  Home, PlusSquare, Clock, Trophy, Settings, PanelLeftClose, PanelLeftOpen, LogOut,
-  Users, FolderOpen, FileText, Briefcase
+  Home, PlusSquare, Clock, Trophy, Settings, PanelLeftClose, PanelLeftOpen, LogOut, Users
 } from 'lucide-react'
 
 interface SidebarProps {
-  user?: { username?: string; email?: string; account_type?: string } | null
+  user?: { username?: string; email?: string } | null
 }
 
 export default function Sidebar({ user }: SidebarProps) {
@@ -19,19 +18,12 @@ export default function Sidebar({ user }: SidebarProps) {
 
   const [isCollapsed, setIsCollapsed] = useState(true)
 
-  const isOrg = user?.account_type === 'organisation'
-
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Dashboard' },
-    { href: '/planner', icon: PlusSquare, label: isOrg ? 'New Client Project' : 'New Project' },
-    { href: '/dashboard?tab=recent', icon: isOrg ? Briefcase : Clock, label: isOrg ? 'Client Projects' : 'Recent Projects' },
-    ...(isOrg ? [
-      { href: '/team', icon: Users, label: 'Team Members' },
-      { href: '/portals', icon: FolderOpen, label: 'Client Portals' },
-      { href: '/proposals', icon: FileText, label: 'Proposals' },
-    ] : [
-      { href: '/badges', icon: Trophy, label: 'Badges' },
-    ]),
+    { href: '/planner', icon: PlusSquare, label: 'New Project' },
+    { href: '/dashboard?tab=recent', icon: Clock, label: 'Recent Projects' },
+    { href: '/team', icon: Users, label: 'Team Guide' },
+    { href: '/badges', icon: Trophy, label: 'Badges' },
     { href: '/settings', icon: Settings, label: 'Settings' },
   ]
 
@@ -49,7 +41,7 @@ export default function Sidebar({ user }: SidebarProps) {
       backdropFilter: 'blur(26px) saturate(140%)',
       display: 'flex', flexDirection: 'column', alignItems: isCollapsed ? 'center' : 'flex-start',
       padding: '20px 0', flexShrink: 0,
-      height: 'calc(100vh - 58px)', overflowY: 'auto', position: 'sticky', top: '58px',
+      height: '100vh', overflowY: 'auto', position: 'sticky', top: 0,
       gap: '24px', transition: 'width 0.3s ease, align-items 0.3s ease'
     }}>
       

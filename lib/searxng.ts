@@ -13,7 +13,8 @@ export async function search(query: string, count = 5): Promise<SearchResult[]> 
     const url = `${baseUrl}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=en`
     const res = await fetch(url, {
       headers: { 'Accept': 'application/json' },
-      next: { revalidate: 3600 } // cache 1 hour
+      next: { revalidate: 3600 }, // cache 1 hour
+      signal: AbortSignal.timeout(4000)
     })
     
     if (!res.ok) throw new Error(`SearXNG error: ${res.status}`)

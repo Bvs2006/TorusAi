@@ -16,8 +16,14 @@ export default function SignupPage() {
   const inputStyle = { width: '100%', background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '10px', padding: '10px 14px', color: '#172326', fontSize: '14px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#607276', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '6px' }
 
-  async function createSession(token: string) {
-    await fetch('/api/auth/session', { method: 'POST', body: JSON.stringify({ token }), headers: { 'Content-Type': 'application/json' } })
+  async function createSession(token: string, username?: string) {
+    const res = await fetch('/api/auth/session', { 
+      method: 'POST', 
+      body: JSON.stringify({ token, username }), 
+      headers: { 'Content-Type': 'application/json' } 
+    })
+    const data = await res.json()
+    if (!res.ok || data.error) throw new Error(data.error || 'Failed to initialize session')
   }
 
   async function handleSignup(e: React.FormEvent) {
@@ -26,14 +32,10 @@ export default function SignupPage() {
     try {
       const cred = await createUserWithEmailAndPassword(auth, form.email, form.password)
       await updateProfile(cred.user, { displayName: form.username })
-      await setDoc(doc(db, 'profiles', cred.user.uid), {
-        username: form.username, email: form.email,
-        full_name: form.username, streak_count: 0, badges: [], created_at: new Date().toISOString()
-      })
       const token = await cred.user.getIdToken()
-      await createSession(token)
+      await createSession(token, form.username)
       setSuccess(true)
-      setTimeout(() => router.push('/onboarding'), 1500)
+      setTimeout(() => router.push('/dashboard'), 900)
     } catch (err: any) {
       setError(err.message?.replace('Firebase: ', '') || 'Sign up failed')
       setLoading(false)
@@ -44,17 +46,9 @@ export default function SignupPage() {
     try {
       const provider = new GoogleAuthProvider()
       const cred = await signInWithPopup(auth, provider)
-      const snap = await import('firebase/firestore').then(({ getDoc, doc: d }) => getDoc(d(db, 'profiles', cred.user.uid)))
-      if (!snap.exists()) {
-        await setDoc(doc(db, 'profiles', cred.user.uid), {
-          username: cred.user.displayName || cred.user.email?.split('@')[0],
-          email: cred.user.email, full_name: cred.user.displayName,
-          streak_count: 0, badges: [], created_at: new Date().toISOString()
-        })
-      }
       const token = await cred.user.getIdToken()
       await createSession(token)
-      router.push('/onboarding')
+      router.push('/dashboard')
     } catch (err: any) {
       setError(err.message?.replace('Firebase: ', '') || 'Google sign-up failed')
     }
@@ -65,7 +59,7 @@ export default function SignupPage() {
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '56px', marginBottom: '16px' }}>🎉</div>
         <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, marginBottom: '8px', color: '#10b981' }}>Welcome to Torus AI!</h2>
-        <p style={{ color: '#607276' }}>Redirecting to setup...</p>
+        <p style={{ color: '#607276' }}>Opening your dashboard...</p>
       </div>
     </div>
   )

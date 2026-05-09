@@ -21,13 +21,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const profileSnap = await adminDb.collection('profiles').doc(uid).get()
   const profile = profileSnap.exists ? profileSnap.data() : null
 
-  if (!profile?.account_type) redirect('/onboarding')
-
   const user = {
     uid,
     email: profile?.email || '',
     username: profile?.username || '',
-    account_type: profile?.account_type,
   }
 
   return (
@@ -35,7 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <Navbar user={user} />
       <div style={{ display: 'flex' }}>
         <Sidebar user={user} />
-        <main style={{ flex: 1, overflow: 'auto', minHeight: 'calc(100vh - 58px)', position: 'relative' }}>
+        <main style={{ flex: 1, overflow: 'auto', minHeight: '100vh', position: 'relative' }}>
           {children}
         </main>
       </div>

@@ -26,36 +26,33 @@ export default function Navbar({ user }: NavbarProps) {
 
   return (
     <nav style={{
-      position: 'sticky', top: 0, zIndex: 100,
-      height: '58px', display: 'flex', alignItems: 'center',
-      justifyContent: 'space-between', padding: '0 32px',
-      background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(26px) saturate(150%)',
-      borderBottom: '1px solid rgba(24,45,56,0.1)', boxShadow: '0 10px 34px rgba(24,45,56,0.08)'
+      position: 'fixed', top: '24px', right: '24px', zIndex: 100,
+      height: '52px', display: 'flex', alignItems: 'center',
+      gap: '16px', padding: '0 10px 0 20px', borderRadius: '999px',
+      background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(26px) saturate(150%)',
+      border: '1px solid rgba(24,45,56,0.1)', boxShadow: '0 12px 40px rgba(0,0,0,0.1)'
     }}>
       {/* Logo */}
       <Link href="/dashboard" style={{
         fontFamily: 'Syne, sans-serif', fontWeight: 800,
-        fontSize: '19px', letterSpacing: '-0.5px', textDecoration: 'none',
-        color: '#182d38'
+        fontSize: '16px', letterSpacing: '-0.5px', textDecoration: 'none',
+        color: '#182d38', display: 'flex', alignItems: 'center'
       }}>
         Torus<span style={{ color: '#0f766e' }}>AI</span>
       </Link>
 
-      {/* Nav Links Removed - Now entirely in Sidebar */}
-      <div style={{ flex: 1 }} />
-
       {/* Right side */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
         {user ? (
           <>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               style={{
-                width: '32px', height: '32px', borderRadius: '50%',
+                width: '36px', height: '36px', borderRadius: '50%',
                 background: 'linear-gradient(135deg, #0f766e, #0891b2 58%, #f97316)',
                 border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: '12px', fontWeight: 700,
+                color: '#fff', fontSize: '13px', fontWeight: 700,
                 fontFamily: 'Syne, sans-serif'
               }}
             >
@@ -64,8 +61,8 @@ export default function Navbar({ user }: NavbarProps) {
 
             {menuOpen && (
               <div style={{
-                position: 'absolute', top: '42px', right: 0,
-                background: 'rgba(255,255,255,.9)', border: '1px solid rgba(24,45,56,.14)',
+                position: 'absolute', top: '48px', right: 0,
+                background: 'rgba(255,255,255,.95)', border: '1px solid rgba(24,45,56,.14)',
                 borderRadius: '16px', padding: '8px', minWidth: '180px',
                 boxShadow: '0 24px 70px rgba(24,45,56,.16)', backdropFilter: 'blur(24px)', zIndex: 200
               }}>

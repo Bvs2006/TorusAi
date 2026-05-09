@@ -1,12 +1,27 @@
-// app/api/ai/plan/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { askGroq, parseJSON } from '@/lib/groq'
 import { search, formatSearchResults } from '@/lib/searxng'
 import type { AIPlanResponse } from '@/types'
+import { adminDb, adminAuth } from '@/utils/firebase/admin'
+import { cookies } from 'next/headers'
 
 export async function POST(req: NextRequest) {
   try {
-    const { idea, platform, experience, budget, features, targetUsers } = await req.json()
+    const { idea, platform, experience, budget, features, targetUsers, userId: bodyUserId } = await req.json()
+
+    let userId = bodyUserId
+    if (!userId) {
+      const cookieStore = await cookies()
+      const session = cookieStore.get('fb_session')?.value
+      if (session) {
+        try {
+          const decoded = await adminAuth.verifySessionCookie(session, true)
+          userId = decoded.uid
+        } catch (err) {
+          console.error('Session verification failed in AI plan:', err)
+        }
+      }
+    }
 
     if (!idea) {
       return NextResponse.json({ error: 'Idea is required' }, { status: 400 })
@@ -76,7 +91,40 @@ Respond with ONLY valid JSON, no markdown:
       return NextResponse.json({ error: 'Failed to parse AI response', raw }, { status: 500 })
     }
 
-    return NextResponse.json(plan)
+    let projectId = Date.now().toString()
+    if (userId) {
+      const projectRef = adminDb.collection('projects').doc(projectId)
+      await projectRef.set({
+        user_id: userId,
+        name: idea.slice(0, 60),
+        idea: idea,
+        platform: 'web',
+        experience: experience || 'intermediate',
+        budget: budget || 'free',
+        stack: plan.stack,
+        estimated_hours: plan.estimated_hours,
+        complexity: plan.complexity,
+        status: 'active',
+        created_at: new Date().toISOString(),
+      })
+
+      // Save phases using batch write
+      const batch = adminDb.batch()
+      plan.phases.forEach((p: any) => {
+        const phaseRef = adminDb.collection('phases').doc()
+        batch.set(phaseRef, {
+          project_id: projectId,
+          phase_number: p.phase_number,
+          name: p.name,
+          tool: p.tool,
+          duration: p.duration,
+          status: 'pending'
+        })
+      })
+      await batch.commit()
+    }
+
+    return NextResponse.json({ ...plan, projectId })
 
   } catch (error: any) {
     console.error('Plan API error:', error)

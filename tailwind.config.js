@@ -8,31 +8,31 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: '#f7f3ea',
-        'bg-2': '#eee7d8',
-        'bg-3': '#e3d8c1',
-        surface: 'rgba(255,255,255,0.72)',
-        'surface-2': 'rgba(24,45,56,0.12)',
+        bg: '#FAFAFA',
+        'bg-2': '#F4F4F5',
+        'bg-3': '#E8E8EC',
+        surface: '#FFFFFF',
+        'surface-2': '#E8E8EC',
         violet: {
-          DEFAULT: '#0f766e',
-          2: '#0891b2',
-          3: '#f97316',
-          dim: 'rgba(15,118,110,0.16)',
+          DEFAULT: '#6366F1',
+          2: '#4F46E5',
+          3: '#20970B',
+          dim: 'rgba(99,102,241,0.12)',
         },
         brand: {
-          DEFAULT: '#0f766e',
-          light: '#f97316',
+          DEFAULT: '#6366F1',
+          light: '#20970B',
         },
         text: {
-          DEFAULT: '#182d38',
-          2: '#526977',
-          3: '#81919a',
+          DEFAULT: '#0A0A0A',
+          2: '#6B6B6B',
+          3: '#9C9C9C',
         },
       },
       fontFamily: {
-        display: ['Syne', 'sans-serif'],
+        display: ['General Sans', 'sans-serif'],
         body: ['DM Sans', 'sans-serif'],
-        mono: ['DM Mono', 'monospace'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       animation: {
         'fade-up': 'fadeUp 0.5s ease both',

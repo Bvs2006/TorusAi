@@ -1,11 +1,10 @@
 // app/layout.tsx
 import type { Metadata } from 'next'
-import { Syne, DM_Sans, DM_Mono } from 'next/font/google'
+import { DM_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
-const syne = Syne({ subsets: ['latin'], variable: '--font-display', weight: ['400','600','700','800'] })
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-body' })
-const dmMono = DM_Mono({ subsets: ['latin'], variable: '--font-mono', weight: ['300','400','500'] })
+const jetBrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', weight: ['400', '500'] })
 
 export const metadata: Metadata = {
   title: 'Torus AI — Build anything. Ship everything.',
@@ -20,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${syne.variable} ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang="en" className={`${dmSans.variable} ${jetBrainsMono.variable}`}>
       <body className="bg-bg text-text font-body antialiased min-h-screen">
         {children}
       </body>

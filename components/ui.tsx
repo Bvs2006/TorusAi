@@ -14,17 +14,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
-    const base = 'inline-flex items-center justify-center gap-2 font-display font-bold rounded-full transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none'
+    const base = 'inline-flex items-center justify-center gap-2 font-medium rounded-md transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-[3px] focus:ring-violet-dim'
     const variants = {
-      primary: 'bg-gradient-to-r from-teal-700 via-cyan-600 to-orange-500 text-white shadow-lg shadow-violet-dim hover:-translate-y-0.5',
-      ghost: 'border border-surface-2 text-text-2 hover:border-violet-DEFAULT hover:text-text bg-white/40 backdrop-blur-xl',
-      danger: 'border border-red-500/30 text-red-400 hover:bg-red-500/10 bg-transparent',
-      success: 'border border-green-500/30 text-green-400 hover:bg-green-500/10 bg-transparent',
+      primary: 'bg-violet-DEFAULT text-white hover:bg-violet-2 hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]',
+      ghost: 'border border-surface-2 text-text-2 hover:bg-bg-2 hover:text-text bg-transparent hover:-translate-y-px',
+      danger: 'border border-red-500 text-red-500 hover:bg-red-50 bg-transparent hover:-translate-y-px',
+      success: 'border border-green-500 text-green-600 hover:bg-green-50 bg-transparent hover:-translate-y-px',
     }
     const sizes = {
-      sm: 'px-3 py-1.5 text-xs',
-      md: 'px-4 py-2 text-sm',
-      lg: 'px-6 py-3 text-base',
+      sm: 'h-8 px-3 text-xs',
+      md: 'h-[38px] px-4 text-sm',
+      lg: 'h-11 px-6 text-base',
     }
     return (
       <button
@@ -59,9 +59,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref}
         className={cn(
-          'w-full bg-white/60 border border-surface-2 rounded-xl px-3.5 py-2.5 text-sm text-text placeholder-text-3 outline-none transition-all shadow-sm backdrop-blur-xl',
-          'focus:border-violet-DEFAULT focus:ring-2 focus:ring-violet-dim',
-          error && 'border-red-500/50 focus:border-red-500',
+          'w-full bg-surface border border-surface-2 rounded-md px-3.5 py-2.5 text-sm text-text placeholder-text-3 outline-none transition-all',
+          'focus:border-violet-DEFAULT focus:ring-[3px] focus:ring-violet-dim',
+          error && 'border-red-500 focus:border-red-500',
           className
         )}
         {...props}
@@ -90,9 +90,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         ref={ref}
         className={cn(
-          'w-full bg-white/60 border border-surface-2 rounded-xl px-3.5 py-2.5 text-sm text-text placeholder-text-3 outline-none transition-all resize-none shadow-sm backdrop-blur-xl',
-          'focus:border-violet-DEFAULT focus:ring-2 focus:ring-violet-dim',
-          error && 'border-red-500/50',
+          'w-full bg-surface border border-surface-2 rounded-md px-3.5 py-2.5 text-sm text-text placeholder-text-3 outline-none transition-all resize-none',
+          'focus:border-violet-DEFAULT focus:ring-[3px] focus:ring-violet-dim',
+          error && 'border-red-500',
           className
         )}
         {...props}
@@ -106,7 +106,7 @@ Textarea.displayName = 'Textarea'
 // ── Card ──
 export function Card({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('telemetry-card p-5', className)} {...props}>
+    <div className={cn('rounded-xl border border-surface-2 bg-surface p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]', className)} {...props}>
       {children}
     </div>
   )
@@ -121,7 +121,7 @@ export function Badge({ children, rarity = 'common' }: { children: React.ReactNo
     legendary: 'badge-legendary',
   }
   return (
-    <span className={cn('px-2.5 py-0.5 rounded-full text-xs font-mono', styles[rarity] || styles.common)}>
+    <span className={cn('px-3 py-1 rounded-full text-xs', styles[rarity] || styles.common)}>
       {children}
     </span>
   )
@@ -151,7 +151,7 @@ export function showToast(message: string, duration = 3000) {
   if (!t) {
     t = document.createElement('div')
     t.id = 'global-toast'
-    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(43,69,72,.12);border:1px solid rgba(66,127,131,.3);border-radius:12px;padding:11px 20px;font-size:13px;color:#172326;z-index:9999;transition:transform .3s ease;pointer-events:none;white-space:nowrap'
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e1f23;border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 30px rgba(0,0,0,0.5);border-radius:12px;padding:12px 24px;font-size:13px;color:#fff;z-index:9999;transition:transform .3s ease;pointer-events:none;white-space:nowrap;font-family:sans-serif'
     document.body.appendChild(t)
   }
   t.textContent = message
@@ -174,8 +174,8 @@ export function Select({ label, options, className, ...props }: SelectProps) {
       {label && <label className="block text-xs font-mono text-text-2 uppercase tracking-wider">{label}</label>}
       <select
         className={cn(
-          'w-full bg-white/70 border border-surface-2 rounded-xl px-3.5 py-2.5 text-sm text-text outline-none transition-all',
-          'focus:border-violet-DEFAULT focus:ring-2 focus:ring-violet-dim',
+          'w-full bg-surface border border-surface-2 rounded-md px-3.5 py-2.5 text-sm text-text outline-none transition-all',
+          'focus:border-violet-DEFAULT focus:ring-[3px] focus:ring-violet-dim',
           className
         )}
         {...props}
@@ -232,7 +232,7 @@ export function CodeBlock({ code, language = 'bash', onCopy }: { code: string; l
     })
   }
   return (
-    <div className="relative bg-bg-2 border border-surface-2 rounded-xl p-4 font-mono text-sm overflow-x-auto">
+    <div className="relative bg-bg-2 border border-surface-2 rounded-lg p-4 font-mono text-sm overflow-x-auto">
       <button
         onClick={copy}
         className="absolute top-2.5 right-2.5 px-2.5 py-1 bg-surface-2 border border-surface-2 rounded-md text-xs text-text-2 hover:border-violet-DEFAULT hover:text-violet-3 transition-all"

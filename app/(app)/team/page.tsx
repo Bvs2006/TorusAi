@@ -1,86 +1,125 @@
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-import { adminAuth, adminDb } from '@/utils/firebase/admin'
-import { Users, Mail, Shield, MoreVertical } from 'lucide-react'
+'use client'
+import { useState } from 'react'
+import { Sparkles, Users, Layers, ArrowRight, Zap } from 'lucide-react'
+import { useTeam } from '@/app/(app)/team/TeamContext'
+import { useRouter } from 'next/navigation'
 
-export default async function TeamPage() {
-  const cookieStore = await cookies()
-  const session = cookieStore.get('fb_session')?.value
-  if (!session) redirect('/login')
+export default function TeamIdeaAnalyzer() {
+  const router = useRouter()
+  const { refreshProjects, setActiveProjectById } = useTeam()
+  const [idea, setIdea] = useState('')
+  const [platform, setPlatform] = useState('web')
+  const [budget, setBudget] = useState('free')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<any>(null)
+  const [roleGuides, setRoleGuides] = useState<Record<string, any>>({})
+  const [loadingRole, setLoadingRole] = useState<string | null>(null)
 
-  let uid: string
-  try { const d = await adminAuth.verifySessionCookie(session, true); uid = d.uid }
-  catch { redirect('/login') as never; uid = '' }
+  async function handleAnalyze(e: React.FormEvent) {
+    e.preventDefault()
+    if (!idea.trim()) return
+    setLoading(true)
 
-  const profileSnap = await adminDb.collection('profiles').doc(uid).get()
-  const profile = profileSnap.data()
-  if (profile?.account_type !== 'organisation') redirect('/dashboard')
+    try {
+      const res = await fetch('/api/team/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea, platform, budget })
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      
+      await refreshProjects()
+      setActiveProjectById(data.projectId)
+      router.push('/team/workflow')
+      
+    } catch (err) {
+      console.error(err)
+      alert('Failed to analyze project')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const orgSnap = await adminDb.collection('organisations').where('owner_id', '==', uid).limit(1).get()
-  const org = orgSnap.empty ? null : { id: orgSnap.docs[0].id, ...orgSnap.docs[0].data() }
-
-  let members: any[] = []
-  if (org) {
-    const mSnap = await adminDb.collection('org_members').where('org_id', '==', org.id).get()
-    members = mSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+  async function handleGenerateGuide(roleTitle: string) {
+    if (!result) return
+    setLoadingRole(roleTitle)
+    try {
+      const res = await fetch('/api/team/role-guide', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea, stack: result.suggested_stack, role: roleTitle })
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setRoleGuides(prev => ({ ...prev, [roleTitle]: data }))
+    } catch (err) {
+      console.error(err)
+      alert('Failed to generate role guide')
+    } finally {
+      setLoadingRole(null)
+    }
   }
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-        <div>
-          <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '28px', fontWeight: 800, color: '#ede9ff', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Users color="#3b82f6" /> Team Members
-          </h1>
-          <p style={{ color: '#9d93c4', fontSize: '14px' }}>Manage access to {(org as any)?.name || 'your organisation'}.</p>
-        </div>
-        <button style={{ padding: '10px 20px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '10px', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Mail size={16} /> Invite Member
-        </button>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', gap: '32px', alignItems: 'flex-start' }}>
+      
+      {/* Input Section */}
+      <div style={{ flex: 1, background: '#111214', border: '1px solid #1e1f23', borderRadius: '16px', padding: '32px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
+        <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Sparkles size={20} color="#3b82f6" /> Project Idea Analyzer
+        </h2>
+        <p style={{ color: '#a0a5ab', fontSize: '13px', marginBottom: '32px' }}>
+          Convert your raw idea into a structured development plan and generate the perfect team roles.
+        </p>
+
+        <form onSubmit={handleAnalyze}>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', fontSize: '12px', color: '#e5e7eb', fontWeight: 600, marginBottom: '8px' }}>Project Idea</label>
+            <textarea
+              value={idea}
+              onChange={e => setIdea(e.target.value)}
+              placeholder="e.g. A SaaS platform for AI interview prep with RAG and Stripe billing..."
+              style={{
+                width: '100%', minHeight: '160px', background: '#09090b', border: '1px solid #2a2c32',
+                borderRadius: '12px', padding: '16px', color: '#e5e7eb', fontSize: '14px', outline: 'none', resize: 'vertical'
+              }}
+              required
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginBottom: '32px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: '#e5e7eb', fontWeight: 600, marginBottom: '8px' }}>Platform</label>
+              <select value={platform} onChange={e => setPlatform(e.target.value)} style={{
+                width: '100%', background: '#09090b', border: '1px solid #2a2c32',
+                borderRadius: '10px', padding: '12px', color: '#e5e7eb', fontSize: '13px', outline: 'none'
+              }}>
+                <option value="web">Web App</option>
+                <option value="mobile">Mobile App</option>
+                <option value="desktop">Desktop App</option>
+                <option value="api">Backend API</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" disabled={loading} style={{
+            width: '100%', padding: '14px', background: '#3b82f6',
+            border: 'none', borderRadius: '12px', color: '#fff', fontSize: '14px', fontWeight: 700,
+            cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            opacity: loading ? 0.7 : 1, transition: 'all 0.2s'
+          }}>
+            {loading ? <span className="animate-spin" style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%' }} /> : <Zap size={16} />}
+            {loading ? 'Analyzing...' : 'Analyze Project & Generate Roles'}
+          </button>
+        </form>
       </div>
 
-      <div style={{ background: 'rgba(26,23,48,.5)', border: '1px solid rgba(255,255,255,.07)', borderRadius: '16px', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,.05)' }}>
-              {['User', 'Role', 'Joined', ''].map(h => (
-                <th key={h} style={{ padding: '16px 24px', fontSize: '11px', color: '#5c5480', fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {members.map(member => (
-              <tr key={member.id} style={{ borderBottom: '1px solid rgba(255,255,255,.03)' }}>
-                <td style={{ padding: '16px 24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #06b6d4, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '14px' }}>
-                      {(member.user_id?.[0] || 'U').toUpperCase()}
-                    </div>
-                    <div>
-                      <div style={{ color: '#ede9ff', fontWeight: 600, fontSize: '14px' }}>{member.user_id}</div>
-                      <div style={{ color: '#5c5480', fontSize: '12px', marginTop: '2px' }}>{member.user_id === uid ? 'You' : 'Member'}</div>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ padding: '16px 24px' }}>
-                  <span style={{ padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, fontFamily: 'DM Mono, monospace', background: member.role === 'owner' ? 'rgba(139,92,246,.1)' : 'rgba(59,130,246,.1)', color: member.role === 'owner' ? '#a78bfa' : '#60a5fa' }}>
-                    {member.role}
-                  </span>
-                </td>
-                <td style={{ padding: '16px 24px', color: '#9d93c4', fontSize: '13px' }}>
-                  {member.joined_at ? new Date(member.joined_at).toLocaleDateString() : '—'}
-                </td>
-                <td style={{ padding: '16px 24px' }}>
-                  <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#5c5480' }}><MoreVertical size={16} /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {members.length === 0 && (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#5c5480' }}>No members found.</div>
-        )}
-      </div>
+
+
+      <style>{`
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
     </div>
   )
 }
