@@ -42,12 +42,26 @@ function ArchitecturePage() {
   const [mode, setMode] = useState<'select' | 'connect'>('select')
   const [searchTerm, setSearchTerm] = useState('')
   const [aiTools, setAiTools] = useState<any[]>([])
+  const [allAvailableTools, setAllAvailableTools] = useState<any[]>([])
   const [features, setFeatures] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
   const [selectedToolConfig, setSelectedToolConfig] = useState<any>(null)
+  const [loadingTools, setLoadingTools] = useState(false)
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
+    
+    // Fetch all available AI tools from worldwide catalog
+    setLoadingTools(true)
+    fetch('/api/ai/all-tools', { method: 'GET' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.tools && Array.isArray(data.tools)) {
+          setAllAvailableTools(data.tools)
+        }
+      })
+      .catch(err => console.error('Error fetching all tools:', err))
+      .finally(() => setLoadingTools(false))
     
     // Load project and features
     getDoc(doc(db as any, 'projects', projectId)).then(async (s) => {
@@ -60,7 +74,7 @@ function ArchitecturePage() {
         const feats = featsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }))
         setFeatures(feats)
         
-        // Fetch AI tools recommendations
+        // Fetch AI tools recommendations for this project
         try {
           const res = await fetch('/api/ai/recommend-tools', {
             method: 'POST',
@@ -364,11 +378,11 @@ function ArchitecturePage() {
             />
           </div>
           
-          {/* Category Tabs */}
-          <div style={{ padding: '8px', borderBottom: '1px solid rgba(38,69,72,.1)', display: 'flex', gap: '4px', overflowX: 'auto' }}>
-            {['All', 'LLMs', 'Agents', 'Image', 'Speech', 'Search', 'Vector', 'Code', 'Other'].map(cat => (
+          {/* Category Tabs - All Categories */}
+          <div style={{ padding: '8px', borderBottom: '1px solid rgba(38,69,72,.1)', display: 'flex', gap: '4px', overflowX: 'auto', flexWrap: 'wrap' }}>
+            {['All', 'LLMs', 'Agents', 'Image', 'Speech', 'Search', 'Vector', 'Code', 'Embeddings', 'Video', 'Audio', '3D', 'Analytics', 'Automation', 'Design', 'Other'].map(cat => (
               <button key={cat} onClick={() => setSelectedCategory(cat)} style={{
-                padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap',
+                padding: '4px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 600, whiteSpace: 'nowrap',
                 border: `1px solid ${selectedCategory === cat ? '#427f83' : 'rgba(38,69,72,.12)'}`,
                 background: selectedCategory === cat ? 'rgba(66,127,131,.15)' : 'transparent',
                 color: selectedCategory === cat ? '#427f83' : '#8a9a9d',
@@ -377,36 +391,53 @@ function ArchitecturePage() {
             ))}
           </div>
           
-          {/* AI Tools List */}
+          {/* All Available AI Tools List */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
-            {aiTools.length === 0 ? (
+            {loadingTools ? (
               <div style={{ padding: '20px 10px', textAlign: 'center', color: '#8a9a9d', fontSize: '12px' }}>
-                🔄 Loading AI tools...
+                <div style={{ animation: 'spin 0.7s linear infinite' }}>⚙️</div>
+                <div style={{ marginTop: '8px' }}>Loading world catalog...</div>
+              </div>
+            ) : allAvailableTools.length === 0 ? (
+              <div style={{ padding: '20px 10px', textAlign: 'center', color: '#8a9a9d', fontSize: '12px' }}>
+                📋 No tools found. Check back soon!
               </div>
             ) : (
-              aiTools.filter(t => selectedCategory === 'All' || t.category.includes(selectedCategory)).map(tool => (
-                <div key={tool.id} draggable onDragStart={(e) => {
-                  e.dataTransfer.effectAllowed = 'copy'
-                  e.dataTransfer.setData('application/reactflow', JSON.stringify({ ...tool, isDraggedTool: true }))
-                }}
-                  style={{
-                    background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.15)',
-                    padding: '10px', borderRadius: '8px', cursor: 'grab', marginBottom: '8px',
-                    transition: 'all 0.15s'
+              allAvailableTools
+                .filter(t => {
+                  const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory || t.category.includes(selectedCategory)
+                  const matchesSearch = searchTerm === '' || t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.description.toLowerCase().includes(searchTerm.toLowerCase())
+                  return matchesCategory && matchesSearch
+                })
+                .map(tool => (
+                  <div key={tool.id} draggable onDragStart={(e) => {
+                    e.dataTransfer.effectAllowed = 'copy'
+                    e.dataTransfer.setData('application/reactflow', JSON.stringify({ ...tool, isDraggedTool: true }))
                   }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.15)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.3)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(66,127,131,.08)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.15)' }}
-                >
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#172326', marginBottom: '2px' }}>{tool.name}</div>
-                  <div style={{ fontSize: '9px', color: '#8a9a9d', marginBottom: '4px' }}>{tool.category}</div>
-                  <div style={{ fontSize: '9px', color: '#5aa0a4', fontWeight: 600 }}>Relevance: {tool.relevance}%</div>
-                </div>
-              ))
+                    style={{
+                      background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.15)',
+                      padding: '9px', borderRadius: '8px', cursor: 'grab', marginBottom: '8px',
+                      transition: 'all 0.15s'
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.15)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.3)' }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(66,127,131,.08)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.15)' }}
+                    title={tool.description}
+                  >
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#172326', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tool.name}</div>
+                    <div style={{ fontSize: '8px', color: '#8a9a9d', marginBottom: '3px', display: 'flex', gap: '6px', justifyContent: 'space-between' }}>
+                      <span>{tool.category}</span>
+                      <span style={{ color: '#5aa0a4', fontWeight: 600 }}>{tool.pricing}</span>
+                    </div>
+                    <div style={{ fontSize: '8px', color: '#607276', lineHeight: '1.3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {tool.description}
+                    </div>
+                  </div>
+                ))
             )}
           </div>
           
-          <div style={{ padding: '10px', borderTop: '1px solid rgba(38,69,72,.1)', fontSize: '9px', color: '#8a9a9d', background: '#fbfcfc' }}>
-            💡 Click or drag AI tools to add them to your architecture. You can swap tools by dragging new ones onto existing nodes.
+          <div style={{ padding: '10px', borderTop: '1px solid rgba(38,69,72,.1)', fontSize: '9px', color: '#8a9a9d', background: '#fbfcfc', lineHeight: '1.4' }}>
+            💡 <strong>Search or browse</strong> 100+ AI tools. <strong>Drag to canvas</strong> to add them. <strong>Swap</strong> by dragging new tools onto nodes.
           </div>
         </div>
 
