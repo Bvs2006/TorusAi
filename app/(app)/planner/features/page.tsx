@@ -37,6 +37,7 @@ export default function FeaturesPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [newFeature, setNewFeature] = useState({ name: '', description: '', priority: 'must' as 'must'|'nice', complexity: 'medium' as 'low'|'medium'|'high' })
   const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [deleteNote, setDeleteNote] = useState<string | null>(null)
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
@@ -53,20 +54,45 @@ export default function FeaturesPage() {
 
     if (!proj) { router.push('/dashboard'); return }
     setProject(proj as any)
+    
     if (!feats?.length) {
-      const defaults = [
-        { name: 'User Authentication', description: 'Sign up, login, OAuth, password reset', priority: 'must' as const, complexity: 'medium' as const, sort_order: 0 },
-        { name: 'Core Dashboard', description: 'Main app dashboard with overview stats', priority: 'must' as const, complexity: 'medium' as const, sort_order: 1 },
-        { name: 'Data Management', description: 'CRUD operations for main data entities', priority: 'must' as const, complexity: 'medium' as const, sort_order: 2 },
-        { name: 'User Profile', description: 'Profile page, settings, preferences', priority: 'must' as const, complexity: 'low' as const, sort_order: 3 },
-        { name: 'API Integration', description: 'Connect to external services and APIs', priority: 'nice' as const, complexity: 'high' as const, sort_order: 4 },
-        { name: 'Notifications', description: 'In-app and email notifications', priority: 'nice' as const, complexity: 'medium' as const, sort_order: 5 },
-        { name: 'Search & Filter', description: 'Search and filter data throughout the app', priority: 'nice' as const, complexity: 'low' as const, sort_order: 6 },
-        { name: 'Responsive Design', description: 'Mobile-friendly UI across all screens', priority: 'must' as const, complexity: 'low' as const, sort_order: 7 },
-      ]
-      const insertedRefs = await Promise.all(defaults.map((f: any) => addDoc(collection(db as any, 'features'), { ...f, project_id: projectId })))
-      const inserted = insertedRefs.map((r: any, i: number) => ({ id: r.id, ...defaults[i], project_id: projectId }))
-      setFeatures(inserted as any)
+      // Call AI to get recommended features
+      try {
+        const res = await fetch('/api/ai/features', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            idea: proj.idea, 
+            platform: proj.platform,
+            stack: proj.stack
+          })
+        })
+        const data = await res.json()
+        
+        if (data.features && Array.isArray(data.features)) {
+          const insertedRefs = await Promise.all(
+            data.features.map((f: any, i: number) => 
+              addDoc(collection(db as any, 'features'), { 
+                ...f,
+                project_id: projectId, 
+                sort_order: i,
+                why_important: f.why_important || ''
+              })
+            )
+          )
+          const inserted = insertedRefs.map((r: any, i: number) => ({ 
+            id: r.id, 
+            ...data.features[i], 
+            project_id: projectId, 
+            sort_order: i 
+          }))
+          setFeatures(inserted as any)
+          showToast('✓ AI recommended features for your project!')
+        }
+      } catch (err) {
+        console.error('Error loading recommended features:', err)
+        showToast('Could not load recommended features')
+      }
     } else {
       setFeatures(feats as any)
     }
@@ -75,7 +101,7 @@ export default function FeaturesPage() {
 
   async function addFeature() {
     if (!newFeature.name.trim() || !projectId) return
-    const ref = await addDoc(collection(db as any, 'features'), { project_id: projectId, ...newFeature, sort_order: features.length })
+    const ref = await addDoc(collection(db as any, 'features'), { project_id: projectId, ...newFeature, sort_order: features.length, why_important: '' })
     const data = { id: ref.id, project_id: projectId, ...newFeature, sort_order: features.length }
     setFeatures((p: any) => [...p, data])
     setNewFeature({ name: '', description: '', priority: 'must', complexity: 'medium' })
@@ -83,9 +109,13 @@ export default function FeaturesPage() {
     showToast('Feature added')
   }
 
-  async function deleteFeature(id: string) {
-    await deleteDoc(doc(db as any, 'features', id))
-    setFeatures((p: any) => p.filter((f: any) => f.id !== id))
+  async function deleteFeature(f: Feature) {
+    await deleteDoc(doc(db as any, 'features', f.id))
+    setFeatures((p: any) => p.filter((x: any) => x.id !== f.id))
+    if (f.why_important) {
+      setDeleteNote(`Removed: "${f.name}" might not be essential for this specific idea.`)
+      setTimeout(() => setDeleteNote(null), 3000)
+    }
   }
 
   async function togglePriority(f: Feature) {
@@ -175,6 +205,9 @@ export default function FeaturesPage() {
             </div>
           </div>
 
+          {/* Delete Note */}
+          {deleteNote && <div style={{ background: 'rgba(244,63,94,.1)', border: '1px solid rgba(244,63,94,.3)', borderRadius: '8px', padding: '12px 16px', marginBottom: '12px', color: '#f43f5e', fontSize: '12px' }}>{deleteNote}</div>}
+
           {/* Feature list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
             {features.map((f, i) => (
@@ -212,9 +245,10 @@ export default function FeaturesPage() {
                     }}>{f.complexity}</span>
                   </div>
                   <div style={{ fontSize: '12px', color: '#607276', lineHeight: '1.5' }}>{f.description}</div>
+                  {f.why_important && <div style={{ fontSize: '11px', color: '#8a9a9d', marginTop: '6px', fontStyle: 'italic' }}>💡 {f.why_important}</div>}
                 </div>
 
-                <button onClick={() => deleteFeature(f.id)} style={{
+                <button onClick={() => deleteFeature(f)} style={{
                   background: 'transparent', border: 'none', cursor: 'pointer',
                   color: '#3a3360', padding: '4px', flexShrink: 0, borderRadius: '6px', transition: 'all 0.15s'
                 }}
@@ -272,12 +306,12 @@ export default function FeaturesPage() {
           )}
         </div>
 
-        {/* RIGHT — Tech Stack */}
+        {/* RIGHT — Recommended Tech Stack Only */}
         <div style={{ overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
             <Cpu size={16} color="#5aa0a4" />
-            <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 800, color: '#172326' }}>AI Tech Stack</span>
+            <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 800, color: '#172326' }}>Recommended Stack</span>
           </div>
 
           {stackEntries.length === 0 ? (
