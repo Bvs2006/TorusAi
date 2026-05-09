@@ -201,12 +201,60 @@ function ArchitecturePage() {
     const toolData = event.dataTransfer.getData('application/reactflow')
     if (!toolData || !reactFlowBounds || !reactFlowInstance) return
 
-    const tool: TechTool = JSON.parse(toolData)
+    const tool: any = JSON.parse(toolData)
     const position = reactFlowInstance.project({
       x: event.clientX - reactFlowBounds.left,
       y: event.clientY - reactFlowBounds.top,
     })
 
+    // Check if dropping on an existing node to swap
+    const nodesAtPosition = reactFlowInstance.getNodes().filter(n => {
+      const distance = Math.sqrt(
+        Math.pow(n.position.x - position.x, 2) + Math.pow(n.position.y - position.y, 2)
+      )
+      return distance < 80 // Within 80px = on the node
+    })
+
+    if (nodesAtPosition.length > 0 && nodesAtPosition[0].id !== 'ai-root') {
+      // Swap tool on existing node
+      const targetNode = nodesAtPosition[0]
+      setNodes((nds) =>
+        nds.map(n =>
+          n.id === targetNode.id
+            ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  tool: {
+                    ...tool,
+                    layer: n.data.tool.layer,
+                    displayName: `${getLayerEmoji(n.data.tool.layer)} ${tool.name}`,
+                    configuration: tool.configuration || `Configure ${tool.name} by setting up API keys and connecting it to your ${n.data.tool.layer.toLowerCase()} services.`
+                  }
+                }
+              }
+            : n
+        )
+      )
+      
+      // Update selected tool config if this is the selected node
+      if (selectedNode?.id === targetNode.id) {
+        setSelectedToolConfig({
+          name: tool.name,
+          layer: selectedNode.data.tool.layer,
+          category: tool.category,
+          reason: `Swapped to known tool: ${tool.name}`,
+          relevance: tool.relevance || 75,
+          description: tool.description,
+          configuration: tool.configuration || `Configure ${tool.name} by setting up API keys and connecting it to your ${selectedNode.data.tool.layer.toLowerCase()} services.`
+        })
+      }
+      
+      showToast(`✓ Swapped to ${tool.name}`)
+      return
+    }
+
+    // Otherwise, create new node
     let isValid = true
     let reason = ''
     if (project?.stack) {
@@ -281,6 +329,43 @@ function ArchitecturePage() {
     a.href = url; a.download = `${project?.name || 'architecture'}.svg`
     a.click(); URL.revokeObjectURL(url)
     showToast('Architecture exported!')
+  }
+
+  const swapToolInNode = (newTool: any) => {
+    if (!selectedNode) return
+    
+    // Update the selected node with new tool data
+    setNodes((nds) =>
+      nds.map(n =>
+        n.id === selectedNode.id
+          ? {
+              ...n,
+              data: {
+                ...n.data,
+                tool: {
+                  ...newTool,
+                  layer: n.data.tool.layer,
+                  displayName: `${getLayerEmoji(n.data.tool.layer)} ${newTool.name}`,
+                  configuration: newTool.configuration || `Configure ${newTool.name} by setting up API keys and connecting it to your ${n.data.tool.layer.toLowerCase()} services.`
+                }
+              }
+            }
+          : n
+      )
+    )
+    
+    // Update the selected tool config panel
+    setSelectedToolConfig({
+      name: newTool.name,
+      layer: selectedNode.data.tool.layer,
+      category: newTool.category,
+      reason: newTool.reason || `Swapped from ${selectedToolConfig.name}`,
+      relevance: newTool.relevance || 75,
+      description: newTool.description,
+      configuration: newTool.configuration || `Configure ${newTool.name} by setting up API keys and connecting it to your ${selectedNode.data.tool.layer.toLowerCase()} services.`
+    })
+    
+    showToast(`✓ Swapped to ${newTool.name}`)
   }
 
   const handleNodeClick = useCallback((_: any, node: any) => {
@@ -437,7 +522,7 @@ function ArchitecturePage() {
           </div>
           
           <div style={{ padding: '10px', borderTop: '1px solid rgba(38,69,72,.1)', fontSize: '9px', color: '#8a9a9d', background: '#fbfcfc', lineHeight: '1.4' }}>
-            💡 <strong>Search or browse</strong> 100+ AI tools. <strong>Drag to canvas</strong> to add them. <strong>Swap</strong> by dragging new tools onto nodes.
+            💡 <strong>Search</strong> 100+ tools • <strong>Drag</strong> to add • <strong>Click</strong> node to swap • <strong>Use tools you know best!</strong>
           </div>
         </div>
 
@@ -543,6 +628,43 @@ function ArchitecturePage() {
                   <span style={{ color: '#5aa0a4', fontWeight: 600 }}>✓</span> Setup involves API key configuration, environment variables, and integration with your {selectedToolConfig.layer.toLowerCase()} services.
                 </div>
               </div>
+
+              {/* Swap Tool Section */}
+              {allAvailableTools.length > 0 && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>💱 Swap Tool</div>
+                  <div style={{ fontSize: '10px', color: '#607276', marginBottom: '8px', lineHeight: '1.4' }}>
+                    Know a tool better? Select from compatible options to swap it.
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '140px', overflowY: 'auto' }}>
+                    {allAvailableTools
+                      .filter(t => t.category === selectedToolConfig.category && t.name !== selectedToolConfig.name)
+                      .slice(0, 8)
+                      .map(tool => (
+                        <button key={tool.id} onClick={() => swapToolInNode(tool)} style={{
+                          padding: '8px 12px', textAlign: 'left', borderRadius: '8px', border: '1px solid rgba(66,127,131,.2)',
+                          background: 'rgba(66,127,131,.08)', color: '#172326', fontSize: '10px', fontWeight: 600,
+                          cursor: 'pointer', transition: 'all 0.15s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                        }}
+                          onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.15)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.4)' }}
+                          onMouseOut={e => { e.currentTarget.style.background = 'rgba(66,127,131,.08)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.2)' }}
+                        >
+                          <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                            <div style={{ fontWeight: 700, marginBottom: '1px' }}>{tool.name}</div>
+                            <div style={{ fontSize: '9px', color: '#8a9a9d' }}>{tool.pricing}</div>
+                          </div>
+                          <div style={{ fontSize: '14px', marginLeft: '8px' }}>→</div>
+                        </button>
+                      ))
+                    }
+                    {allAvailableTools.filter(t => t.category === selectedToolConfig.category && t.name !== selectedToolConfig.name).length === 0 && (
+                      <div style={{ padding: '12px', textAlign: 'center', color: '#8a9a9d', fontSize: '10px', background: 'rgba(38,69,72,.05)', borderRadius: '6px' }}>
+                        No alternatives available
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Continue button */}
               <button onClick={() => router.push(`/planner/blueprint?project=${projectId}`)} style={{
