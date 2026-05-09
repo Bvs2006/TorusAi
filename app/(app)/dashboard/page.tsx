@@ -2,9 +2,8 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ProgressBar } from '@/components/ui'
 import { adminAuth, adminDb } from '@/utils/firebase/admin'
-import { Plus, Zap, ArrowRight, Trophy, Flame, Clock, Layers, Sparkles } from 'lucide-react'
+import { Plus, Zap, ArrowRight, Clock } from 'lucide-react'
 
 const getPhaseProgress = (project: any) => {
   const phases = project.phases || []
@@ -73,52 +72,42 @@ function renderRecentProjects({ projects }: { projects: any[] }) {
           </Link>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-          {projects?.map(project => {
-            const progress = getPhaseProgress(project)
-            return (
-              <Link key={project.id} href={`/planner/prompts?project=${project.id}`} style={{
-                background: 'rgba(255,255,255,.54)', backdropFilter: 'blur(16px)', border: '1px solid rgba(38,69,72,.1)',
-                borderRadius: '16px', padding: '24px', textDecoration: 'none', display: 'flex', flexDirection: 'column',
-                transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative', overflow: 'hidden'
-              }} className="glass-card telemetry-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                  <div style={{
-                    width: '40px', height: '40px', background: 'rgba(66,127,131,.1)', border: '1px solid rgba(66,127,131,.2)',
-                    borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
-                    boxShadow: 'inset 0 0 10px rgba(66,127,131,.1)'
-                  }}>
-                    {project.platform === 'mobile' ? '📱' : project.platform === 'api' ? '⚡' : '🌐'}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px', maxWidth: '500px' }}>
+          <div style={{
+            background: 'linear-gradient(145deg, rgba(66,127,131,.1), rgba(6,182,212,.05))',
+            backdropFilter: 'blur(16px)', border: '1px solid rgba(66,127,131,.2)',
+            borderRadius: '20px', padding: '24px', boxShadow: '0 10px 40px rgba(66,127,131,.1)'
+          }}>
+            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: '#172326' }}>
+              <Zap size={18} color="#83b9bd" /> Quick Tools
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[
+                { href: '/error-fix', icon: '🔧', label: 'Error Fixer', desc: 'Debug terminal output instantly' },
+                { href: '/tools', icon: '⚡', label: 'Tool Directory', desc: 'Find the best AI coding agents' }
+              ].map(action => (
+                <Link key={action.href} href={action.href} style={{
+                  display: 'flex', alignItems: 'center', gap: '14px', padding: '14px',
+                  background: 'rgba(255,255,255,.46)', border: '1px solid rgba(38,69,72,.1)',
+                  borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s'
+                }} className="glass-row">
+                  <div style={{ fontSize: '20px' }}>{action.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326' }}>{action.label}</div>
+                    <div style={{ fontSize: '11px', color: '#607276', marginTop: '2px' }}>{action.desc}</div>
                   </div>
-                  <span style={{ fontSize: '11px', fontFamily: 'DM Mono, monospace', color: progress === 100 ? '#10b981' : '#06b6d4', background: progress === 100 ? 'rgba(16,185,129,.1)' : 'rgba(6,182,212,.1)', padding: '4px 10px', borderRadius: '20px', border: `1px solid ${progress === 100 ? 'rgba(16,185,129,.2)' : 'rgba(6,182,212,.2)'}` }}>
-                    {progress}% Done
-                  </span>
-                </div>
-                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#172326', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{project.name}</h3>
-                <div style={{ fontSize: '12px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>
-                  {project.stack?.frontend?.name || project.platform}
-                </div>
-                <div style={{ marginTop: 'auto' }}>
-                  <ProgressBar value={progress} />
-                </div>
-              </Link>
-            )
-          })}
+                  <ArrowRight size={14} color="#8a9a9d" />
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
-        {(!projects || projects.length === 0) && (
-           <div style={{ textAlign: 'center', padding: '60px 0', background: 'rgba(255,255,255,.54)', borderRadius: '20px', border: '1px solid rgba(38,69,72,.1)' }}>
-             <Sparkles size={32} color="#5aa0a4" style={{ margin: '0 auto 16px' }} />
-             <div style={{ fontSize: '16px', fontWeight: 600, color: '#172326', marginBottom: '8px' }}>No projects yet</div>
-             <p style={{ color: '#607276', fontSize: '14px' }}>Start your first project to see it here.</p>
-           </div>
-        )}
       </div>
       <style>{`
-        .glass-card:hover {
-          background: rgba(66,127,131,.15) !important;
-          border-color: rgba(66,127,131,.28) !important;
-          transform: translateY(-4px);
-          box-shadow: 0 10px 30px rgba(66,127,131,.2);
+        .glass-row:hover {
+          background: rgba(66,127,131,.1) !important;
+          border-color: rgba(66,127,131,.3) !important;
+          transform: translateX(4px);
         }
       `}</style>
     </div>
@@ -162,12 +151,10 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '32px' }}>
           {[
             { label: 'Total Projects', value: totalProjects, sub: `${completedProjects} completed`, color: '#5aa0a4', glow: 'rgba(66,127,131,.2)' },
             { label: 'Phases Completed', value: totalPhasesDone, sub: 'across all projects', color: '#06b6d4', glow: 'rgba(6,182,212,.2)' },
-            { label: 'Current Streak', value: `🔥 ${streak}`, sub: 'days consecutive', color: '#f97316', glow: 'rgba(249,115,22,.2)' },
-            { label: 'Badges Earned', value: badges.length, sub: 'achievements unlocked', color: '#10b981', glow: 'rgba(16,185,129,.2)' },
           ].map(stat => (
             <div key={stat.label} style={{
               background: 'rgba(255,255,255,.54)', backdropFilter: 'blur(16px)',
@@ -191,47 +178,13 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
           <div style={{ background: 'rgba(255,255,255,.54)', backdropFilter: 'blur(16px)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '20px', padding: '24px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', color: '#172326' }}>
-                <Layers color="#427f83" size={20} /> Active Projects
+                <Clock color="#427f83" size={20} /> Active Projects
               </div>
-              <Link href="/dashboard?tab=recent" style={{ fontSize: '12px', color: '#06b6d4', textDecoration: 'none', fontFamily: 'DM Mono, monospace' }}>View all →</Link>
             </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {!projects?.length ? (
-                <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <Sparkles size={24} color="#8a9a9d" style={{ margin: '0 auto 12px' }} />
-                  <div style={{ color: '#607276', fontSize: '14px' }}>No active projects. Time to build!</div>
-                </div>
-              ) : (
-                projects.slice(0, 3).map((project: any) => {
-                  const progress = getPhaseProgress(project)
-                  return (
-                    <Link key={project.id} href={`/planner/prompts?project=${project.id}`} style={{
-                      display: 'flex', alignItems: 'center', gap: '16px', padding: '16px',
-                      background: 'rgba(255,255,255,.46)', border: '1px solid rgba(38,69,72,.07)',
-                      borderRadius: '14px', textDecoration: 'none', transition: 'all 0.2s'
-                    }} className="glass-row">
-                      <div style={{
-                        width: '44px', height: '44px', background: 'rgba(66,127,131,.1)',
-                        border: '1px solid rgba(66,127,131,.2)', borderRadius: '12px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px'
-                      }}>
-                        {project.platform === 'mobile' ? '📱' : project.platform === 'api' ? '⚡' : '🌐'}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <span style={{ fontSize: '15px', fontWeight: 600, color: '#172326' }}>{project.name}</span>
-                          <span style={{ fontSize: '11px', fontFamily: 'DM Mono, monospace', color: progress === 100 ? '#10b981' : '#06b6d4' }}>{progress}%</span>
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', marginBottom: '8px' }}>
-                          {project.stack?.frontend?.name || project.platform} · Phase {(project.phases || []).filter((p: any) => p.status === 'done').length}/{(project.phases || []).length}
-                        </div>
-                        <ProgressBar value={progress} />
-                      </div>
-                    </Link>
-                  )
-                })
-              )}
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <div style={{ color: '#607276', fontSize: '14px' }}>No active projects. Time to build!</div>
+              </div>
             </div>
           </div>
 
@@ -239,83 +192,33 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
             <div style={{
               background: 'linear-gradient(145deg, rgba(66,127,131,.1), rgba(6,182,212,.05))',
               backdropFilter: 'blur(16px)', border: '1px solid rgba(66,127,131,.2)',
-              borderRadius: '20px', padding: '24px', boxShadow: '0 10px 40px rgba(66,127,131,.1)'
-            }}>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: '#172326' }}>
-                <Zap size={18} color="#83b9bd" /> Quick Tools
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {[
-                  { href: '/planner', icon: '✨', label: 'AI Build Planner', desc: 'Generate a new architecture' },
-                  { href: '/error-fix', icon: '🔧', label: 'Error Fixer', desc: 'Debug terminal output instantly' },
-                  { href: '/tools', icon: '⚡', label: 'Tool Directory', desc: 'Find the best AI coding agents' }
-                ].map(action => (
-                  <Link key={action.href} href={action.href} style={{
-                    display: 'flex', alignItems: 'center', gap: '14px', padding: '14px',
-                    background: 'rgba(255,255,255,.46)', border: '1px solid rgba(38,69,72,.1)',
-                    borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s'
-                  }} className="glass-row">
-                    <div style={{ fontSize: '20px' }}>{action.icon}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326' }}>{action.label}</div>
-                      <div style={{ fontSize: '11px', color: '#607276', marginTop: '2px' }}>{action.desc}</div>
-                    </div>
-                    <ArrowRight size={14} color="#8a9a9d" />
-                  </Link>
-                ))}
-              </div>
+            borderRadius: '20px', padding: '24px', boxShadow: '0 10px 40px rgba(66,127,131,.1)'
+          }}>
+            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: '#172326' }}>
+              <Zap size={18} color="#83b9bd" /> Quick Tools
             </div>
-
-            <div style={{ background: 'rgba(255,255,255,.54)', backdropFilter: 'blur(16px)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '20px', padding: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', color: '#172326' }}>
-                  <Trophy size={18} color="#fbbf24" /> Achievements
-                </div>
-                <Link href="/badges" style={{ fontSize: '12px', color: '#fbbf24', textDecoration: 'none', fontFamily: 'DM Mono, monospace' }}>View all →</Link>
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {badges.length > 0 ? badges.slice(0, 4).map((b: any, i: number) => (
-                  <span key={i} style={{
-                    padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
-                    background: 'rgba(251,191,36,.1)', border: '1px solid rgba(251,191,36,.3)', color: '#fbbf24',
-                    display: 'flex', alignItems: 'center', gap: '6px'
-                  }}>
-                    <span>{b.emoji}</span> {b.name}
-                  </span>
-                )) : (
-                  <div style={{ fontSize: '12px', color: '#8a9a9d', padding: '10px 0' }}>Complete your first milestone to unlock badges.</div>
-                )}
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[
+                { href: '/error-fix', icon: '🔧', label: 'Error Fixer', desc: 'Debug terminal output instantly' },
+                { href: '/tools', icon: '⚡', label: 'Tool Directory', desc: 'Find the best AI coding agents' }
+              ].map(action => (
+                <Link key={action.href} href={action.href} style={{
+                  display: 'flex', alignItems: 'center', gap: '14px', padding: '14px',
+                  background: 'rgba(255,255,255,.46)', border: '1px solid rgba(38,69,72,.1)',
+                  borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s'
+                }} className="glass-row">
+                  <div style={{ fontSize: '20px' }}>{action.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326' }}>{action.label}</div>
+                    <div style={{ fontSize: '11px', color: '#607276', marginTop: '2px' }}>{action.desc}</div>
+                  </div>
+                  <ArrowRight size={14} color="#8a9a9d" />
+                </Link>
+              ))}
             </div>
           </div>
         </div>
-
-        <div style={{ background: 'rgba(255,255,255,.54)', backdropFilter: 'blur(16px)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '20px', padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', color: '#172326' }}>
-              <Flame size={20} color="#f97316" /> Consistency Activity
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(26, 1fr)', gap: '4px' }}>
-            {Array.from({ length: 182 }).map((_, i) => {
-              const intensity = Math.random()
-              const colors = ['rgba(255,255,255,0.03)', 'rgba(249,115,22,0.2)', 'rgba(249,115,22,0.4)', 'rgba(249,115,22,0.6)', 'rgba(249,115,22,0.8)', '#f97316']
-              const ci = intensity < 0.6 ? 0 : intensity < 0.75 ? 1 : intensity < 0.85 ? 2 : intensity < 0.92 ? 3 : intensity < 0.98 ? 4 : 5
-              return (
-                <div key={i} style={{
-                  aspectRatio: '1', borderRadius: '4px',
-                  background: i >= 170 ? colors[Math.min(5, ci + 2)] : colors[ci],
-                  transition: 'transform 0.2s', cursor: 'pointer'
-                }} className="heatmap-cell" title="Activity block" />
-              )
-            })}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', fontSize: '11px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace' }}>
-            <span>6 months ago</span>
-            <span>Today</span>
-          </div>
         </div>
-        
       </div>
       
       <style>{`

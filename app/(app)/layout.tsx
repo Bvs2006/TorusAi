@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { adminAuth, adminDb } from '@/utils/firebase/admin'
 import Navbar from '@/components/Navbar'
-import Sidebar from '@/components/Sidebar'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies()
@@ -30,12 +29,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="control-shell" style={{ minHeight: '100vh', background: 'transparent' }}>
       <Navbar user={user} />
-      <div style={{ display: 'flex' }}>
-        <Sidebar user={user} />
-        <main style={{ flex: 1, overflow: 'auto', minHeight: '100vh', position: 'relative' }}>
-          {children}
-        </main>
-      </div>
+      <main style={{ flex: 1, overflow: 'auto', minHeight: '100vh', position: 'relative' }}>
+        {children}
+      </main>
     </div>
   )
 }
