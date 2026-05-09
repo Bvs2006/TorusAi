@@ -41,13 +41,110 @@ function ArchitecturePage() {
   const [selectedNode, setSelectedNode] = useState<any>(null)
   const [mode, setMode] = useState<'select' | 'connect'>('select')
   const [searchTerm, setSearchTerm] = useState('')
+  const [aiTools, setAiTools] = useState<any[]>([])
+  const [features, setFeatures] = useState<any[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>('All')
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
-    getDoc(doc(db as any, 'projects', projectId)).then(s => { if (s.exists()) setProject({ id: s.id, ...s.data() as any }); setLoading(false) })
+    
+    // Load project and features
+    getDoc(doc(db as any, 'projects', projectId)).then(async (s) => {
+      if (s.exists()) {
+        const proj = { id: s.id, ...s.data() as any }
+        setProject(proj)
+        
+        // Fetch features
+        const featsSnap = await getDocs(query(collection(db as any, 'features'), where('project_id', '==', projectId)))
+        const feats = featsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }))
+        setFeatures(feats)
+        
+        // Fetch AI tools recommendations
+        try {
+          const res = await fetch('/api/ai/recommend-tools', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              projectIdea: proj.idea,
+              features: feats,
+              platform: proj.platform,
+              stack: proj.stack
+            })
+          })
+          const data = await res.json()
+          if (data.tools) {
+            setAiTools(data.tools)
+            // Create initial nodes from AI tools
+            createAIToolNodes(data.tools)
+          }
+        } catch (err) {
+          console.error('Error fetching AI tools:', err)
+        }
+      }
+      setLoading(false)
+    })
+    
     // Save current step when visiting architecture page
     updateDoc(doc(db as any, 'projects', projectId!), { current_step: 'architecture' }).catch(() => {})
   }, [projectId])
+
+  const createAIToolNodes = (tools: any[]) => {
+    const newNodes = []
+    const newEdges = []
+    
+    // Root node
+    const rootNode = {
+      id: 'ai-root',
+      type: 'techNode',
+      position: { x: 0, y: 0 },
+      data: { tool: { name: 'AI Tool IDE', category: 'root', description: 'Recommended AI Tools Hub' }, isValid: true }
+    }
+    newNodes.push(rootNode)
+    
+    // Group tools by layer
+    const layers: { [key: string]: any[] } = { Frontend: [], Backend: [], Data: [], DevOps: [] }
+    tools.forEach((tool: any) => {
+      const layer = tool.layer || 'Backend'
+      if (layers[layer]) layers[layer].push(tool)
+    })
+    
+    let yOffset = -250
+    let xOffset = -400
+    const layerSpacing = 200
+    const toolSpacing = 100
+    
+    // Create nodes for each layer
+    Object.entries(layers).forEach(([layer, toolsList]: [string, any[]]) => {
+      toolsList.forEach((tool: any, idx: number) => {
+        const nodeId = `tool-${tool.id}`
+        const xPos = xOffset + (Object.keys(layers).indexOf(layer) * layerSpacing)
+        const yPos = yOffset + (idx * toolSpacing)
+        
+        newNodes.push({
+          id: nodeId,
+          type: 'techNode',
+          position: { x: xPos, y: yPos },
+          data: { 
+            tool: { ...tool, name: tool.name, description: `${tool.category} - ${tool.reason}` },
+            isValid: true,
+            relevance: tool.relevance
+          }
+        })
+        
+        // Connect to root
+        newEdges.push({
+          id: `edge-root-${nodeId}`,
+          source: 'ai-root',
+          target: nodeId,
+          animated: true,
+          style: { stroke: '#5aa0a4', strokeWidth: 2 }
+        })
+      })
+    })
+    
+    setNodes(newNodes)
+    setEdges(newEdges)
+  }
 
   const onConnect = useCallback((params: any) =>
     setEdges((eds) => addEdge({
@@ -226,56 +323,61 @@ function ArchitecturePage() {
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-        {/* Left Palette */}
-        <div style={{ width: '200px', background: '#eef3f4', borderRight: '1px solid rgba(38,69,72,.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(38,69,72,.1)' }}>
-            <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>Drag to Canvas</div>
+        {/* Left AI Tools Palette */}
+        <div style={{ width: '220px', background: '#eef3f4', borderRight: '1px solid rgba(38,69,72,.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '12px', borderBottom: '1px solid rgba(38,69,72,.1)', background: '#fbfcfc' }}>
+            <div style={{ fontSize: '10px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>🤖 AI Tools</div>
             <input
-              placeholder="Search tools..."
+              placeholder="Search AI tools..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              style={{ width: '100%', background: 'rgba(38,69,72,.08)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '8px', padding: '7px 10px', color: '#172326', fontSize: '12px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
+              style={{ width: '100%', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.2)', borderRadius: '6px', padding: '6px 10px', color: '#172326', fontSize: '11px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
             />
           </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
-            {(searchTerm
-              ? [{ id: 'results', label: 'Results', emoji: '🔍' }]
-              : CATEGORIES
-            ).map(cat => {
-              const tools = filteredTools.filter(t => searchTerm ? true : t.category === cat.id)
-              if (!tools.length) return null
-              return (
-                <div key={cat.id} style={{ marginBottom: '12px' }}>
-                  {!searchTerm && (
-                    <div style={{ fontSize: '10px', fontWeight: 600, color: '#607276', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>{cat.emoji}</span> {cat.label}
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {tools.map(tool => (
-                      <div key={tool.id} draggable onDragStart={(e) => onDragStart(e, tool)}
-                        style={{
-                          background: 'rgba(38,69,72,.07)', border: `1px solid ${tool.color}20`,
-                          padding: '8px 10px', borderRadius: '8px', cursor: 'grab',
-                          display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.15s'
-                        }}
-                        onMouseOver={e => { e.currentTarget.style.background = `${tool.bg}`; e.currentTarget.style.borderColor = `${tool.color}40` }}
-                        onMouseOut={e => { e.currentTarget.style.background = 'rgba(38,69,72,.07)'; e.currentTarget.style.borderColor = `${tool.color}20` }}
-                      >
-                        <div style={{ fontSize: '14px', width: '20px', textAlign: 'center', flexShrink: 0 }}>{tool.emoji}</div>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: '#172326', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tool.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
+          
+          {/* Category Tabs */}
+          <div style={{ padding: '8px', borderBottom: '1px solid rgba(38,69,72,.1)', display: 'flex', gap: '4px', overflowX: 'auto' }}>
+            {['All', 'LLMs', 'Agents', 'Image', 'Speech', 'Search', 'Vector', 'Code', 'Other'].map(cat => (
+              <button key={cat} onClick={() => setSelectedCategory(cat)} style={{
+                padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap',
+                border: `1px solid ${selectedCategory === cat ? '#427f83' : 'rgba(38,69,72,.12)'}`,
+                background: selectedCategory === cat ? 'rgba(66,127,131,.15)' : 'transparent',
+                color: selectedCategory === cat ? '#427f83' : '#8a9a9d',
+                cursor: 'pointer', transition: 'all 0.15s'
+              }}>{cat}</button>
+            ))}
           </div>
-          <div style={{ padding: '10px 12px', borderTop: '1px solid rgba(38,69,72,.1)', fontSize: '10px', color: '#8a9a9d', lineHeight: '1.6' }}>
-            💡 <span style={{ color: '#607276' }}>Tips</span><br />
-            • Drag nodes to reposition<br />
-            • Click a node to configure it<br />
-            • Right-click to delete
+          
+          {/* AI Tools List */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+            {aiTools.length === 0 ? (
+              <div style={{ padding: '20px 10px', textAlign: 'center', color: '#8a9a9d', fontSize: '12px' }}>
+                🔄 Loading AI tools...
+              </div>
+            ) : (
+              aiTools.filter(t => selectedCategory === 'All' || t.category.includes(selectedCategory)).map(tool => (
+                <div key={tool.id} draggable onDragStart={(e) => {
+                  e.dataTransfer.effectAllowed = 'copy'
+                  e.dataTransfer.setData('application/reactflow', JSON.stringify({ ...tool, isDraggedTool: true }))
+                }}
+                  style={{
+                    background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.15)',
+                    padding: '10px', borderRadius: '8px', cursor: 'grab', marginBottom: '8px',
+                    transition: 'all 0.15s'
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.15)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.3)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(66,127,131,.08)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.15)' }}
+                >
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#172326', marginBottom: '2px' }}>{tool.name}</div>
+                  <div style={{ fontSize: '9px', color: '#8a9a9d', marginBottom: '4px' }}>{tool.category}</div>
+                  <div style={{ fontSize: '9px', color: '#5aa0a4', fontWeight: 600 }}>Relevance: {tool.relevance}%</div>
+                </div>
+              ))
+            )}
+          </div>
+          
+          <div style={{ padding: '10px', borderTop: '1px solid rgba(38,69,72,.1)', fontSize: '9px', color: '#8a9a9d', background: '#fbfcfc' }}>
+            💡 Click or drag AI tools to add them to your architecture. You can swap tools by dragging new ones onto existing nodes.
           </div>
         </div>
 

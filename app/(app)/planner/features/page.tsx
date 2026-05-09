@@ -40,8 +40,6 @@ export default function FeaturesPage() {
   const [deleteNote, setDeleteNote] = useState<string | null>(null)
   const [validationResult, setValidationResult] = useState<any>(null)
   const [validating, setValidating] = useState(false)
-  const [validationResult, setValidationResult] = useState<any>(null)
-  const [validating, setValidating] = useState(false)
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
