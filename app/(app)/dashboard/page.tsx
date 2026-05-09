@@ -240,7 +240,7 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
                   const stepPath = `/planner/${resumeStep}?project=${proj.id}`
                   return (
                     <Link key={proj.id} href={stepPath} style={{ textDecoration: 'none' }}>
-                      <div style={{ padding: '14px 16px', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.2)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.15)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.4)' }} onMouseOut={e => { e.currentTarget.style.background = 'rgba(66,127,131,.08)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.2)' }}>
+                      <div className="active-project-card" style={{ padding: '14px 16px', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.2)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
                         <div>
                           <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326' }}>{proj.name || 'Untitled Project'}</div>
                           <div style={{ fontSize: '11px', color: '#8a9a9d', marginTop: '3px' }}>{proj.idea?.substring(0, 50) || 'No description'}...</div>
@@ -301,6 +301,10 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
           transform: scale(1.3);
           z-index: 10;
           box-shadow: 0 0 10px rgba(249,115,22,0.5);
+        }
+        .active-project-card:hover {
+          background: rgba(66,127,131,.15) !important;
+          border-color: rgba(66,127,131,.4) !important;
         }
       `}</style>
     </div>
