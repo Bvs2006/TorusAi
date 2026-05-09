@@ -23,11 +23,12 @@ Format your response as ONLY valid JSON (no markdown, no code blocks):
       "id": "unique_id",
       "name": "Tool Name",
       "description": "Brief description",
-      "category": "LLMs|Agents|Image Generation|Speech-to-Text|Search|Vector DB|etc",
+      "category": "LLMs|Agents|Image Generation|Speech-to-Text|Search|Vector DB|Code|Embeddings",
       "layer": "Frontend|Backend|Data|DevOps",
       "level": 1,
-      "reason": "Why this tool is recommended",
-      "relevance": 95
+      "reason": "Why this tool is recommended for this specific project",
+      "relevance": 95,
+      "configuration": "Step-by-step guide: 1. Get API key from tool's dashboard. 2. Add to .env.local file as NEXT_PUBLIC_TOOL_API_KEY. 3. Initialize in your code with the API key. 4. For Frontend: use client-side SDK or API calls. For Backend: use server-side SDK with authentication. For Data: set up data pipelines and vector storage. For DevOps: configure deployment settings and monitoring."
     }
   ]
 }

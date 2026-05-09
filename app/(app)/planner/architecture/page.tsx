@@ -44,6 +44,7 @@ function ArchitecturePage() {
   const [aiTools, setAiTools] = useState<any[]>([])
   const [features, setFeatures] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
+  const [selectedToolConfig, setSelectedToolConfig] = useState<any>(null)
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
@@ -88,6 +89,16 @@ function ArchitecturePage() {
     updateDoc(doc(db as any, 'projects', projectId!), { current_step: 'architecture' }).catch(() => {})
   }, [projectId])
 
+  const getLayerEmoji = (layer: string): string => {
+    const emojis: { [key: string]: string } = {
+      'Frontend': '🎨',
+      'Backend': '⚙️',
+      'Data': '💾',
+      'DevOps': '🚀'
+    }
+    return emojis[layer] || '🔧'
+  }
+
   const createAIToolNodes = (tools: any[]) => {
     const newNodes = []
     const newEdges = []
@@ -97,7 +108,7 @@ function ArchitecturePage() {
       id: 'ai-root',
       type: 'techNode',
       position: { x: 0, y: 0 },
-      data: { tool: { name: 'AI Tool IDE', category: 'root', description: 'Recommended AI Tools Hub' }, isValid: true }
+      data: { tool: { name: 'AI Tool IDE', category: 'root', description: 'Recommended AI Tools Hub', layer: 'root' }, isValid: true }
     }
     newNodes.push(rootNode)
     
@@ -125,7 +136,14 @@ function ArchitecturePage() {
           type: 'techNode',
           position: { x: xPos, y: yPos },
           data: { 
-            tool: { ...tool, name: tool.name, description: `${tool.category} - ${tool.reason}` },
+            tool: { 
+              ...tool, 
+              name: tool.name,
+              layer: layer,
+              description: `${tool.category} - ${tool.reason}`,
+              displayName: `${getLayerEmoji(layer)} ${tool.name}`,
+              configuration: tool.configuration || `Configure ${tool.name} by setting up API keys and connecting it to your ${layer.toLowerCase()} services.`
+            },
             isValid: true,
             relevance: tool.relevance
           }
@@ -253,6 +271,17 @@ function ArchitecturePage() {
 
   const handleNodeClick = useCallback((_: any, node: any) => {
     setSelectedNode(node)
+    if (node.data?.tool?.layer) {
+      setSelectedToolConfig({
+        name: node.data.tool.name,
+        layer: node.data.tool.layer,
+        category: node.data.tool.category,
+        reason: node.data.tool.reason,
+        relevance: node.data.relevance,
+        description: node.data.tool.description,
+        configuration: node.data.tool.configuration
+      })
+    }
   }, [])
 
   const handlePaneClick = useCallback(() => {
@@ -418,7 +447,7 @@ function ArchitecturePage() {
 
         {/* Right Configuration Panel */}
         <div style={{
-          width: '240px', background: '#eef3f4', borderLeft: '1px solid rgba(38,69,72,.1)',
+          width: '280px', background: '#eef3f4', borderLeft: '1px solid rgba(38,69,72,.1)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden'
         }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(38,69,72,.1)', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -426,85 +455,62 @@ function ArchitecturePage() {
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#172326', fontFamily: 'Syne, sans-serif' }}>Configuration</span>
           </div>
 
-          {!selectedTool ? (
+          {!selectedToolConfig ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', color: '#3d3a55' }}>
               <Info size={28} style={{ marginBottom: '12px', opacity: 0.4 }} />
-              <div style={{ fontSize: '12px', color: '#8a9a9d' }}>Click a node to configure it</div>
+              <div style={{ fontSize: '12px', color: '#8a9a9d' }}>Click an AI tool node to see configuration</div>
             </div>
           ) : (
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
 
-              {/* Node label */}
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px' }}>Node</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326', background: 'rgba(38,69,72,.1)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '8px', padding: '8px 12px' }}>
-                  {selectedTool.category.charAt(0).toUpperCase() + selectedTool.category.slice(1)} — {selectedTool.name}
+              {/* Tool Name with Layer */}
+              <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(66,127,131,.12)', borderRadius: '10px', border: '1px solid rgba(66,127,131,.2)' }}>
+                <div style={{ fontSize: '20px', fontWeight: 800, color: '#172326', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>{getLayerEmoji(selectedToolConfig.layer)}</span>
+                  {selectedToolConfig.name}
+                </div>
+                <div style={{ fontSize: '11px', color: '#5aa0a4', fontWeight: 600 }}>
+                  {selectedToolConfig.layer} Layer
                 </div>
               </div>
 
-              {/* AI Recommended */}
-              {selectedTool.aiRecommended && (
-                <div style={{ marginBottom: '14px' }}>
-                  <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px' }}>AI Recommended</div>
-                  <div style={{ fontSize: '12px', color: '#83b9bd', background: 'rgba(66,127,131,.1)', border: '1px solid rgba(66,127,131,.2)', borderRadius: '8px', padding: '8px 12px', fontWeight: 600 }}>
-                    {selectedTool.aiRecommended}
+              {/* Category */}
+              <div style={{ marginBottom: '14px' }}>
+                <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Category</div>
+                <div style={{ fontSize: '12px', color: '#607276', background: 'rgba(38,69,72,.07)', borderRadius: '6px', padding: '8px 12px', fontWeight: 600 }}>
+                  {selectedToolConfig.category}
+                </div>
+              </div>
+
+              {/* Relevance Score */}
+              <div style={{ marginBottom: '14px' }}>
+                <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Relevance Score</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ flex: 1, height: '8px', background: 'rgba(38,69,72,.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${selectedToolConfig.relevance}%`, height: '100%', background: 'linear-gradient(90deg, #427f83, #5aa0a4)', borderRadius: '4px', transition: 'width 0.3s' }} />
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#5aa0a4', minWidth: '35px', textAlign: 'right' }}>
+                    {selectedToolConfig.relevance}%
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Why This Tool */}
-              {selectedTool.whyThisTool && (
-                <div style={{ marginBottom: '14px' }}>
-                  <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px' }}>Why This Tool</div>
-                  <div style={{ fontSize: '11px', color: '#607276', background: 'rgba(38,69,72,.07)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '8px', padding: '8px 12px', lineHeight: '1.5' }}>
-                    {selectedTool.whyThisTool}
-                  </div>
+              <div style={{ marginBottom: '14px' }}>
+                <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Why Recommended</div>
+                <div style={{ fontSize: '11px', color: '#607276', background: 'rgba(38,69,72,.07)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '8px', padding: '10px 12px', lineHeight: '1.6' }}>
+                  {selectedToolConfig.reason}
                 </div>
-              )}
+              </div>
 
-              {/* Alternative */}
-              {selectedTool.alternative && (
-                <div style={{ marginBottom: '14px' }}>
-                  <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px' }}>Alternative</div>
-                  <div style={{ fontSize: '12px', color: '#06b6d4', background: 'rgba(6,182,212,.08)', border: '1px solid rgba(6,182,212,.15)', borderRadius: '8px', padding: '8px 12px', fontWeight: 600 }}>
-                    {selectedTool.alternative}
-                  </div>
+              {/* How to Configure */}
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>How to Use & Configure</div>
+                <div style={{ fontSize: '11px', color: '#607276', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.15)', borderRadius: '8px', padding: '10px 12px', lineHeight: '1.6' }}>
+                  {selectedToolConfig.configuration}
+                  <br /><br />
+                  <span style={{ color: '#5aa0a4', fontWeight: 600 }}>✓</span> Setup involves API key configuration, environment variables, and integration with your {selectedToolConfig.layer.toLowerCase()} services.
                 </div>
-              )}
-
-              {/* Cost / Month */}
-              {selectedTool.costPerMonth !== undefined && (
-                <div style={{ marginBottom: '14px' }}>
-                  <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px' }}>Cost / Month</div>
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: selectedTool.costPerMonth === '$0' ? '#10b981' : '#f97316', fontFamily: 'Syne, sans-serif', background: 'rgba(38,69,72,.07)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '8px', padding: '8px 12px' }}>
-                    {selectedTool.costPerMonth}
-                  </div>
-                </div>
-              )}
-
-              {/* Performance Score */}
-              {selectedTool.performanceScore !== undefined && (
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>Performance Score</div>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} style={{
-                        flex: 1, height: '6px', borderRadius: '3px',
-                        background: i < selectedTool.performanceScore! ? '#5aa0a4' : 'rgba(38,69,72,.12)'
-                      }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Export actions */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                {['PNG', 'PDF', 'Share'].map(label => (
-                  <button key={label} onClick={handleExportPNG} style={{
-                    flex: 1, padding: '7px 0', borderRadius: '8px', border: '1px solid rgba(38,69,72,.12)',
-                    background: 'rgba(38,69,72,.07)', color: '#607276', fontSize: '11px', fontWeight: 600, cursor: 'pointer'
-                  }}>{label}</button>
-                ))}
               </div>
 
               {/* Continue button */}
@@ -512,7 +518,7 @@ function ArchitecturePage() {
                 width: '100%', padding: '11px', background: 'linear-gradient(135deg, #365f62, #83b9bd)',
                 border: 'none', borderRadius: '10px', color: '#fff', fontFamily: 'Syne, sans-serif',
                 fontSize: '13px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(66,127,131,.28)'
+                justifyContent: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(66,127,131,.28)', marginTop: 'auto'
               }}>
                 Continue → <ArrowRight size={14} />
               </button>
