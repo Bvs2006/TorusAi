@@ -97,9 +97,25 @@ export default function TeamGuidePage() {
               </div>
               <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', fontWeight: 800, margin: 0, color: 'var(--text-heading)' }}>Team Guide Generator</h1>
             </div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '32px' }}>
-              Define your team structure to generate role-specific workflows for <strong>{project?.name}</strong>.
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px', lineHeight: 1.6 }}>
+              Define your team structure to generate role-specific workflows for <strong>{project?.name}</strong>. Each teammate gets clear ownership, tasks, tools, and a step-by-step development guide.
             </p>
+
+            <div style={{ display: 'grid', gap: '10px', marginBottom: '28px' }}>
+              {[
+                { label: 'Ownership', text: 'Each role gets a clear area of responsibility.' },
+                { label: 'Parallel work', text: 'Teammates can build different parts without blocking each other.' },
+                { label: 'Confidence checks', text: 'Role guides include goals, prompts, sub-steps, and definition of done.' },
+              ].map(item => (
+                <div key={item.label} style={{ display: 'flex', gap: '12px', padding: '12px', background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '12px' }}>
+                  <CheckCircle2 size={16} color="var(--accent-teal)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-heading)' }}>{item.label}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.45 }}>{item.text}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             <form onSubmit={handleGenerateRoles}>
               <div style={{ marginBottom: '24px' }}>
@@ -151,7 +167,7 @@ export default function TeamGuidePage() {
               <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', border: '2px dashed var(--border-subtle)', borderRadius: '24px', textAlign: 'center' }}>
                 <LayoutGrid size={48} color="var(--border-subtle)" style={{ marginBottom: '16px' }} />
                 <h3 style={{ margin: 0, color: 'var(--text-muted)', fontSize: '18px', fontWeight: 700 }}>Roles will appear here</h3>
-                <p style={{ color: 'var(--text-subtle)', fontSize: '13px', maxWidth: '300px', marginTop: '8px' }}>Fill out the team details to generate specific responsibilities and guides.</p>
+                <p style={{ color: 'var(--text-subtle)', fontSize: '13px', maxWidth: '320px', marginTop: '8px', lineHeight: 1.6 }}>Fill out the team details to generate specific responsibilities, recommended tools, development tasks, and role-wise guides.</p>
               </div>
             ) : (
               <div style={{ animation: 'fadeUp 0.5s ease-out' }}>
@@ -160,30 +176,56 @@ export default function TeamGuidePage() {
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
                   {roles.map((role, idx) => (
-                    <div key={idx} style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s', cursor: 'default' }} onMouseOver={e => e.currentTarget.style.transform = 'translateX(8px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateX(0)'}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div key={idx} style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '20px', transition: 'all 0.2s', cursor: 'default' }} onMouseOver={e => e.currentTarget.style.transform = 'translateX(6px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateX(0)'}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '18px' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1 }}>
                         <div style={{ width: '44px', height: '44px', background: 'rgba(66,127,131,.08)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-teal)' }}>
                           <User size={20} />
                         </div>
                         <div>
                           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-heading)' }}>{role.title}</div>
-                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{role.focus}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, marginTop: '4px' }}>{role.focus}</div>
                         </div>
+                        </div>
+                        <button 
+                          onClick={() => router.push(`/planner/architecture/team-guide/role?project=${projectId}&role=${encodeURIComponent(role.title)}`)}
+                          style={{ background: 'rgba(59,130,246,.08)', border: 'none', color: '#3b82f6', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}
+                        >
+                          Open Guide <ArrowRight size={14} />
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => router.push(`/planner/architecture/team-guide/role?project=${projectId}&role=${encodeURIComponent(role.title)}`)}
-                        style={{ background: 'rgba(59,130,246,.08)', border: 'none', color: '#3b82f6', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        Open Guide <ArrowRight size={14} />
-                      </button>
+
+                      {Array.isArray(role.tasks) && role.tasks.length > 0 && (
+                        <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent-teal)', textTransform: 'uppercase', letterSpacing: '.6px', marginBottom: '10px' }}>Owned tasks</div>
+                          <div style={{ display: 'grid', gap: '8px' }}>
+                            {role.tasks.slice(0, 4).map((task: string, taskIdx: number) => (
+                              <div key={taskIdx} style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                                <span style={{ color: 'var(--accent-teal)', fontWeight: 800 }}>{taskIdx + 1}.</span>
+                                <span>{task}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {Array.isArray(role.tools) && role.tools.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '14px' }}>
+                          {role.tools.map((tool: string) => (
+                            <span key={tool} style={{ fontSize: '11px', color: 'var(--text-heading)', background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '999px', padding: '5px 9px' }}>
+                              {tool}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
 
-                <div style={{ marginTop: '32px', padding: '20px', background: 'rgba(16,185,129,.05)', border: '1px solid rgba(16,185,129,.15)', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ marginTop: '32px', padding: '20px', background: 'rgba(16,185,129,.05)', border: '1px solid rgba(16,185,129,.15)', borderRadius: '16px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                   <CheckCircle2 size={20} color="#10b981" />
                   <div style={{ fontSize: '13px', color: 'var(--success)' }}>
-                    <strong>Team Structure Finalized.</strong> Share these links with your teammates to begin parallel development.
+                    <strong>Team structure finalized.</strong> Ask every teammate to open their role guide, complete each phase, and share blockers at the end of the day.
                   </div>
                 </div>
               </div>

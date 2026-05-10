@@ -19,6 +19,9 @@ type StepData = {
   prompt: string;
   expected: string;
   tips: string[];
+  beforeStart?: string[];
+  verify?: string[];
+  handoff?: string;
   documentation?: string;
 };
 
@@ -40,6 +43,9 @@ const PHASES: PhaseData[] = [
         prompt: 'I am starting a new project. What are the best settings and extensions to install for a Next.js, Firebase, and TailwindCSS stack?',
         expected: 'A list of recommended settings, extensions, and a quick-start checklist.',
         tips: ['Make sure to log in to enable premium AI models.', 'Use the Composer feature for multi-file edits.'],
+        beforeStart: ['Create or open the project folder.', 'Confirm Git is installed.', 'Keep your project idea and stack notes nearby.'],
+        verify: ['The project folder opens without permission issues.', 'AI chat/composer can access the workspace.', 'You can run terminal commands inside the IDE.'],
+        handoff: 'Commit editor settings or document them in the README so teammates can match the setup.',
         documentation: 'https://docs.cursor.com/'
       }
     ]
@@ -56,6 +62,9 @@ const PHASES: PhaseData[] = [
         prompt: 'Generate the terminal commands to create a new Next.js 14 app with App Router, TailwindCSS, and TypeScript. Also include the command to install Firebase, Lucide React, and Framer Motion.',
         expected: 'Exact terminal commands to run and file structure overview.',
         tips: ['Always choose App Router when prompted by create-next-app.', 'Keep your package.json clean and organized.'],
+        beforeStart: ['Install Node.js and npm.', 'Choose a clear project folder name.', 'Decide which environment variables are needed.'],
+        verify: ['npm install completes successfully.', 'npm run dev starts without errors.', 'The homepage opens in the browser.'],
+        handoff: 'Share setup commands and required environment variable names with the team.',
         documentation: 'https://nextjs.org/docs'
       }
     ]
@@ -72,6 +81,9 @@ const PHASES: PhaseData[] = [
         prompt: 'Create a modern, responsive sidebar navigation and top header layout for a SaaS dashboard. Use Tailwind CSS and Lucide React icons. It should have a dark mode aesthetic with glassmorphism effects.',
         expected: 'A fully functional React component with Tailwind classes that you can copy directly into your layout.tsx file.',
         tips: ['Ask v0 to iterate on the design if it does not match exactly.', 'Ensure you have the required lucide-react icons installed.'],
+        beforeStart: ['List the main pages users need.', 'Decide navigation labels.', 'Check existing colors and typography.'],
+        verify: ['Navigation links work.', 'Layout does not break on mobile.', 'Repeated UI pieces are components, not copied blocks.'],
+        handoff: 'Capture screenshots of the main UI states and note any unfinished screens.',
         documentation: 'https://v0.dev/faq'
       }
     ]
@@ -88,6 +100,9 @@ const PHASES: PhaseData[] = [
         prompt: 'Look at my frontend components in the /app folder. Generate the Next.js API route handlers (Route Handlers in the App Router) needed to support fetching and updating this data.',
         expected: 'Complete API route files (route.ts) with proper HTTP methods (GET, POST) and error handling.',
         tips: ['Specify if you need Edge runtime or Node.js runtime.', 'Ask for Zod validation for all incoming POST requests.'],
+        beforeStart: ['Write the data each page needs.', 'Name the API routes clearly.', 'Decide request and response shapes.'],
+        verify: ['Each route returns useful status codes.', 'Invalid input is rejected.', 'Frontend can call the routes successfully.'],
+        handoff: 'Document each endpoint with method, body, response, and error cases.',
         documentation: 'https://docs.cursor.com/composer/overview'
       }
     ]
@@ -104,6 +119,9 @@ const PHASES: PhaseData[] = [
         prompt: 'I need to connect my Next.js App Router project to Firebase Firestore. Generate the firebase/client.ts initialization file, and provide a utility function to fetch a collection of items.',
         expected: 'A configured firebase initialization script and data fetching utilities.',
         tips: ['Ensure your Firebase config variables are stored in .env.local', 'Do not expose your private Admin SDK keys in the client code.'],
+        beforeStart: ['Create the Firebase project.', 'Add required env variables.', 'Sketch the collections or tables.'],
+        verify: ['Client config loads.', 'A test read succeeds.', 'A test write appears in the database console.'],
+        handoff: 'Record collection names, required fields, and security rules assumptions.',
         documentation: 'https://firebase.google.com/docs/firestore'
       }
     ]
@@ -120,6 +138,9 @@ const PHASES: PhaseData[] = [
         prompt: 'Write a complete Firebase Authentication flow for Next.js App Router. Create an AuthContext provider, a useAuth hook, and a Login page component with Google Sign-in and Email/Password options using TailwindCSS.',
         expected: 'AuthContext file, useAuth hook, and a beautifully styled Login page component.',
         tips: ['Remember to enable Google and Email providers in your Firebase Console.', 'Use middleware.ts to protect private routes.'],
+        beforeStart: ['Enable auth providers.', 'Define public and private routes.', 'Decide where logged-in users should land.'],
+        verify: ['Signup and login work.', 'Logout clears session.', 'Private pages redirect unauthenticated users.'],
+        handoff: 'Document test accounts, redirect behavior, and protected route rules.',
         documentation: 'https://firebase.google.com/docs/auth'
       }
     ]
@@ -136,6 +157,9 @@ const PHASES: PhaseData[] = [
         prompt: 'Create a Next.js API route that connects to the Groq API (using the groq-sdk). It should take a user prompt from the request body, send it to the llama3-70b-8192 model, and return the streaming response.',
         expected: 'An API route handling the Groq connection and returning a readable stream.',
         tips: ['Use the AI SDK by Vercel (ai package) for easy UI streaming.', 'Always handle rate limits gracefully.'],
+        beforeStart: ['Create an AI provider API key.', 'Store the key only on the server.', 'Define the exact user input and AI output.'],
+        verify: ['API returns an AI response.', 'Loading and error states are visible.', 'Missing API key fails with a clear message.'],
+        handoff: 'Write the prompt purpose, model name, rate-limit assumptions, and fallback behavior.',
         documentation: 'https://console.groq.com/docs/quickstart'
       }
     ]
@@ -152,6 +176,9 @@ const PHASES: PhaseData[] = [
         prompt: 'Generate comprehensive unit tests for this utility function using Vitest. Include tests for edge cases, null inputs, and expected successful outputs.',
         expected: 'A complete .test.ts file covering all branches of your function.',
         tips: ['Review the generated tests to ensure they are testing actual logic, not just mocking everything.', 'Keep tests fast and isolated.'],
+        beforeStart: ['Choose the most important functions or flows.', 'Confirm the test command.', 'Prepare sample valid and invalid inputs.'],
+        verify: ['Tests fail before the fix when possible.', 'Tests pass locally.', 'Manual smoke test still works.'],
+        handoff: 'Share the test command and list any remaining untested risks.',
         documentation: 'https://docs.cursor.com/chat/overview'
       }
     ]
@@ -169,6 +196,9 @@ const PHASES: PhaseData[] = [
         prompt: 'Review my entire codebase and generate a comprehensive README.md. Include a project description, feature list, tech stack, local setup instructions, and deployment guide.',
         expected: 'A beautifully formatted markdown file documenting your project.',
         tips: ['Add screenshots of your application to the README.', 'Include a license and contact information.'],
+        beforeStart: ['Collect setup commands.', 'List environment variables.', 'Note deployment and demo steps.'],
+        verify: ['A new developer can run the project from the README.', 'Screenshots and links are accurate.', 'Known limitations are included.'],
+        handoff: 'Keep documentation updated after every major feature change.',
         documentation: 'https://docs.cursor.com/composer/overview'
       }
     ]
@@ -239,11 +269,27 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
     window.open(url, '_blank')
   }
 
+  const completedCount = phase.steps.filter(s => completedSteps[s.id]).length
+
   return (
     <div>
       <h2 style={{ fontSize: 24, fontFamily: 'Syne, sans-serif', fontWeight: 800 }}>{phase.title}</h2>
       <div style={{ marginTop: 8, color: '#6b7280', fontSize: 14 }}>
-        This guide follows your selected architecture. Phase {phaseId} contains {phase.steps.length} step(s).
+        This guide follows your selected architecture. Complete the preparation, build, verification, and handoff items before moving forward.
+      </div>
+
+      <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+        {[
+          { label: 'Prepare', text: 'Check tools, keys, files, and context first.' },
+          { label: 'Build', text: 'Use the prompt, then review every generated change.' },
+          { label: 'Verify', text: 'Run the app and confirm the expected output.' },
+          { label: 'Handoff', text: 'Commit or document what changed for the next phase.' },
+        ].map(item => (
+          <div key={item.label} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 14 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#0f766e', marginBottom: 5 }}>{item.label}</div>
+            <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.45 }}>{item.text}</div>
+          </div>
+        ))}
       </div>
 
       <div style={{ marginTop: 24, display: 'grid', gap: 24 }}>
@@ -281,6 +327,21 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
               <div style={{ background: '#f0fdf4', padding: 16, borderRadius: 8, border: '1px solid #bbf7d0' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', marginBottom: 6 }}>Expected Output</div>
                 <div style={{ fontSize: 14, color: '#15803d', lineHeight: 1.5 }}>{s.expected}</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+              <div style={{ background: '#fff7ed', padding: 16, borderRadius: 8, border: '1px solid #fed7aa' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#9a3412', textTransform: 'uppercase', marginBottom: 8 }}>Before you start</div>
+                <ul style={{ margin: 0, paddingLeft: 18, color: '#7c2d12', fontSize: 13, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(s.beforeStart || ['Read the phase goal.', 'Open the relevant files.', 'Keep the app running while editing.']).map((item, i) => <li key={i}>{item}</li>)}
+                </ul>
+              </div>
+              <div style={{ background: '#ecfeff', padding: 16, borderRadius: 8, border: '1px solid #a5f3fc' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#155e75', textTransform: 'uppercase', marginBottom: 8 }}>Verification checklist</div>
+                <ul style={{ margin: 0, paddingLeft: 18, color: '#164e63', fontSize: 13, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(s.verify || [s.expected]).map((item, i) => <li key={i}>{item}</li>)}
+                </ul>
               </div>
             </div>
 
@@ -340,6 +401,11 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
               </div>
             </div>
 
+            <div style={{ marginTop: 24, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#334155', textTransform: 'uppercase', marginBottom: 6 }}>Handoff note</div>
+              <div style={{ fontSize: 13, color: '#475569', lineHeight: 1.5 }}>{s.handoff || 'Commit the completed work and write down anything the next phase depends on.'}</div>
+            </div>
+
             {/* Error Fixer Link */}
             <div style={{ marginTop: 24, padding: 16, background: '#fff1f2', borderRadius: 8, border: '1px solid #ffe4e6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
@@ -369,8 +435,9 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
           </Link>
           <Link 
             href={`/planner/architecture/guide/step/${phaseId + 1}?project=${projectId}`} 
+            aria-disabled={completedCount < phase.steps.length}
             style={{ 
-              padding: '12px 24px', background: '#0f766e', 
+              padding: '12px 24px', background: completedCount < phase.steps.length ? '#94a3b8' : '#0f766e', 
               border: 'none', borderRadius: '10px', color: '#fff', fontFamily: 'Syne, sans-serif', 
               fontSize: '14px', fontWeight: 800, textDecoration: 'none', display: 'inline-flex', 
               alignItems: 'center', gap: '8px', boxShadow: '0 4px 14px rgba(15,118,110,.2)' 

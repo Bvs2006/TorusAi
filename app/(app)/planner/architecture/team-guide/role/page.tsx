@@ -94,7 +94,7 @@ export default function RoleGuideDetailsPage() {
                 </div>
                 <div>
                   <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '28px', fontWeight: 800, margin: 0, color: 'var(--text-heading)' }}>{roleTitle}</h1>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: '4px 0 0 0' }}>Role-Specific Development Guide & Roadmap</p>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: '4px 0 0 0' }}>Role-specific roadmap with context, tasks, prompts, integration steps, and definition of done.</p>
                 </div>
               </div>
             </div>
@@ -130,12 +130,19 @@ export default function RoleGuideDetailsPage() {
 
           {/* Step Content */}
           <div style={{ flex: 1, minWidth: '300px' }}>
-            {roadmap && (
+            {roadmap && roadmap.length > 0 ? (
               <div style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '24px', padding: '40px', boxShadow: 'var(--card-shadow)', animation: 'fadeUp 0.4s ease-out' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-teal)', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '12px' }}>
                   <LayoutList size={14} /> Phase {activeStep + 1}
                 </div>
                 <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '16px' }}>{roadmap[activeStep].title}</h2>
+
+                {roadmap[activeStep].context && (
+                  <div style={{ marginBottom: '24px', background: 'rgba(66,127,131,.06)', border: '1px solid rgba(66,127,131,.18)', borderRadius: '16px', padding: '18px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--accent-teal)', textTransform: 'uppercase', marginBottom: '8px' }}>Why this phase matters</div>
+                    <div style={{ fontSize: '14px', color: 'var(--text)', lineHeight: 1.6 }}>{roadmap[activeStep].context}</div>
+                  </div>
+                )}
                 
                 <div style={{ marginBottom: '32px' }}>
                   <div style={{ fontSize: '14px', color: 'var(--text)', lineHeight: '1.6', background: 'var(--bg-2)', padding: '20px', borderRadius: '16px', borderLeft: '4px solid var(--accent-teal)' }}>
@@ -163,6 +170,9 @@ export default function RoleGuideDetailsPage() {
                         </div>
                         <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-heading)' }}>{roadmap[activeStep].tool}</span>
                       </div>
+                      {roadmap[activeStep].usage && (
+                        <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>{roadmap[activeStep].usage}</div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -178,6 +188,13 @@ export default function RoleGuideDetailsPage() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {roadmap[activeStep].integration && (
+                  <div style={{ marginBottom: '32px', background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '18px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '10px', textTransform: 'uppercase' }}>How to integrate safely</div>
+                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{roadmap[activeStep].integration}</div>
                   </div>
                 )}
 
@@ -200,12 +217,20 @@ export default function RoleGuideDetailsPage() {
                       value={roadmap[activeStep].prompt}
                       style={{ width: '100%', height: '240px', background: 'var(--bg-3)', color: 'var(--text)', borderRadius: '16px', padding: '24px', fontSize: '13px', lineHeight: '1.6', border: '1px solid var(--border-subtle)', outline: 'none', fontFamily: 'var(--font-mono)', resize: 'none' }}
                     />
-                    <div style={{ position: 'absolute', bottom: '16px', right: '16px', display: 'flex', gap: '8px' }}>
-                      <button style={{ background: 'rgba(255,255,255,.1)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Play size={12} /> Run in Workspace
-                      </button>
-                    </div>
                   </div>
+                </div>
+
+                <div style={{ marginTop: '28px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                  {[
+                    { title: 'Before coding', text: 'Open only the files related to this role and phase.' },
+                    { title: 'During coding', text: 'Review generated code before saving or committing it.' },
+                    { title: 'Before handoff', text: 'Run the app, verify the goal, and note blockers clearly.' },
+                  ].map(item => (
+                    <div key={item.title} style={{ background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '14px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--accent-teal)', marginBottom: '6px' }}>{item.title}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>{item.text}</div>
+                    </div>
+                  ))}
                 </div>
 
                 <div style={{ marginTop: '32px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -219,6 +244,17 @@ export default function RoleGuideDetailsPage() {
                     </button>
                   )}
                 </div>
+              </div>
+            ) : (
+              <div style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '24px', padding: '40px', textAlign: 'center' }}>
+                <LayoutList size={42} color="var(--text-subtle)" style={{ marginBottom: '14px' }} />
+                <h2 style={{ fontFamily: 'Syne, sans-serif', color: 'var(--text-heading)', margin: '0 0 8px' }}>No roadmap generated yet</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto 20px' }}>
+                  Go back and open this role again, or regenerate the team guide if the AI service returned an empty response.
+                </p>
+                <button onClick={() => router.back()} style={{ background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }}>
+                  Back to Team Guide
+                </button>
               </div>
             )}
           </div>
