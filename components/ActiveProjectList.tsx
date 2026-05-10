@@ -87,8 +87,8 @@ export default function ActiveProjectList({ projects }: { projects: any[] }) {
             className="active-project-card"
             style={{
               padding: '14px 16px',
-              background: 'rgba(66,127,131,.08)',
-              border: '1px solid rgba(66,127,131,.2)',
+              background: 'var(--surface-overlay)',
+              border: '1px solid var(--border-subtle)',
               borderRadius: '12px',
               display: 'flex',
               justifyContent: 'space-between',
@@ -101,13 +101,13 @@ export default function ActiveProjectList({ projects }: { projects: any[] }) {
           >
             <Link href={stepPath} style={{ textDecoration: 'none', flex: 1, display: 'block', paddingRight: '10px' }}>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326' }}>{proj.name || 'Untitled Project'}</div>
-                <div style={{ fontSize: '11px', color: '#8a9a9d', marginTop: '3px' }}>{proj.idea?.substring(0, 50) || 'No description'}...</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-heading)' }}>{proj.name || 'Untitled Project'}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px' }}>{proj.idea?.substring(0, 50) || 'No description'}...</div>
               </div>
             </Link>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-              <div style={{ fontSize: '11px', color: '#5aa0a4', fontWeight: 600, padding: '4px 10px', background: 'rgba(90,160,164,.1)', borderRadius: '6px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '11px', color: 'var(--accent-teal)', fontWeight: 600, padding: '4px 10px', background: 'var(--surface-glass)', borderRadius: '6px', whiteSpace: 'nowrap' }}>
                 {getProjectProgress(proj)}%
               </div>
               <button

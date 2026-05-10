@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { StepIndicator, showToast } from '@/components/ui'
-import { Check, Copy, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import { Check, Copy, ChevronDown, ChevronUp, ExternalLink, ArrowRight } from 'lucide-react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/utils/firebase/client'
 
@@ -56,17 +56,18 @@ export default function DeployPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '28px 32px', maxWidth: '760px', color: '#607276' }}>
-        Loading deployment guide...
+      <div style={{ padding: '28px 32px', maxWidth: '760px', color: 'var(--text-muted)', fontFamily: 'DM Sans, sans-serif' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '18px', height: '18px', border: '2px solid var(--border-subtle)', borderTopColor: 'var(--accent-teal)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+          Loading deployment guide...
+        </div>
       </div>
     )
   }
 
-  // Determine the recommended deployment platform from the project stack
   const recommendedPlatform = project?.stack?.deployment?.name || 'Vercel'
   const recommendedReason = project?.stack?.deployment?.reason || 'Zero-config Next.js, free tier'
   
-  // Create direct link based on platform
   let platformUrl = 'https://vercel.com/new'
   const lowerPlatform = recommendedPlatform.toLowerCase()
   if (lowerPlatform.includes('railway')) platformUrl = 'https://railway.app/new'
@@ -82,7 +83,7 @@ export default function DeployPage() {
       notes: 'Create a new repo on github.com first, then run these commands in your project folder.'
     },
     {
-      n: 2, title: 'Set up Supabase / Database', emoji: '🔵',
+      n: 2, title: 'Set up Database', emoji: '🔵',
       commands: ['# Go to your database dashboard', '# Create new project', '# Copy connection URL/keys', '# Run migrations if necessary'],
       notes: 'Ensure your database is accessible and you have the production credentials ready.'
     },
@@ -117,37 +118,51 @@ export default function DeployPage() {
   const allChecked = checklistItems.every(item => checklist.has(item))
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: '760px' }}>
+    <div style={{ padding: '28px 32px', maxWidth: '760px', color: 'var(--text)', fontFamily: 'DM Sans, sans-serif' }}>
       <StepIndicator steps={STEPS} current={5} />
       
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, marginBottom: '4px' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '28px', fontWeight: 800, marginBottom: '8px', color: 'var(--text-heading)', letterSpacing: '-0.5px' }}>
           🚀 Deployment Guide
         </h1>
-        <p style={{ color: '#607276', fontSize: '13px' }}>
-          {done.size}/{dynamicDeploySteps.length} steps complete · Follow these steps to go live
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
+          {done.size}/{dynamicDeploySteps.length} steps complete · Follow these steps to go live with your project.
         </p>
-        <div style={{ height: '4px', background: 'rgba(43,69,72,.12)', borderRadius: '2px', marginTop: '10px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${(done.size / dynamicDeploySteps.length) * 100}%`, background: 'linear-gradient(90deg, #427f83, #10b981)', borderRadius: '2px', transition: 'width 0.4s' }} />
+        <div style={{ height: '6px', background: 'var(--border-subtle)', borderRadius: '3px', marginTop: '16px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${(done.size / dynamicDeploySteps.length) * 100}%`, background: 'linear-gradient(90deg, var(--accent-teal), var(--accent-cyan))', borderRadius: '3px', transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }} />
         </div>
       </div>
 
       {/* Recommended Platform Card */}
-      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ 
+        background: 'var(--surface-glass)', 
+        backdropFilter: 'var(--glass-blur)',
+        border: '1px solid var(--border-subtle)', 
+        borderRadius: '20px', 
+        padding: '24px', 
+        marginBottom: '32px', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        boxShadow: 'var(--card-shadow)'
+      }}>
         <div>
-          <div style={{ fontSize: '12px', color: '#475569', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Recommended Platform</div>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>{recommendedPlatform}</div>
-          <div style={{ fontSize: '13px', color: '#64748b' }}>{recommendedReason}</div>
+          <div style={{ fontSize: '11px', color: 'var(--accent-teal)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '1px', fontFamily: 'DM Mono, monospace' }}>Recommended Platform</div>
+          <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '4px', fontFamily: 'Syne, sans-serif' }}>{recommendedPlatform}</div>
+          <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{recommendedReason}</div>
         </div>
         <a 
           href={platformUrl}
           target="_blank" 
           rel="noreferrer"
           style={{ 
-            display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', 
-            background: '#0f172a', color: '#fff', textDecoration: 'none', 
-            borderRadius: '8px', fontSize: '14px', fontWeight: 600, transition: 'all 0.2s' 
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', 
+            background: 'var(--text-heading)', color: 'var(--bg)', textDecoration: 'none', 
+            borderRadius: '12px', fontSize: '14px', fontWeight: 700, transition: 'all 0.2s',
+            fontFamily: 'Syne, sans-serif', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }}
+          onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
         >
           Open {recommendedPlatform} <ExternalLink size={16} />
         </a>
@@ -157,48 +172,78 @@ export default function DeployPage() {
         const isExpanded = expanded === step.n
         const isDone = done.has(step.n)
         return (
-          <div key={step.n} style={{ marginBottom: '10px', background: 'rgba(255,255,255,.62)', border: `1px solid ${isDone ? 'rgba(16,185,129,.3)' : isExpanded ? 'rgba(66,127,131,.3)' : 'rgba(38,69,72,.12)'}`, borderRadius: '12px', overflow: 'hidden', transition: 'border-color 0.2s' }}>
+          <div key={step.n} style={{ 
+            marginBottom: '16px', 
+            background: isExpanded ? 'var(--surface-overlay)' : 'var(--surface-glass)', 
+            backdropFilter: 'var(--glass-blur)',
+            border: '1px solid var(--border-subtle)', 
+            borderRadius: '16px', 
+            overflow: 'hidden', 
+            transition: 'all 0.3s ease',
+            boxShadow: isExpanded ? 'var(--hover-shadow)' : 'none'
+          }}>
             {/* Header */}
             <button onClick={() => setExpanded(isExpanded ? 0 : step.n)} style={{
               width: '100%', background: 'transparent', border: 'none', cursor: 'pointer',
-              padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', textAlign: 'left'
+              padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left'
             }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isDone ? '#10b981' : isExpanded ? 'rgba(66,127,131,.2)' : 'rgba(43,69,72,.12)', border: `1px solid ${isDone ? '#10b981' : isExpanded ? '#427f83' : 'rgba(38,69,72,.12)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isDone ? '14px' : '11px', flexShrink: 0, color: isDone ? '#fff' : isExpanded ? '#83b9bd' : '#607276', fontFamily: 'DM Mono, monospace' }}>
+              <div style={{ 
+                width: '36px', height: '36px', borderRadius: '50%', 
+                background: isDone ? 'var(--success)' : isExpanded ? 'var(--focus)' : 'var(--bg-3)', 
+                border: `1px solid ${isDone ? 'var(--success)' : isExpanded ? 'var(--primary)' : 'var(--border-subtle)'}`, 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                fontSize: isDone ? '16px' : '12px', flexShrink: 0, 
+                color: isDone ? '#fff' : isExpanded ? 'var(--primary)' : 'var(--text-subtle)', 
+                fontFamily: 'DM Mono, monospace', fontWeight: 700,
+                transition: 'all 0.2s'
+              }}>
                 {isDone ? '✓' : step.n}
               </div>
-              <span style={{ fontSize: '20px' }}>{step.emoji}</span>
+              <span style={{ fontSize: '24px' }}>{step.emoji}</span>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 700, color: isDone ? '#10b981' : '#172326' }}>
+                <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 700, color: isDone ? 'var(--success)' : 'var(--text-heading)' }}>
                   Step {step.n}: {step.title}
                 </div>
               </div>
-              {isExpanded ? <ChevronUp size={16} color="#8a9a9d" /> : <ChevronDown size={16} color="#8a9a9d" />}
+              {isExpanded ? <ChevronUp size={20} color="var(--text-subtle)" /> : <ChevronDown size={20} color="var(--text-subtle)" />}
             </button>
 
             {/* Content */}
             {isExpanded && (
-              <div style={{ padding: '0 16px 16px', animation: 'fadeUp .2s ease' }}>
+              <div style={{ padding: '0 20px 24px', animation: 'fadeUp .3s ease' }}>
                 {step.notes && (
-                  <div style={{ background: 'rgba(124,58,237,.08)', border: '1px solid rgba(66,127,131,.15)', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px', fontSize: '12px', color: '#607276' }}>
-                    💡 {step.notes}
+                  <div style={{ background: 'var(--focus)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                    <span style={{ marginRight: '8px' }}>💡</span> {step.notes}
                   </div>
                 )}
 
                 {step.commands && (
                   <div style={{ position: 'relative' }}>
                     <button onClick={() => copyCmd(step.commands!.join('\n'), String(step.n))} style={{
-                      position: 'absolute', top: '10px', right: '10px',
-                      padding: '4px 10px', background: 'rgba(66,127,131,.2)', border: '1px solid rgba(66,127,131,.3)',
-                      borderRadius: '6px', color: '#83b9bd', fontSize: '10px', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'DM Mono, monospace', zIndex: 1
+                      position: 'absolute', top: '12px', right: '12px',
+                      padding: '6px 12px', background: 'var(--bg-3)', border: '1px solid var(--border-subtle)',
+                      borderRadius: '8px', color: 'var(--text-heading)', fontSize: '11px', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'DM Mono, monospace', zIndex: 1,
+                      transition: 'all 0.2s'
                     }}>
-                      {copied === String(step.n) ? <Check size={10} /> : <Copy size={10} />}
+                      {copied === String(step.n) ? <Check size={12} color="var(--success)" /> : <Copy size={12} />}
                       {copied === String(step.n) ? 'Copied' : 'Copy'}
                     </button>
-                    <pre style={{ background: 'rgba(255,255,255,.54)', borderRadius: '10px', padding: '14px 14px 14px 14px', fontSize: '12px', color: '#83b9bd', fontFamily: 'DM Mono, monospace', lineHeight: '1.8', overflowX: 'auto', margin: 0 }}>
+                    <pre style={{ 
+                      background: 'var(--surface-overlay)', 
+                      borderRadius: '12px', 
+                      padding: '20px', 
+                      fontSize: '13px', 
+                      color: 'var(--text)', 
+                      fontFamily: 'var(--font-mono), monospace', 
+                      lineHeight: '1.8', 
+                      overflowX: 'auto', 
+                      margin: 0,
+                      border: '1px solid var(--border-subtle)'
+                    }}>
                       {step.commands.map((cmd, i) => (
-                        <div key={i} style={{ color: cmd.startsWith('#') ? '#8a9a9d' : '#83b9bd' }}>
-                          {cmd.startsWith('#') ? '' : '$ '}{cmd}
+                        <div key={i} style={{ color: cmd.startsWith('#') ? 'var(--text-subtle)' : 'var(--text)' }}>
+                          {cmd.startsWith('#') ? '' : <span style={{ color: 'var(--accent-teal)', opacity: 0.7, marginRight: '8px' }}>$</span>}{cmd}
                         </div>
                       ))}
                     </pre>
@@ -206,14 +251,20 @@ export default function DeployPage() {
                 )}
 
                 {step.checklist && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
                     {step.checklist.map(item => (
-                      <label key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                      <label key={item} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '4px 0' }}>
                         <div onClick={() => setChecklist(prev => { const n = new Set(prev); n.has(item) ? n.delete(item) : n.add(item); return n })}
-                          style={{ width: '18px', height: '18px', borderRadius: '4px', border: `1.5px solid ${checklist.has(item) ? '#10b981' : 'rgba(255,255,255,.15)'}`, background: checklist.has(item) ? '#10b981' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer', transition: 'all .15s' }}>
-                          {checklist.has(item) && <Check size={11} color="#fff" />}
+                          style={{ 
+                            width: '20px', height: '20px', borderRadius: '6px', 
+                            border: `2px solid ${checklist.has(item) ? 'var(--success)' : 'var(--border-subtle)'}`, 
+                            background: checklist.has(item) ? 'var(--success)' : 'transparent', 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                            flexShrink: 0, cursor: 'pointer', transition: 'all .2s' 
+                          }}>
+                          {checklist.has(item) && <Check size={14} color="#fff" strokeWidth={3} />}
                         </div>
-                        <span style={{ fontSize: '13px', color: checklist.has(item) ? '#10b981' : '#607276', textDecoration: checklist.has(item) ? 'line-through' : 'none' }}>
+                        <span style={{ fontSize: '14px', color: checklist.has(item) ? 'var(--success)' : 'var(--text-muted)', textDecoration: checklist.has(item) ? 'line-through' : 'none', transition: 'all 0.2s' }}>
                           {item}
                         </span>
                       </label>
@@ -221,15 +272,16 @@ export default function DeployPage() {
                   </div>
                 )}
 
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
                   <button onClick={() => toggleDone(step.n)} style={{
-                    padding: '8px 18px', background: isDone ? 'rgba(16,185,129,.15)' : '#427f83',
-                    border: `1px solid ${isDone ? 'rgba(16,185,129,.3)' : 'transparent'}`,
-                    borderRadius: '8px', color: isDone ? '#10b981' : '#fff',
-                    fontFamily: 'Syne, sans-serif', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: '6px'
+                    padding: '10px 24px', 
+                    background: isDone ? 'rgba(16,185,129,0.1)' : 'var(--accent-teal)',
+                    border: `1px solid ${isDone ? 'var(--success)' : 'transparent'}`,
+                    borderRadius: '10px', color: isDone ? 'var(--success)' : '#fff',
+                    fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s'
                   }}>
-                    {isDone ? <><Check size={13} /> Done</> : '✓ Mark Complete'}
+                    {isDone ? <><Check size={16} /> Done</> : '✓ Mark Complete'}
                   </button>
                 </div>
               </div>
@@ -238,28 +290,42 @@ export default function DeployPage() {
         )
       })}
 
-      {/* Completion */}
+      {/* Completion Card */}
       {done.size >= dynamicDeploySteps.length - 1 && allChecked && (
-        <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,.1), rgba(124,58,237,.08))', border: '1px solid rgba(16,185,129,.3)', borderRadius: '16px', padding: '28px', textAlign: 'center', marginTop: '10px', marginBottom: '24px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎉</div>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '20px', fontWeight: 800, color: '#10b981', marginBottom: '6px' }}>Your project is live!</h2>
-          <p style={{ color: '#607276', fontSize: '13px', margin: 0 }}>Share your URL and keep building. You earned the 🚀 First Ship badge!</p>
+        <div style={{ 
+          background: 'linear-gradient(135deg, rgba(16,185,129,.1), rgba(8,145,178,.08))', 
+          border: '1px solid var(--success)', 
+          borderRadius: '24px', 
+          padding: '40px 24px', 
+          textAlign: 'center', 
+          marginTop: '16px', 
+          marginBottom: '32px',
+          boxShadow: '0 20px 40px rgba(16,185,129,0.1)',
+          animation: 'fadeUp 0.5s ease'
+        }}>
+          <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
+          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', fontWeight: 800, color: 'var(--success)', marginBottom: '8px' }}>Your project is live!</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '15px', maxWidth: '400px', margin: '0 auto' }}>Congratulations! You've successfully deployed your app. Share the URL and keep building.</p>
         </div>
       )}
 
-      {/* Always Visible Next Step */}
-      <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(43,69,72,.12)', paddingTop: '24px' }}>
+      {/* Footer Navigation */}
+      <div style={{ marginTop: '48px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-subtle)', paddingTop: '32px' }}>
         <Link href="/dashboard" style={{
-          display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 28px',
-          background: 'linear-gradient(135deg, #365f62, #83b9bd)', color: '#fff', textDecoration: 'none',
-          borderRadius: '10px', fontSize: '14px', fontWeight: 800, fontFamily: 'Syne, sans-serif',
-          boxShadow: '0 4px 20px rgba(66,127,131,.3)', transition: 'transform 0.2s'
-        }}>
-          Finish & Go to Dashboard →
+          display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '14px 32px',
+          background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', color: '#fff', textDecoration: 'none',
+          borderRadius: '14px', fontSize: '15px', fontWeight: 800, fontFamily: 'Syne, sans-serif',
+          boxShadow: '0 8px 24px rgba(66,127,131,0.3)', transition: 'all 0.2s'
+        }}
+        onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+        onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          Finish & Go to Dashboard <ArrowRight size={18} />
         </Link>
       </div>
       <style>{`
-        @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   )

@@ -27,7 +27,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="control-shell" style={{ minHeight: '100vh', background: 'transparent' }}>
+    <div className="control-shell" style={{ minHeight: '100vh', background: 'var(--bg)', transition: 'background 0.35s ease' }}>
       <Navbar user={user} />
       <main style={{ flex: 1, overflow: 'auto', minHeight: '100vh', position: 'relative' }}>
         {children}

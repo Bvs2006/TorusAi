@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { askGroq } from '@/lib/groq'
+import { askGroq, parseJSON } from '@/lib/groq'
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,20 +39,13 @@ Example format (return ONLY the array, no wrapping text):
 
 Return ONLY valid JSON array.`
 
-    const response = await askGroq(prompt, 1500)
+    const response = await askGroq(prompt, 2000)
     
-    let features = []
-    try {
-      // Extract JSON array from response
-      const jsonMatch = response.match(/\[[\s\S]*\]/)
-      if (jsonMatch) {
-        features = JSON.parse(jsonMatch[0])
-      } else {
-        features = JSON.parse(response)
-      }
-    } catch (parseErr) {
-      console.error('Failed to parse features:', parseErr)
-      return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 })
+    const features = parseJSON<any[]>(response)
+    
+    if (!features || !Array.isArray(features)) {
+      console.error('Failed to parse features AI response:', response)
+      return NextResponse.json({ error: 'Failed to generate a valid features list. Please try again.' }, { status: 500 })
     }
 
     return NextResponse.json({ features })

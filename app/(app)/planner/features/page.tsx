@@ -206,26 +206,26 @@ export default function FeaturesPage() {
   }
 
   return (
-    <div style={{ height: 'calc(100vh - 58px)', display: 'flex', flexDirection: 'column', background: '#eef3f4' }}>
+    <div style={{ height: 'calc(100vh - 58px)', display: 'flex', flexDirection: 'column', background: 'var(--bg)', color: 'var(--text)' }}>
       {/* Header */}
-      <div style={{ padding: '20px 28px 0', borderBottom: '1px solid rgba(38,69,72,.1)' }}>
+      <div style={{ padding: '20px 28px 0', borderBottom: '1px solid var(--border-subtle)' }}>
         <StepIndicator steps={STEPS} current={1} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px' }}>
           <div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, color: '#172326', marginBottom: '4px' }}>
-              Build Blocks — <span style={{ color: '#5aa0a4' }}>{project?.name}</span>
+            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '4px' }}>
+              Build Blocks — <span style={{ color: 'var(--accent-teal)' }}>{project?.name}</span>
             </h1>
-            <p style={{ color: '#8a9a9d', fontSize: '12px' }}>Drag to reorder · Click priority to toggle · Delete unwanted blocks</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Drag to reorder · Click priority to toggle · Delete unwanted blocks</p>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            {[{ label: 'Must Have', val: must.length, color: '#5aa0a4' }, { label: 'Nice to Have', val: nice.length, color: '#06b6d4' }].map(s => (
-              <div key={s.label} style={{ textAlign: 'center', background: 'rgba(255,255,255,.64)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '10px', padding: '10px 16px' }}>
+            {[{ label: 'Must Have', val: must.length, color: 'var(--accent-teal)' }, { label: 'Nice to Have', val: nice.length, color: 'var(--accent-cyan)' }].map(s => (
+              <div key={s.label} style={{ textAlign: 'center', background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '10px 16px' }}>
                 <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, color: s.color }}>{s.val}</div>
-                <div style={{ fontSize: '10px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace' }}>{s.label}</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace' }}>{s.label}</div>
               </div>
             ))}
             <button onClick={() => router.push(`/planner/architecture?project=${projectId}`)} style={{
-              padding: '10px 20px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none',
+              padding: '10px 20px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', border: 'none',
               borderRadius: '10px', color: '#fff', fontFamily: 'Syne, sans-serif', fontWeight: 800,
               fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
               boxShadow: '0 4px 20px rgba(66,127,131,.3)'
@@ -240,16 +240,16 @@ export default function FeaturesPage() {
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 340px', overflow: 'hidden' }}>
 
         {/* LEFT — Build Blocks */}
-        <div style={{ overflowY: 'auto', padding: '20px 20px 20px 28px', borderRight: '1px solid rgba(38,69,72,.1)' }}>
+        <div style={{ overflowY: 'auto', padding: '20px 20px 20px 28px', borderRight: '1px solid var(--border-subtle)' }}>
 
           {/* Complexity bar */}
-          <div style={{ background: 'rgba(255,255,255,.58)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '10px', padding: '12px 16px', marginBottom: '18px' }}>
+          <div style={{ background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '12px 16px', marginBottom: '18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', color: '#607276', fontFamily: 'DM Mono, monospace' }}>Complexity Score <strong style={{ color: '#5aa0a4' }}>{score}</strong></span>
-              <span style={{ fontSize: '11px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace' }}>~{project?.estimated_hours || features.length * 3}h total</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace' }}>Complexity Score <strong style={{ color: 'var(--accent-teal)' }}>{score}</strong></span>
+              <span style={{ fontSize: '11px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace' }}>~{project?.estimated_hours || features.length * 3}h total</span>
             </div>
-            <div style={{ height: '5px', background: 'rgba(38,69,72,.1)', borderRadius: '3px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${Math.min(100, (score / maxScore) * 100)}%`, background: 'linear-gradient(90deg, #427f83, #06b6d4)', borderRadius: '3px', transition: 'width 0.4s' }} />
+            <div style={{ height: '5px', background: 'var(--bg-2)', borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${Math.min(100, (score / maxScore) * 100)}%`, background: 'linear-gradient(90deg, var(--accent-teal), var(--accent-cyan))', borderRadius: '3px', transition: 'width 0.4s' }} />
             </div>
           </div>
 
@@ -258,32 +258,46 @@ export default function FeaturesPage() {
 
           {/* Feature list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+            {features.length === 0 && !loading && (
+              <div style={{ padding: '40px', textAlign: 'center', background: 'var(--surface-overlay)', border: '1px dashed var(--border-subtle)', borderRadius: '16px' }}>
+                <Sparkles size={32} color="var(--text-subtle)" style={{ margin: '0 auto 16px' }} />
+                <h3 style={{ margin: 0, color: 'var(--text-heading)', fontSize: '16px', fontWeight: 800 }}>No features generated yet</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '8px 0 20px' }}>Our AI might be taking a break. Click below to try generating recommendations again.</p>
+                <button onClick={loadData} style={{
+                  padding: '10px 24px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))',
+                  border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 800, fontSize: '13px', cursor: 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(66,127,131,.2)'
+                }}>
+                  <Cpu size={14} /> Generate AI Recommendations
+                </button>
+              </div>
+            )}
             {features.map((f, i) => (
               <div key={f.id} draggable
                 onDragStart={() => onDragStart(i)}
                 onDragOver={e => onDragOver(e, i)}
                 onDragEnd={onDragEnd}
                 style={{
-                  background: dragIdx === i ? 'rgba(124,58,237,.12)' : 'rgba(255,255,255,.58)',
-                  border: `1px solid ${dragIdx === i ? '#427f83' : f.priority === 'must' ? 'rgba(157,95,245,.15)' : 'rgba(38,69,72,.1)'}`,
+                  background: dragIdx === i ? 'rgba(66,127,131,.12)' : 'var(--surface-overlay)',
+                  border: `1px solid ${dragIdx === i ? 'var(--accent-teal)' : f.priority === 'must' ? 'rgba(66,127,131,0.3)' : 'var(--border-subtle)'}`,
                   borderRadius: '12px', padding: '14px 16px',
                   display: 'flex', alignItems: 'flex-start', gap: '12px',
                   cursor: 'grab', transition: 'all 0.15s',
-                  borderLeft: `3px solid ${f.priority === 'must' ? '#427f83' : 'rgba(38,69,72,.14)'}`
+                  borderLeft: `3px solid ${f.priority === 'must' ? 'var(--accent-teal)' : 'var(--border-subtle)'}`
                 }}
               >
-                <GripVertical size={14} color="#3a3360" style={{ marginTop: '4px', flexShrink: 0 }} />
+                <GripVertical size={14} color="var(--text-subtle)" style={{ marginTop: '4px', flexShrink: 0 }} />
 
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#172326' }}>{f.name}</span>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-heading)' }}>{f.name}</span>
                     <button onClick={() => togglePriority(f)} style={{
                       padding: '3px 9px', borderRadius: '20px', fontSize: '10px', fontWeight: 600,
                       fontFamily: 'DM Mono, monospace', cursor: 'pointer', border: 'none',
-                      background: f.priority === 'must' ? 'rgba(66,127,131,.2)' : 'rgba(38,69,72,.1)',
-                      color: f.priority === 'must' ? '#83b9bd' : '#8a9a9d', display: 'flex', alignItems: 'center', gap: '4px'
+                      background: f.priority === 'must' ? 'rgba(66,127,131,.2)' : 'var(--bg-2)',
+                      color: f.priority === 'must' ? 'var(--accent-teal)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px'
                     }}>
-                      {f.priority === 'must' ? <Star size={9} fill="#83b9bd" /> : <Circle size={9} />}
+                      {f.priority === 'must' ? <Star size={9} fill="var(--accent-teal)" /> : <Circle size={9} />}
                       {f.priority === 'must' ? 'Must Have' : 'Nice to Have'}
                     </button>
                     <span style={{
@@ -292,16 +306,16 @@ export default function FeaturesPage() {
                       border: `1px solid ${COMPLEXITY_COLOR[f.complexity]}30`
                     }}>{f.complexity}</span>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#607276', lineHeight: '1.5' }}>{f.description}</div>
-                  {f.why_important && <div style={{ fontSize: '11px', color: '#8a9a9d', marginTop: '6px', fontStyle: 'italic' }}>💡 {f.why_important}</div>}
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{f.description}</div>
+                  {f.why_important && <div style={{ fontSize: '11px', color: 'var(--text-subtle)', marginTop: '6px', fontStyle: 'italic' }}>💡 {f.why_important}</div>}
                 </div>
 
                 <button onClick={() => deleteFeature(f)} style={{
                   background: 'transparent', border: 'none', cursor: 'pointer',
-                  color: '#3a3360', padding: '4px', flexShrink: 0, borderRadius: '6px', transition: 'all 0.15s'
+                  color: 'var(--text-subtle)', padding: '4px', flexShrink: 0, borderRadius: '6px', transition: 'all 0.15s'
                 }}
                   onMouseOver={e => { e.currentTarget.style.color = '#f43f5e'; e.currentTarget.style.background = 'rgba(244,63,94,.1)' }}
-                  onMouseOut={e => { e.currentTarget.style.color = '#3a3360'; e.currentTarget.style.background = 'transparent' }}
+                  onMouseOut={e => { e.currentTarget.style.color = 'var(--text-subtle)'; e.currentTarget.style.background = 'transparent' }}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -311,26 +325,26 @@ export default function FeaturesPage() {
 
           {/* Add Feature */}
           {showAdd ? (
-            <div style={{ background: 'rgba(255,255,255,.7)', border: '1px solid rgba(66,127,131,.3)', borderRadius: '12px', padding: '16px', marginBottom: '12px' }}>
+            <div style={{ background: 'var(--surface-overlay)', border: '1px solid var(--accent-teal)', borderRadius: '12px', padding: '16px', marginBottom: '12px' }}>
               <input value={newFeature.name} onChange={e => setNewFeature({ ...newFeature, name: e.target.value })}
-                placeholder="Feature name" onKeyDown={e => e.key === 'Enter' && addFeature()} style={inputStyle} />
+                placeholder="Feature name" onKeyDown={e => e.key === 'Enter' && addFeature()} style={{ ...inputStyle, background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', color: 'var(--text)' }} />
               <input value={newFeature.description} onChange={e => setNewFeature({ ...newFeature, description: e.target.value })}
-                placeholder="Short description" style={inputStyle} />
+                placeholder="Short description" style={{ ...inputStyle, background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', color: 'var(--text)' }} />
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
                 {(['must', 'nice'] as const).map(p => (
                   <button key={p} onClick={() => setNewFeature({ ...newFeature, priority: p })} style={{
                     padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                    border: `1px solid ${newFeature.priority === p ? '#427f83' : 'rgba(38,69,72,.12)'}`,
+                    border: `1px solid ${newFeature.priority === p ? 'var(--accent-teal)' : 'var(--border-subtle)'}`,
                     background: newFeature.priority === p ? 'rgba(66,127,131,.2)' : 'transparent',
-                    color: newFeature.priority === p ? '#83b9bd' : '#8a9a9d'
+                    color: newFeature.priority === p ? 'var(--accent-teal)' : 'var(--text-muted)'
                   }}>★ Must Have</button>
                 ))}
                 {(['low', 'medium', 'high'] as const).map(c => (
                   <button key={c} onClick={() => setNewFeature({ ...newFeature, complexity: c })} style={{
                     padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                    border: `1px solid ${newFeature.complexity === c ? COMPLEXITY_COLOR[c] : 'rgba(38,69,72,.12)'}`,
+                    border: `1px solid ${newFeature.complexity === c ? COMPLEXITY_COLOR[c] : 'var(--border-subtle)'}`,
                     background: newFeature.complexity === c ? `${COMPLEXITY_COLOR[c]}20` : 'transparent',
-                    color: newFeature.complexity === c ? COMPLEXITY_COLOR[c] : '#8a9a9d'
+                    color: newFeature.complexity === c ? COMPLEXITY_COLOR[c] : 'var(--text-muted)'
                   }}>{c}</button>
                 ))}
               </div>
@@ -343,29 +357,29 @@ export default function FeaturesPage() {
                   marginBottom: '12px',
                   fontSize: '12px'
                 }}>
-                  <div style={{ color: validationResult.suitable ? '#059669' : '#f43f5e', fontWeight: 600, marginBottom: '6px' }}>
+                  <div style={{ color: validationResult.suitable ? '#10b981' : '#f43f5e', fontWeight: 600, marginBottom: '6px' }}>
                     {validationResult.suitable ? '✓ Suitable for idea' : '✗ Not suitable for idea'} ({validationResult.suitabilityScore}%)
                   </div>
-                  <div style={{ color: '#607276', marginBottom: '8px' }}>{validationResult.reason}</div>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>{validationResult.reason}</div>
                   {validationResult.suggestion && (
-                    <div style={{ color: '#8a9a9d', fontSize: '11px', fontStyle: 'italic' }}>💡 {validationResult.suggestion}</div>
+                    <div style={{ color: 'var(--text-subtle)', fontSize: '11px', fontStyle: 'italic' }}>💡 {validationResult.suggestion}</div>
                   )}
                 </div>
               )}
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={addFeature} disabled={validating || (validationResult && !validationResult.suitable)} style={{ padding: '8px 18px', background: validating || (validationResult && !validationResult.suitable) ? 'rgba(66,127,131,.4)' : 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none', borderRadius: '8px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 700, cursor: validating || (validationResult && !validationResult.suitable) ? 'not-allowed' : 'pointer', opacity: validating || (validationResult && !validationResult.suitable) ? 0.6 : 1 }}>{validating ? 'Validating...' : 'Add Feature'}</button>
-                <button onClick={() => { setShowAdd(false); setValidationResult(null) }} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid rgba(38,69,72,.12)', borderRadius: '8px', color: '#607276', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={addFeature} disabled={validating || (validationResult && !validationResult.suitable)} style={{ padding: '8px 18px', background: validating || (validationResult && !validationResult.suitable) ? 'rgba(66,127,131,.4)' : 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', border: 'none', borderRadius: '8px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 700, cursor: validating || (validationResult && !validationResult.suitable) ? 'not-allowed' : 'pointer', opacity: validating || (validationResult && !validationResult.suitable) ? 0.6 : 1 }}>{validating ? 'Validating...' : 'Add Feature'}</button>
+                <button onClick={() => { setShowAdd(false); setValidationResult(null) }} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
               </div>
             </div>
           ) : (
             <button onClick={() => setShowAdd(true)} style={{
               width: '100%', padding: '12px', background: 'transparent',
-              border: '1px dashed rgba(66,127,131,.3)', borderRadius: '12px',
-              color: '#607276', fontSize: '13px', cursor: 'pointer',
+              border: '1px dashed var(--accent-teal)', borderRadius: '12px',
+              color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.15s'
             }}
-              onMouseOver={e => { e.currentTarget.style.borderColor = '#427f83'; e.currentTarget.style.color = '#83b9bd' }}
-              onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(66,127,131,.3)'; e.currentTarget.style.color = '#607276' }}
+              onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--accent-teal)'; e.currentTarget.style.color = 'var(--accent-teal)' }}
+              onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(66,127,131,0.3)'; e.currentTarget.style.color = 'var(--text-muted)' }}
             >
               <Plus size={14} /> Add Build Block
             </button>
@@ -376,32 +390,32 @@ export default function FeaturesPage() {
         <div style={{ overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <Cpu size={16} color="#5aa0a4" />
-            <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 800, color: '#172326' }}>Recommended Stack</span>
+            <Cpu size={16} color="var(--accent-teal)" />
+            <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 800, color: 'var(--text-heading)' }}>Recommended Stack</span>
           </div>
 
           {stackEntries.length === 0 ? (
-            <div style={{ background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '12px', padding: '32px 20px', textAlign: 'center' }}>
-              <Sparkles size={28} color="#8a9a9d" style={{ margin: '0 auto 12px' }} />
-              <div style={{ color: '#8a9a9d', fontSize: '13px' }}>No stack selected yet.</div>
-              <div style={{ color: '#3a3360', fontSize: '11px', marginTop: '4px' }}>Go back to Idea step to generate one.</div>
+            <div style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '32px 20px', textAlign: 'center' }}>
+              <Sparkles size={28} color="var(--text-subtle)" style={{ margin: '0 auto 12px' }} />
+              <div style={{ color: 'var(--text-subtle)', fontSize: '13px' }}>No stack selected yet.</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '4px' }}>Go back to Idea step to generate one.</div>
             </div>
           ) : (
             stackEntries.map(([cat, s]: [string, any]) => (
               <div key={cat} style={{
-                background: 'rgba(255,255,255,.58)', border: `1px solid ${CAT_COLORS[cat] || '#5aa0a4'}25`,
-                borderRadius: '12px', padding: '14px 16px', borderLeft: `3px solid ${CAT_COLORS[cat] || '#5aa0a4'}`
+                background: 'var(--surface-overlay)', border: `1px solid ${CAT_COLORS[cat] || 'var(--accent-teal)'}25`,
+                borderRadius: '12px', padding: '14px 16px', borderLeft: `3px solid ${CAT_COLORS[cat] || 'var(--accent-teal)'}`
               }}>
-                <div style={{ fontSize: '9px', color: CAT_COLORS[cat] || '#5aa0a4', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>{cat}</div>
+                <div style={{ fontSize: '9px', color: CAT_COLORS[cat] || 'var(--accent-teal)', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>{cat}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${CAT_COLORS[cat] || '#5aa0a4'}15`, border: `1px solid ${CAT_COLORS[cat] || '#5aa0a4'}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 800, color: CAT_COLORS[cat] || '#5aa0a4', flexShrink: 0 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${CAT_COLORS[cat] || 'var(--accent-teal)'}15`, border: `1px solid ${CAT_COLORS[cat] || 'var(--accent-teal)'}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 800, color: CAT_COLORS[cat] || 'var(--accent-teal)', flexShrink: 0 }}>
                     {getIcon(s.name || '')}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#172326', marginBottom: '2px' }}>{s.name}</div>
-                    {s.why && <div style={{ fontSize: '11px', color: '#607276', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{s.why}</div>}
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '2px' }}>{s.name}</div>
+                    {s.why && <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{s.why}</div>}
                   </div>
-                  <CheckCircle2 size={16} color={CAT_COLORS[cat] || '#5aa0a4'} style={{ flexShrink: 0, opacity: 0.7 }} />
+                  <CheckCircle2 size={16} color={CAT_COLORS[cat] || 'var(--accent-teal)'} style={{ flexShrink: 0, opacity: 0.7 }} />
                 </div>
                 {s.free !== undefined && (
                   <div style={{ marginTop: '8px', padding: '4px 10px', background: s.free ? 'rgba(16,185,129,.08)' : 'rgba(249,115,22,.08)', border: `1px solid ${s.free ? 'rgba(16,185,129,.2)' : 'rgba(249,115,22,.2)'}`, borderRadius: '6px', fontSize: '10px', color: s.free ? '#10b981' : '#f97316', fontFamily: 'DM Mono, monospace', display: 'inline-block' }}>
@@ -413,25 +427,25 @@ export default function FeaturesPage() {
           )}
 
           {/* Feature summary by priority */}
-          <div style={{ background: 'rgba(255,255,255,.58)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '12px', padding: '14px 16px' }}>
+          <div style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '14px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Layers size={14} color="#5aa0a4" />
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#172326' }}>Feature Summary</span>
+              <Layers size={14} color="var(--accent-teal)" />
+              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-heading)' }}>Feature Summary</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {[
-                { label: 'Must Have', count: must.length, color: '#427f83' },
-                { label: 'Nice to Have', count: nice.length, color: '#06b6d4' },
-                { label: 'Total Blocks', count: features.length, color: '#607276' },
+                { label: 'Must Have', count: must.length, color: 'var(--accent-teal)' },
+                { label: 'Nice to Have', count: nice.length, color: 'var(--accent-cyan)' },
+                { label: 'Total Blocks', count: features.length, color: 'var(--text-muted)' },
               ].map(r => (
                 <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', color: '#607276' }}>{r.label}</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{r.label}</span>
                   <span style={{ fontSize: '14px', fontWeight: 800, color: r.color, fontFamily: 'Syne, sans-serif' }}>{r.count}</span>
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: '12px', height: '4px', background: 'rgba(38,69,72,.1)', borderRadius: '2px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${Math.min(100, (score / maxScore) * 100)}%`, background: 'linear-gradient(90deg, #427f83, #06b6d4)', borderRadius: '2px' }} />
+            <div style={{ marginTop: '12px', height: '4px', background: 'var(--bg-2)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${Math.min(100, (score / maxScore) * 100)}%`, background: 'linear-gradient(90deg, var(--accent-teal), var(--accent-cyan))', borderRadius: '2px' }} />
             </div>
           </div>
         </div>

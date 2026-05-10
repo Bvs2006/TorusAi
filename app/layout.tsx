@@ -17,11 +17,15 @@ export const metadata: Metadata = {
   },
 }
 
+import ThemeProvider from '@/components/ThemeProvider'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${dmSans.variable} ${jetBrainsMono.variable}`}>
-      <body className="bg-bg text-text font-body antialiased min-h-screen">
-        {children}
+      <body className="bg-bg text-text font-body antialiased min-h-screen theme-transition">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

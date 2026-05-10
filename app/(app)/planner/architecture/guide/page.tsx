@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { Terminal, Settings, Layout, Server, Database, Lock, Wand2, TestTube2, BookOpen, ChevronRight, LayoutList } from 'lucide-react'
 
@@ -17,20 +18,20 @@ export default function ArchitectureGuidePage({ searchParams }: { searchParams?:
   const projectId = searchParams?.project || ''
 
   return (
-    <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto', position: 'relative' }}>
+    <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto', position: 'relative', background: 'var(--bg)', minHeight: 'calc(100vh - 58px)' }}>
       {/* Background elements */}
       <div style={{ position: 'absolute', top: -50, right: -100, width: 400, height: 400, background: 'radial-gradient(circle, rgba(66,127,131,.08) 0%, transparent 60%)', zIndex: 0, pointerEvents: 'none' }} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div style={{ marginBottom: '40px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#427f83', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-teal)', marginBottom: '12px' }}>
             <LayoutList size={24} />
             <span style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase' }}>Workflow Planner</span>
           </div>
-          <h1 style={{ margin: 0, fontFamily: 'Syne, sans-serif', fontSize: '32px', fontWeight: 800, color: '#172326' }}>
+          <h1 style={{ margin: 0, fontFamily: 'Syne, sans-serif', fontSize: '32px', fontWeight: 800, color: 'var(--text-heading)' }}>
             Development Guide
           </h1>
-          <p style={{ color: '#607276', fontSize: '15px', marginTop: '10px', maxWidth: '600px', lineHeight: '1.6' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '15px', marginTop: '10px', maxWidth: '600px', lineHeight: '1.6' }}>
             Follow these sequential phases to build your project from scratch. Each phase contains specific AI prompts and step-by-step instructions.
           </p>
         </div>
@@ -45,24 +46,24 @@ export default function ArchitectureGuidePage({ searchParams }: { searchParams?:
                 className="phase-card"
                 style={{ 
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-                  padding: '24px', borderRadius: '16px', background: 'rgba(255,255,255,0.6)', 
-                  border: '1px solid rgba(66,127,131,.15)', textDecoration: 'none',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', backdropFilter: 'blur(10px)',
+                  padding: '24px', borderRadius: '16px', background: 'var(--surface-overlay)', 
+                  border: '1px solid var(--border-subtle)', textDecoration: 'none',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', backdropFilter: 'var(--glass-blur)',
                   position: 'relative', overflow: 'hidden'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(66,127,131,.1), rgba(16,185,129,.1))', border: '1px solid rgba(66,127,131,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#427f83', flexShrink: 0 }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(66,127,131,.1)', border: '1px solid rgba(66,127,131,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-teal)', flexShrink: 0 }}>
                     <Icon size={22} />
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '12px', fontFamily: 'DM Mono, monospace', color: '#8a9a9d', fontWeight: 600 }}>Phase {idx + 1}</span>
-                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, fontFamily: 'Syne, sans-serif', color: '#172326' }}>
+                      <span style={{ fontSize: '12px', fontFamily: 'DM Mono, monospace', color: 'var(--text-subtle)', fontWeight: 600 }}>Phase {idx + 1}</span>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, fontFamily: 'Syne, sans-serif', color: 'var(--text-heading)' }}>
                         {phase.name}
                       </h3>
                     </div>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#607276', lineHeight: '1.5' }}>
+                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
                       {phase.desc}
                     </p>
                   </div>
@@ -70,8 +71,8 @@ export default function ArchitectureGuidePage({ searchParams }: { searchParams?:
 
                 <div className="open-btn" style={{ 
                   display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', 
-                  background: '#f8fafc', color: '#427f83', borderRadius: '10px', 
-                  fontSize: '13px', fontWeight: 700, transition: 'all 0.2s', border: '1px solid rgba(66,127,131,.1)'
+                  background: 'var(--bg-3)', color: 'var(--accent-teal)', borderRadius: '10px', 
+                  fontSize: '13px', fontWeight: 700, transition: 'all 0.2s', border: '1px solid var(--border-subtle)'
                 }}>
                   Open Phase <ChevronRight size={16} />
                 </div>
@@ -80,11 +81,11 @@ export default function ArchitectureGuidePage({ searchParams }: { searchParams?:
           })}
         </div>
 
-        <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(66,127,131,.1)', paddingTop: '30px' }}>
+        <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-subtle)', paddingTop: '30px' }}>
           <Link 
             href={`/planner/deploy?project=${projectId}`} 
             style={{ 
-              padding: '14px 28px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', 
+              padding: '14px 28px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', 
               border: 'none', borderRadius: '12px', color: '#fff', fontFamily: 'Syne, sans-serif', 
               fontSize: '15px', fontWeight: 800, textDecoration: 'none', display: 'inline-flex', 
               alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(66,127,131,.25)',
@@ -100,13 +101,13 @@ export default function ArchitectureGuidePage({ searchParams }: { searchParams?:
 
       <style>{`
         .phase-card:hover {
-          background: #ffffff !important;
-          border-color: rgba(66,127,131,.4) !important;
-          box-shadow: 0 12px 32px rgba(66,127,131,.08);
+          background: var(--bg) !important;
+          border-color: var(--accent-teal) !important;
+          box-shadow: 0 12px 32px rgba(66,127,131,.12);
           transform: translateY(-2px);
         }
         .phase-card:hover .open-btn {
-          background: linear-gradient(135deg, #427f83, #83b9bd) !important;
+          background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan)) !important;
           color: #ffffff !important;
           border-color: transparent !important;
         }

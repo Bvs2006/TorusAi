@@ -42,15 +42,15 @@ export default function OnboardingPage() {
   }, [router])
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 58px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div className="telemetry-card" style={{ width: '100%', maxWidth: '420px', textAlign: 'center', padding: '32px' }}>
-        <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: 'linear-gradient(135deg, #0f766e, #0891b2 58%, #f97316)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+    <div style={{ minHeight: 'calc(100vh - 58px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'var(--bg)' }}>
+      <div className="telemetry-card" style={{ width: '100%', maxWidth: '420px', textAlign: 'center', padding: '32px', background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '24px', boxShadow: 'var(--card-shadow)', backdropFilter: 'var(--glass-blur)' }}>
+        <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan) 58%, var(--accent-orange))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
           <Code2 size={26} />
         </div>
-        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '26px', fontWeight: 800, marginBottom: '8px' }}>
+        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '26px', fontWeight: 800, marginBottom: '8px', color: 'var(--text-heading)' }}>
           Setting up your developer workspace
         </h1>
-        <p style={{ color: '#526977', fontSize: '14px', lineHeight: 1.6 }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6 }}>
           {loading ? 'Preparing your dashboard...' : 'Something went wrong. Please try signing in again.'}
         </p>
       </div>

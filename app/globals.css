@@ -5,6 +5,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════
+   LIGHT MODE (default)
+   ═══════════════════════════════════════════════ */
 :root {
   --primary: #6366F1;
   --primary-hover: #4F46E5;
@@ -12,16 +15,80 @@
   --neutral: #9C9C9C;
   --bg: #FAFAFA;
   --bg-2: #F4F4F5;
+  --bg-3: #E8E8EC;
   --surface: #FFFFFF;
+  --surface-glass: rgba(255,255,255,0.62);
+  --surface-glass-hover: rgba(255,255,255,0.82);
+  --surface-overlay: rgba(255,255,255,0.85);
   --text: #0A0A0A;
   --text-2: #6B6B6B;
   --text-3: #9C9C9C;
+  --text-heading: #172326;
+  --text-muted: #607276;
+  --text-subtle: #8a9a9d;
   --border: #E8E8EC;
+  --border-subtle: rgba(24,45,56,0.1);
   --success: #10B981;
   --warning: #F59E0B;
   --error: #EF4444;
   --focus: rgba(99,102,241,0.12);
   --hover-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  --card-shadow: 0 10px 30px rgba(0,0,0,0.04);
+  --glass-blur: blur(26px) saturate(140%);
+  --dot-color: rgba(10,10,10,0.12);
+  --dot-mask: linear-gradient(to bottom, rgba(0,0,0,0.44), transparent 82%);
+  --accent-teal: #0f766e;
+  --accent-teal-transparent: rgba(15,118,110,0.15);
+  --accent-cyan: #0891b2;
+  --accent-cyan-transparent: rgba(8,145,178,0.15);
+  --accent-orange: #f97316;
+  --accent-orange-transparent: rgba(249,115,22,0.15);
+  --scrollbar-thumb: #D4D4D8;
+  --scrollbar-track: transparent;
+  color-scheme: light;
+}
+
+/* ═══════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════ */
+:root.dark {
+  --primary: #818cf8;
+  --primary-hover: #6366f1;
+  --secondary: #34d399;
+  --neutral: #6b7280;
+  --bg: #0c0c14;
+  --bg-2: #14141f;
+  --bg-3: #1e1e2e;
+  --surface: #1a1a2e;
+  --surface-glass: rgba(26,26,46,0.72);
+  --surface-glass-hover: rgba(30,30,50,0.88);
+  --surface-overlay: rgba(20,20,35,0.92);
+  --text: #e8e8f0;
+  --text-2: #9ca3af;
+  --text-3: #6b7280;
+  --text-heading: #f1f1f6;
+  --text-muted: #9ca3af;
+  --text-subtle: #6b7280;
+  --border: #2a2a3e;
+  --border-subtle: rgba(255,255,255,0.08);
+  --success: #34d399;
+  --warning: #fbbf24;
+  --error: #f87171;
+  --focus: rgba(129,140,248,0.2);
+  --hover-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  --card-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  --glass-blur: blur(26px) saturate(140%);
+  --dot-color: rgba(255,255,255,0.06);
+  --dot-mask: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent 72%);
+  --accent-teal: #2dd4bf;
+  --accent-teal-transparent: rgba(45,212,191,0.15);
+  --accent-cyan: #22d3ee;
+  --accent-cyan-transparent: rgba(34,211,238,0.15);
+  --accent-orange: #fb923c;
+  --accent-orange-transparent: rgba(251,146,60,0.15);
+  --scrollbar-thumb: #3a3a50;
+  --scrollbar-track: transparent;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,12 +97,14 @@ html {
   background: var(--bg);
   color: var(--text);
   scroll-behavior: smooth;
+  transition: background 0.35s ease, color 0.35s ease;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body), 'DM Sans', sans-serif;
+  transition: background 0.35s ease, color 0.35s ease;
 }
 
 button,
@@ -49,17 +118,21 @@ select {
   background: rgba(99,102,241,0.18);
 }
 
+:root.dark ::selection {
+  background: rgba(129,140,248,0.3);
+}
+
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 9999px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 9999px; }
 
 .font-display { font-family: 'General Sans', sans-serif; }
 .font-mono { font-family: var(--font-mono), 'JetBrains Mono', monospace; }
 
 .editorial-grid {
-  background-image: radial-gradient(circle, rgba(10,10,10,0.12) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
   background-size: 24px 24px;
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.44), transparent 82%);
+  mask-image: var(--dot-mask);
 }
 
 .card,
@@ -70,11 +143,13 @@ select {
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: none;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .glass-row {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .glass-row:hover,
@@ -95,7 +170,7 @@ select {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(10,10,10,0.10) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
   background-size: 24px 24px;
   mask-image: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent 72%);
   pointer-events: none;
@@ -147,7 +222,7 @@ select {
   color: var(--text);
   font-size: 14px;
   outline: none;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 0.3s ease;
 }
 
 .input-field:focus {
@@ -159,12 +234,15 @@ select {
 
 .badge-common,
 .badge-rare {
-  background: #F4F4F5;
+  background: var(--bg-2);
   border: 1px solid transparent;
   color: var(--text-2);
 }
 .badge-epic { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.2); color: #A16207; }
 .badge-legendary { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.2); color: var(--error); }
+
+:root.dark .badge-epic { color: #fbbf24; }
+:root.dark .badge-legendary { color: #f87171; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
@@ -173,3 +251,13 @@ select {
 .animate-spin { animation: spin 0.7s linear infinite; }
 .animate-pulse-dot { animation: pulse 2s ease infinite; }
 .animate-fade-up { animation: fadeUp 0.5s ease both; }
+
+/* ═══════════════════════════════════════════════
+   THEME TRANSITION HELPERS
+   ═══════════════════════════════════════════════ */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease !important;
+}

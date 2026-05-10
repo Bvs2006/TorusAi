@@ -134,29 +134,29 @@ NEXTAUTH_SECRET=your-32-char-secret-here`
   }[m] || { bg: 'rgba(6,182,212,.1)', color: '#06b6d4' })
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: '900px' }}>
+    <div style={{ padding: '28px 32px', maxWidth: '900px', background: 'var(--bg)', color: 'var(--text)', minHeight: 'calc(100vh - 58px)' }}>
       <StepIndicator steps={STEPS} current={4} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
-          <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, marginBottom: '4px' }}>
-            Blueprint — <span style={{ color: '#5aa0a4' }}>{project.name}</span>
+          <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, marginBottom: '4px', color: 'var(--text-heading)' }}>
+            Blueprint — <span style={{ color: 'var(--accent-teal)' }}>{project.name}</span>
           </h1>
-          <p style={{ color: '#607276', fontSize: '13px' }}>Auto-generated from your stack. Copy any section to use in your project.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Auto-generated from your stack. Copy any section to use in your project.</p>
         </div>
         <button onClick={() => router.push(`/planner/deploy?project=${projectId}`)}
-          style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none', borderRadius: '8px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          style={{ padding: '8px 16px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', border: 'none', borderRadius: '8px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 15px rgba(66,127,131,.2)' }}>
           Deploy Guide <ArrowRight size={14} />
         </button>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(38,69,72,.12)', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', marginBottom: '20px' }}>
         {tabs.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
             padding: '10px 16px', background: 'transparent', border: 'none', cursor: 'pointer',
             fontSize: '13px', fontFamily: 'DM Sans, sans-serif', transition: 'all .15s',
-            color: activeTab === tab.key ? '#83b9bd' : '#607276',
-            borderBottom: `2px solid ${activeTab === tab.key ? '#427f83' : 'transparent'}`,
+            color: activeTab === tab.key ? 'var(--accent-teal)' : 'var(--text-muted)',
+            borderBottom: `2px solid ${activeTab === tab.key ? 'var(--accent-teal)' : 'transparent'}`,
             marginBottom: '-1px'
           }}>{tab.label}</button>
         ))}
@@ -164,32 +164,32 @@ NEXTAUTH_SECRET=your-32-char-secret-here`
 
       {/* Tab content */}
       {activeTab === 'files' && (
-        <div>
+        <div style={{ animation: 'fadeIn .3s ease' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
-            <button onClick={() => copy(fileStructure, 'files')} style={{ padding: '5px 12px', background: 'rgba(66,127,131,.15)', border: '1px solid rgba(66,127,131,.3)', borderRadius: '7px', color: '#83b9bd', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'DM Mono, monospace' }}>
+            <button onClick={() => copy(fileStructure, 'files')} style={{ padding: '5px 12px', background: 'rgba(66,127,131,.15)', border: '1px solid var(--border-subtle)', borderRadius: '7px', color: 'var(--accent-teal)', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'DM Mono, monospace' }}>
               {copied === 'files' ? <><Check size={11} /> Copied</> : <><Copy size={11} /> Copy</>}
             </button>
           </div>
-          <pre style={{ background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '12px', padding: '20px', fontSize: '12px', color: '#83b9bd', fontFamily: 'DM Mono, monospace', lineHeight: '1.7', overflowX: 'auto' }}>
+          <pre style={{ background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '20px', fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace', lineHeight: '1.7', overflowX: 'auto' }}>
             {fileStructure}
           </pre>
         </div>
       )}
 
       {activeTab === 'api' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', animation: 'fadeIn .3s ease' }}>
           {apiRoutes.map((route, i) => {
             const mc = methodColor(route.method)
             return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '10px', padding: '11px 14px' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '11px 14px' }}>
                 <span style={{ padding: '2px 8px', background: mc.bg, color: mc.color, borderRadius: '4px', fontSize: '10px', fontFamily: 'DM Mono, monospace', fontWeight: 700, flexShrink: 0, minWidth: '50px', textAlign: 'center' }}>
                   {route.method}
                 </span>
-                <code style={{ flex: 1, fontSize: '12px', color: '#83b9bd', fontFamily: 'DM Mono, monospace' }}>
+                <code style={{ flex: 1, fontSize: '12px', color: 'var(--text-heading)', fontFamily: 'DM Mono, monospace' }}>
                   {route.route}
                 </code>
-                <span style={{ flex: 2, fontSize: '12px', color: '#607276' }}>{route.description}</span>
-                <span style={{ fontSize: '10px', fontFamily: 'DM Mono, monospace', color: '#8a9a9d', flexShrink: 0 }}>{route.auth}</span>
+                <span style={{ flex: 2, fontSize: '12px', color: 'var(--text-muted)' }}>{route.description}</span>
+                <span style={{ fontSize: '10px', fontFamily: 'DM Mono, monospace', color: 'var(--text-subtle)', flexShrink: 0 }}>{route.auth}</span>
               </div>
             )
           })}
@@ -197,41 +197,41 @@ NEXTAUTH_SECRET=your-32-char-secret-here`
       )}
 
       {activeTab === 'db' && (
-        <div>
+        <div style={{ animation: 'fadeIn .3s ease' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
-            <button onClick={() => copy(dbSchema, 'db')} style={{ padding: '5px 12px', background: 'rgba(66,127,131,.15)', border: '1px solid rgba(66,127,131,.3)', borderRadius: '7px', color: '#83b9bd', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'DM Mono, monospace' }}>
+            <button onClick={() => copy(dbSchema, 'db')} style={{ padding: '5px 12px', background: 'rgba(66,127,131,.15)', border: '1px solid var(--border-subtle)', borderRadius: '7px', color: 'var(--accent-teal)', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'DM Mono, monospace' }}>
               {copied === 'db' ? <><Check size={11} /> Copied</> : <><Copy size={11} /> Copy SQL</>}
             </button>
           </div>
-          <pre style={{ background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '12px', padding: '20px', fontSize: '12px', color: '#83b9bd', fontFamily: 'DM Mono, monospace', lineHeight: '1.7', overflowX: 'auto' }}>
+          <pre style={{ background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '20px', fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace', lineHeight: '1.7', overflowX: 'auto' }}>
             {dbSchema}
           </pre>
         </div>
       )}
 
       {activeTab === 'env' && (
-        <div>
+        <div style={{ animation: 'fadeIn .3s ease' }}>
           <div style={{ background: 'rgba(244,63,94,.08)', border: '1px solid rgba(244,63,94,.2)', borderRadius: '10px', padding: '12px 14px', marginBottom: '12px', fontSize: '12px', color: '#f43f5e' }}>
             🔒 Never commit .env.local to Git. Add to .gitignore immediately.
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
-            <button onClick={() => copy(envVars, 'env')} style={{ padding: '5px 12px', background: 'rgba(66,127,131,.15)', border: '1px solid rgba(66,127,131,.3)', borderRadius: '7px', color: '#83b9bd', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'DM Mono, monospace' }}>
+            <button onClick={() => copy(envVars, 'env')} style={{ padding: '5px 12px', background: 'rgba(66,127,131,.15)', border: '1px solid var(--border-subtle)', borderRadius: '7px', color: 'var(--accent-teal)', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'DM Mono, monospace' }}>
               {copied === 'env' ? <><Check size={11} /> Copied</> : <><Copy size={11} /> Copy .env</>}
             </button>
           </div>
-          <pre style={{ background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '12px', padding: '20px', fontSize: '12px', color: '#83b9bd', fontFamily: 'DM Mono, monospace', lineHeight: '1.8', overflowX: 'auto' }}>
+          <pre style={{ background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '20px', fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace', lineHeight: '1.8', overflowX: 'auto' }}>
             {envVars}
           </pre>
         </div>
       )}
 
       {activeTab === 'stack' && stack && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px', animation: 'fadeIn .3s ease' }}>
           {Object.entries(stack).map(([key, item]: any) => (
-            <div key={key} style={{ background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '12px', padding: '16px' }}>
-              <div style={{ fontSize: '10px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>{key}</div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 700, marginBottom: '6px' }}>{item.name}</div>
-              <p style={{ fontSize: '12px', color: '#607276', lineHeight: '1.5', marginBottom: '8px' }}>{item.reason}</p>
+            <div key={key} style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '16px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>{key}</div>
+              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 700, marginBottom: '6px', color: 'var(--text-heading)' }}>{item.name}</div>
+              <p style={{ fontSize: '12px', color: 'var(--text-subtle)', lineHeight: '1.5', marginBottom: '8px' }}>{item.reason}</p>
               <span style={{ padding: '2px 8px', background: item.free ? 'rgba(16,185,129,.1)' : 'rgba(244,63,94,.1)', border: `1px solid ${item.free ? 'rgba(16,185,129,.3)' : 'rgba(244,63,94,.3)'}`, borderRadius: '4px', fontSize: '10px', color: item.free ? '#10b981' : '#f43f5e', fontFamily: 'DM Mono, monospace' }}>
                 {item.free ? '✓ Free tier' : '$ Paid'}
               </span>
@@ -239,6 +239,9 @@ NEXTAUTH_SECRET=your-32-char-secret-here`
           ))}
         </div>
       )}
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
     </div>
   )
 }

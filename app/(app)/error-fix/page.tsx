@@ -72,34 +72,34 @@ export default function ErrorFixPage() {
   }
 
   const inputBase: React.CSSProperties = {
-    width: '100%', background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.12)',
-    borderRadius: '10px', padding: '10px 14px', color: '#172326', fontSize: '13px',
-    outline: 'none', fontFamily: 'DM Mono, monospace', transition: 'border-color 0.15s'
+    width: '100%', background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)',
+    borderRadius: '12px', padding: '12px 16px', color: 'var(--text)', fontSize: '14px',
+    outline: 'none', fontFamily: 'var(--font-mono), monospace', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    backdropFilter: 'var(--glass-blur)'
   }
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: '820px' }}>
+    <div style={{ padding: '28px 32px', maxWidth: '820px', color: 'var(--text)', fontFamily: 'DM Sans, sans-serif' }}>
       {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', fontWeight: 800, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '28px', fontWeight: 800, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-heading)', letterSpacing: '-0.5px' }}>
           🔧 Error Fix Assistant
         </h1>
-        <p style={{ color: '#607276', fontSize: '13px' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
           Paste any error message. Get a plain-English explanation, debug steps, and a ready-to-use fix prompt for Cursor or Windsurf.
         </p>
       </div>
 
       {/* Examples */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '11px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', alignSelf: 'center' }}>Try example:</span>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace', alignSelf: 'center' }}>Try example:</span>
         {EXAMPLE_ERRORS.map(ex => (
           <button key={ex.label} onClick={() => loadExample(ex)} style={{
-            padding: '5px 12px', background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.12)',
-            borderRadius: '20px', color: '#607276', fontSize: '11px', cursor: 'pointer',
-            fontFamily: 'DM Mono, monospace', transition: 'all 0.15s'
+            padding: '6px 14px', background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)',
+            borderRadius: '20px', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer',
+            fontFamily: 'DM Mono, monospace', transition: 'all 0.2s'
           }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = '#427f83'; e.currentTarget.style.color = '#83b9bd' }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(38,69,72,.12)'; e.currentTarget.style.color = '#607276' }}
+            className="example-btn"
           >
             {ex.label}
           </button>
@@ -107,125 +107,141 @@ export default function ErrorFixPage() {
       </div>
 
       <form onSubmit={handleFix}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px', gap: '12px', marginBottom: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 240px', gap: '16px', marginBottom: '16px' }}>
           {/* Error textarea */}
           <div>
-            <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#607276', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', fontWeight: 600 }}>
               Error Message *
             </label>
             <textarea
               value={errorText}
               onChange={e => setErrorText(e.target.value)}
               placeholder="Paste your full error message here including stack trace..."
-              rows={7}
+              rows={8}
               style={{ ...inputBase, resize: 'vertical' as const }}
-              onFocus={e => (e.target.style.borderColor = '#427f83')}
-              onBlur={e => (e.target.style.borderColor = 'rgba(38,69,72,.12)')}
+              className="error-textarea"
             />
           </div>
           {/* Right col */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#607276', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', fontWeight: 600 }}>
                 Language / Framework
               </label>
               <select value={language} onChange={e => setLanguage(e.target.value)}
-                style={{ ...inputBase, fontFamily: 'DM Sans, sans-serif' }}>
+                style={{ ...inputBase, fontFamily: 'DM Sans, sans-serif' }}
+                className="language-select"
+              >
                 {['TypeScript/Next.js', 'JavaScript/React', 'Python/Django', 'Python/FastAPI',
                   'Node.js/Express', 'TypeScript/NestJS', 'Supabase / PostgreSQL',
                   'React Native / Expo', 'Go', 'Rust'].map(l => (
-                    <option key={l} value={l} style={{ background: 'rgba(255,255,255,.62)' }}>{l}</option>
+                    <option key={l} value={l} style={{ background: 'var(--surface)', color: 'var(--text)' }}>{l}</option>
                   ))}
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#607276', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', fontWeight: 600 }}>
                 Context (optional)
               </label>
               <textarea
                 value={context}
                 onChange={e => setContext(e.target.value)}
-                placeholder="What were you trying to do when this happened?"
-                rows={4}
+                placeholder="What were you trying to do?"
+                rows={5}
                 style={{ ...inputBase, resize: 'none' as const }}
-                onFocus={e => (e.target.style.borderColor = '#427f83')}
-                onBlur={e => (e.target.style.borderColor = 'rgba(38,69,72,.12)')}
+                className="error-textarea"
               />
             </div>
           </div>
         </div>
 
         <button type="submit" disabled={loading || !errorText.trim()} style={{
-          padding: '11px 28px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none', borderRadius: '10px',
-          color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 800,
+          padding: '12px 32px', 
+          background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', 
+          border: 'none', borderRadius: '12px',
+          color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '15px', fontWeight: 800,
           cursor: loading || !errorText.trim() ? 'not-allowed' : 'pointer',
           opacity: !errorText.trim() ? 0.5 : 1,
-          display: 'flex', alignItems: 'center', gap: '8px',
-          boxShadow: '0 4px 18px rgba(66,127,131,.3)'
-        }}>
+          display: 'flex', alignItems: 'center', gap: '10px',
+          boxShadow: '0 8px 24px rgba(66,127,131,0.25)',
+          transition: 'all 0.2s'
+        }}
+        onMouseOver={e => !loading && errorText.trim() && (e.currentTarget.style.transform = 'translateY(-2px)')}
+        onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
           {loading ? (
-            <><div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />Analyzing error...</>
+            <><div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />Analyzing error...</>
           ) : (
-            <><Zap size={14} /> Analyze & Fix</>
+            <><Zap size={16} strokeWidth={2.5} /> Analyze & Fix Error</>
           )}
         </button>
       </form>
 
       {/* Results */}
       {result && (
-        <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '14px', animation: 'fadeUp 0.4s ease both' }}>
+        <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeUp 0.4s ease both' }}>
           {/* Explanation */}
-          <div style={{ background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '12px', padding: '18px' }}>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 700, marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: 'var(--surface-glass)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
+            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 700, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-heading)' }}>
               💡 What went wrong
             </div>
-            <p style={{ color: '#607276', fontSize: '13px', lineHeight: '1.7' }}>{result.explanation}</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.7' }}>{result.explanation}</p>
           </div>
 
           {/* Debug steps */}
-          <div style={{ background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '12px', padding: '18px' }}>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>
+          <div style={{ background: 'var(--surface-glass)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
+            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: 'var(--text-heading)' }}>
               🔍 Debug Steps
             </div>
             {result.steps?.map((step, i) => (
-              <div key={i} style={{ display: 'flex', gap: '12px', marginBottom: '10px', alignItems: 'flex-start' }}>
-                <div style={{ width: '22px', height: '22px', background: 'rgba(66,127,131,.2)', border: '1px solid rgba(66,127,131,.3)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#83b9bd', flexShrink: 0, marginTop: '1px' }}>
+              <div key={i} style={{ display: 'flex', gap: '16px', marginBottom: '12px', alignItems: 'flex-start' }}>
+                <div style={{ width: '26px', height: '26px', background: 'var(--focus)', border: '1px solid var(--border-subtle)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontFamily: 'DM Mono, monospace', color: 'var(--primary)', flexShrink: 0, fontWeight: 700 }}>
                   {i + 1}
                 </div>
-                <p style={{ color: '#607276', fontSize: '13px', lineHeight: '1.6', margin: 0 }}>{step}</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6', margin: 0, paddingTop: '2px' }}>{step}</p>
               </div>
             ))}
           </div>
 
           {/* Fixed prompt */}
-          <div style={{ background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '12px', overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255,255,255,.62)', borderBottom: '1px solid rgba(38,69,72,.1)' }}>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: 'var(--surface-overlay)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)', borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--hover-shadow)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'var(--surface-glass)', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-heading)' }}>
                 ✨ Fixed Prompt
-                <span style={{ fontSize: '11px', color: '#607276', fontFamily: 'DM Mono, monospace', fontWeight: 400 }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace', fontWeight: 400 }}>
                   — paste into Cursor or Windsurf
                 </span>
               </div>
               <button onClick={() => copyText(result.fixedPrompt, 'prompt')} style={{
-                padding: '6px 12px', background: copied === 'prompt' ? 'rgba(16,185,129,.2)' : 'rgba(66,127,131,.2)',
-                border: `1px solid ${copied === 'prompt' ? 'rgba(16,185,129,.4)' : 'rgba(66,127,131,.28)'}`,
-                borderRadius: '7px', color: copied === 'prompt' ? '#10b981' : '#83b9bd',
-                fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
-                fontFamily: 'DM Mono, monospace'
+                padding: '8px 16px', background: copied === 'prompt' ? 'rgba(16,185,129,.1)' : 'var(--focus)',
+                border: `1px solid ${copied === 'prompt' ? 'var(--success)' : 'var(--border-subtle)'}`,
+                borderRadius: '8px', color: copied === 'prompt' ? 'var(--success)' : 'var(--primary)',
+                fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                fontFamily: 'DM Mono, monospace', fontWeight: 600, transition: 'all 0.2s'
               }}>
-                {copied === 'prompt' ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy</>}
+                {copied === 'prompt' ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy</>}
               </button>
             </div>
-            <pre style={{ padding: '16px', fontSize: '12px', color: '#83b9bd', fontFamily: 'DM Mono, monospace', lineHeight: '1.7', whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>
+            <pre style={{ 
+              padding: '24px', 
+              fontSize: '13px', 
+              color: 'var(--text)', 
+              fontFamily: 'var(--font-mono), monospace', 
+              lineHeight: '1.8', 
+              whiteSpace: 'pre-wrap', 
+              wordBreak: 'break-word', 
+              margin: 0,
+              background: 'var(--surface-overlay)'
+            }}>
               {result.fixedPrompt}
             </pre>
           </div>
 
           {result.relatedDocs && (
-            <div style={{ fontSize: '12px', color: '#607276' }}>
-              📚 Related docs:{' '}
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'flex', gap: '8px' }}>
+              📚 Related docs:
               <a href={result.relatedDocs} target="_blank" rel="noopener noreferrer"
-                style={{ color: '#5aa0a4', textDecoration: 'none' }}>
+                style={{ color: 'var(--accent-teal)', textDecoration: 'none', fontWeight: 600 }}>
                 {result.relatedDocs}
               </a>
             </div>
@@ -233,6 +249,9 @@ export default function ErrorFixPage() {
         </div>
       )}
       <style>{`
+        .example-btn:hover { border-color: var(--accent-teal) !important; color: var(--text-heading) !important; background: var(--surface-glass-hover) !important; }
+        .error-textarea:focus { border-color: var(--accent-teal) !important; box-shadow: 0 0 0 3px var(--focus) !important; }
+        .language-select:focus { border-color: var(--accent-teal) !important; box-shadow: 0 0 0 3px var(--focus) !important; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>

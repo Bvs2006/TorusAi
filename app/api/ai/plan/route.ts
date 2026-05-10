@@ -88,7 +88,8 @@ Respond with ONLY valid JSON, no markdown:
     const plan = parseJSON<AIPlanResponse>(raw)
 
     if (!plan) {
-      return NextResponse.json({ error: 'Failed to parse AI response', raw }, { status: 500 })
+      console.error('[Plan API] parseJSON failed. Raw response:', raw?.slice(0, 800))
+      return NextResponse.json({ error: 'AI returned an invalid response. Please try again.' }, { status: 500 })
     }
 
     let projectId = Date.now().toString()
@@ -127,7 +128,7 @@ Respond with ONLY valid JSON, no markdown:
     return NextResponse.json({ ...plan, projectId })
 
   } catch (error: any) {
-    console.error('Plan API error:', error)
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 })
+    console.error('[Plan API] Unhandled error:', error)
+    return NextResponse.json({ error: error.message || 'Internal error. Please try again.' }, { status: 500 })
   }
 }

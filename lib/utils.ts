@@ -30,23 +30,60 @@ export const BADGE_DEFINITIONS = [
 ] as const
 
 export const CATEGORIES = [
-  'All', '3D AI', 'AI APIs', 'AI Automation', 'AI Design', 'AI Marketing', 
-  'AI Resources', 'AI SDKs', 'AI Tools', 'Agents', 'Assistant', 'Business'
+  'All', 'LLMs', 'Image Generation', 'Video Generation', 'Audio & Music', 
+  'Coding Assistants', 'Productivity & Writing', 'Design & UI', 'Data & Analytics',
+  'Marketing & SEO', 'Automation & Agents', 'Search & Research', 'Developer Tools'
 ]
 
 export const TOOLS_DB = [
-  { name: 'Cursor', domain: 'cursor.sh', emoji: '⚡', score: 9.4, views: 658, favorites: 124, description: 'AI-first code editor with deep codebase context.', category: 'AI Tools', pricing: 'Freemium', tags: ['AI', 'Coding'], url: 'https://cursor.sh', gradient: 'linear-gradient(135deg, #1e3a8a, #3b82f6)' },
-  { name: 'Lovable', domain: 'lovable.dev', emoji: '💜', score: 9.1, views: 420, favorites: 89, description: 'Build apps and websites by chatting with AI.', category: 'Low-Code AI Building', pricing: 'Freemium', tags: ['AI', 'Coding'], url: 'https://lovable.dev', gradient: 'linear-gradient(135deg, #4c1d95, #ec4899)' },
-  { name: 'Bolt.new', domain: 'bolt.new', emoji: '⚡', score: 8.8, views: 312, favorites: 56, description: 'Prompt, run, edit, and deploy web apps directly in the browser.', category: 'Low-Code AI Building', pricing: 'Freemium', tags: ['AI', 'Coding'], url: 'https://bolt.new', gradient: 'linear-gradient(135deg, #0f172a, #334155)' },
-  { name: 'Consul', domain: 'consul.so', emoji: '🏢', score: 8.7, views: 28, favorites: 1, description: 'Consul is your AI executive assistant, managing your schedule, email, and tasks.', category: 'Assistant', pricing: 'Paid', tags: ['AI', 'Business'], url: 'https://consul.so', gradient: 'linear-gradient(135deg, #cbd5e1, #f8fafc)' },
-  { name: 'Firecrawl', domain: 'firecrawl.dev', emoji: '🔥', score: 8.6, views: 224, favorites: 14, description: 'Turn websites into LLM-ready data. The web crawling, scraping, and search API for AI.', category: 'AI APIs', pricing: 'Freemium', tags: ['AI', 'AI APIs'], url: 'https://firecrawl.dev', gradient: 'linear-gradient(135deg, #ef4444, #f97316)' },
-  { name: 'Chef by Convex', domain: 'chef.convex.dev', emoji: '👨‍🍳', score: 8.5, views: 140, favorites: 8, description: 'Cook up something hot with Chef, the full-stack AI coding agent from Convex.', category: 'Agents', pricing: 'Free', tags: ['AI', 'Coding'], url: 'https://chef.convex.dev', gradient: 'linear-gradient(135deg, #7f1d1d, #dc2626)' },
-  { name: 'Smithery', domain: 'smithery.ai', emoji: '🔨', score: 8.4, views: 91, favorites: 5, description: 'Model Context Protocol Registry. Extend your agents capabilities with MCP.', category: 'AI SDKs', pricing: 'Free', tags: ['AI', 'MCP'], url: 'https://smithery.ai', gradient: 'linear-gradient(135deg, #1e293b, #0f172a)' },
-  { name: 'v0 by Vercel', domain: 'v0.dev', emoji: '🔮', score: 8.9, views: 512, favorites: 98, description: 'Generate production-ready UI from text prompts.', category: 'AI Design', pricing: 'Freemium', tags: ['AI', 'Design'], url: 'https://v0.dev', gradient: 'linear-gradient(135deg, #000000, #333333)' },
-  { name: 'n8n', domain: 'n8n.io', emoji: '🔄', score: 8.3, views: 189, favorites: 22, description: 'Open-source workflow automation. Self-hostable.', category: 'AI Automation', pricing: 'Free', tags: ['AI', 'Automation'], url: 'https://n8n.io', gradient: 'linear-gradient(135deg, #ea580c, #f59e0b)' },
-  { name: 'Supabase', domain: 'supabase.com', emoji: '🔵', score: 9.0, views: 890, favorites: 310, description: 'Open-source Firebase alternative — DB + Auth + Realtime + Storage.', category: 'AI Resources', pricing: 'Free', tags: ['Database', 'Auth'], url: 'https://supabase.com', gradient: 'linear-gradient(135deg, #065f46, #10b981)' },
-  { name: 'Groq', domain: 'groq.com', emoji: '🤖', score: 8.8, views: 405, favorites: 76, description: 'Fastest LLM inference — 14,400 free req/day.', category: 'AI APIs', pricing: 'Free', tags: ['AI', 'LLM'], url: 'https://groq.com', gradient: 'linear-gradient(135deg, #831843, #f43f5e)' },
-  { name: 'ElevenLabs', domain: 'elevenlabs.io', emoji: '🎙️', score: 8.2, views: 320, favorites: 45, description: 'AI voice generation and cloning.', category: 'AI Tools', pricing: 'Free', tags: ['AI', 'Voice'], url: 'https://elevenlabs.io', gradient: 'linear-gradient(135deg, #171717, #525252)' },
-  { name: 'Spline', domain: 'spline.design', emoji: '🧊', score: 8.1, views: 275, favorites: 60, description: '3D design tool in the browser with AI generation capabilities.', category: '3D AI', pricing: 'Freemium', tags: ['3D', 'AI', 'Design'], url: 'https://spline.design', gradient: 'linear-gradient(135deg, #be185d, #fbbf24)' },
-  { name: 'Resend', domain: 'resend.com', emoji: '✉️', score: 8.4, views: 310, favorites: 85, description: 'Developer-first email API — 3,000 emails/month free.', category: 'AI Marketing', pricing: 'Free', tags: ['Email', 'API'], url: 'https://resend.com', gradient: 'linear-gradient(135deg, #000000, #111111)' },
+  // --- LLMs & Chat ---
+  { name: 'ChatGPT', domain: 'openai.com', emoji: '🧠', score: 9.8, description: 'The industry leader for conversational AI and reasoning.', category: 'LLMs', pricing: 'Freemium', tags: ['LLM', 'AI', 'Chat'], url: 'https://chat.openai.com', featured: true },
+  { name: 'Claude', domain: 'anthropic.com', emoji: '🎭', score: 9.7, description: 'High-performance LLM known for constitutional AI and large context windows.', category: 'LLMs', pricing: 'Freemium', tags: ['LLM', 'AI', 'Context'], url: 'https://claude.ai', featured: true },
+  { name: 'Gemini', domain: 'google.com', emoji: '✨', score: 9.5, description: 'Google\'s multimodal AI integrated across the ecosystem.', category: 'LLMs', pricing: 'Freemium', tags: ['LLM', 'AI', 'Multimodal'], url: 'https://gemini.google.com' },
+  { name: 'Mistral AI', domain: 'mistral.ai', emoji: '🇫🇷', score: 9.2, description: 'Open-weight high-efficiency models from Europe.', category: 'LLMs', pricing: 'Free/Paid', tags: ['LLM', 'Open Source'], url: 'https://mistral.ai' },
+  { name: 'Perplexity', domain: 'perplexity.ai', emoji: '🔍', score: 9.6, description: 'AI-powered search engine that provides citations.', category: 'Search & Research', pricing: 'Freemium', tags: ['Search', 'AI', 'Research'], url: 'https://perplexity.ai' },
+
+  // --- Image Generation ---
+  { name: 'Midjourney', domain: 'midjourney.com', emoji: '🎨', score: 9.7, description: 'The highest fidelity AI image generator via Discord.', category: 'Image Generation', pricing: 'Paid', tags: ['Image', 'Art', 'Design'], url: 'https://midjourney.com', featured: true },
+  { name: 'DALL-E 3', domain: 'openai.com', emoji: '🖌️', score: 9.4, description: 'OpenAI\'s image generator with perfect prompt adherence.', category: 'Image Generation', pricing: 'Paid', tags: ['Image', 'OpenAI'], url: 'https://openai.com/dall-e-3' },
+  { name: 'Stable Diffusion', domain: 'stability.ai', emoji: '🌀', score: 9.3, description: 'Open-source image generation with ultimate control.', category: 'Image Generation', pricing: 'Free', tags: ['Image', 'Open Source'], url: 'https://stability.ai' },
+  { name: 'Leonardo.ai', domain: 'leonardo.ai', emoji: '🦁', score: 9.1, description: 'Web-based image generation with advanced tuning.', category: 'Image Generation', pricing: 'Freemium', tags: ['Image', 'Gaming'], url: 'https://leonardo.ai' },
+
+  // --- Video Generation ---
+  { name: 'Sora', domain: 'openai.com', emoji: '📹', score: 9.9, description: 'Realistic 60-second video generation from text.', category: 'Video Generation', pricing: 'Coming Soon', tags: ['Video', 'Realism'], url: 'https://openai.com/sora', featured: true },
+  { name: 'Runway Gen-3', domain: 'runwayml.com', emoji: '🎬', score: 9.6, description: 'Professional AI video editing and generation suite.', category: 'Video Generation', pricing: 'Paid', tags: ['Video', 'VFX'], url: 'https://runwayml.com' },
+  { name: 'Luma Dream Machine', domain: 'lumalabs.ai', emoji: '🌌', score: 9.4, description: 'High-quality realistic video from text and images.', category: 'Video Generation', pricing: 'Freemium', tags: ['Video', 'Luma'], url: 'https://lumalabs.ai' },
+  { name: 'Pika Art', domain: 'pika.art', emoji: '🎞️', score: 9.0, description: 'Creative AI animation and video generator.', category: 'Video Generation', pricing: 'Freemium', tags: ['Video', 'Animation'], url: 'https://pika.art' },
+
+  // --- Audio & Music ---
+  { name: 'Suno AI', domain: 'suno.com', emoji: '🎵', score: 9.8, description: 'Generate full songs with lyrics and vocals.', category: 'Audio & Music', pricing: 'Freemium', tags: ['Music', 'Audio'], url: 'https://suno.com', featured: true },
+  { name: 'Udio', domain: 'udio.com', emoji: '🎹', score: 9.7, description: 'Professional grade high-fidelity music generation.', category: 'Audio & Music', pricing: 'Freemium', tags: ['Music', 'High-Fi'], url: 'https://udio.com' },
+  { name: 'ElevenLabs', domain: 'elevenlabs.io', emoji: '🎙️', score: 9.8, description: 'The best AI text-to-speech and voice cloning.', category: 'Audio & Music', pricing: 'Freemium', tags: ['Speech', 'Voice'], url: 'https://elevenlabs.io' },
+
+  // --- Coding Assistants ---
+  { name: 'Cursor', domain: 'cursor.sh', emoji: '⚡', score: 9.9, description: 'AI-first code editor that knows your whole codebase.', category: 'Coding Assistants', pricing: 'Freemium', tags: ['Code', 'IDE'], url: 'https://cursor.com', featured: true },
+  { name: 'GitHub Copilot', domain: 'github.com', emoji: '🐙', score: 9.6, description: 'The standard AI pair programmer for every IDE.', category: 'Coding Assistants', pricing: 'Paid', tags: ['Code', 'Autocomplete'], url: 'https://github.com/features/copilot' },
+  { name: 'Replit Agent', domain: 'replit.com', emoji: '🌀', score: 9.5, description: 'Build and deploy entire apps from scratch via chat.', category: 'Coding Assistants', pricing: 'Paid', tags: ['Code', 'Deployment'], url: 'https://replit.com' },
+  { name: 'Bolt.new', domain: 'bolt.new', emoji: '🔩', score: 9.4, description: 'Full-stack web development in the browser.', category: 'Coding Assistants', pricing: 'Freemium', tags: ['Code', 'Browser'], url: 'https://bolt.new' },
+
+  // --- Productivity & Writing ---
+  { name: 'Notion AI', domain: 'notion.so', emoji: '📓', score: 9.3, description: 'AI integrated directly into your notes and docs.', category: 'Productivity & Writing', pricing: 'Paid', tags: ['Notes', 'Writing'], url: 'https://notion.so' },
+  { name: 'Jasper', domain: 'jasper.ai', emoji: '✍️', score: 9.0, description: 'AI writing assistant for enterprise marketing teams.', category: 'Productivity & Writing', pricing: 'Paid', tags: ['Writing', 'Marketing'], url: 'https://jasper.ai' },
+  { name: 'Copy.ai', domain: 'copy.ai', emoji: '📝', score: 8.9, description: 'GTM AI platform for sales and marketing content.', category: 'Productivity & Writing', pricing: 'Freemium', tags: ['Writing', 'Sales'], url: 'https://copy.ai' },
+
+  // --- Design & UI ---
+  { name: 'v0.dev', domain: 'v0.dev', emoji: '🔮', score: 9.6, description: 'Generate UI components from text prompts using Shadcn.', category: 'Design & UI', pricing: 'Freemium', tags: ['UI', 'Frontend'], url: 'https://v0.dev', featured: true },
+  { name: 'Canva Magic Studio', domain: 'canva.com', emoji: '🎨', score: 9.2, description: 'Suite of AI design tools for non-designers.', category: 'Design & UI', pricing: 'Freemium', tags: ['Design', 'Graphic'], url: 'https://canva.com' },
+  { name: 'Framer AI', domain: 'framer.com', emoji: '🖼️', score: 9.1, description: 'Design and publish whole websites in seconds.', category: 'Design & UI', pricing: 'Freemium', tags: ['Web', 'Design'], url: 'https://framer.com' },
+
+  // --- Automation & Agents ---
+  { name: 'Zapier Central', domain: 'zapier.com', emoji: '⚙️', score: 9.4, description: 'AI agents that can take actions across 6,000+ apps.', category: 'Automation & Agents', pricing: 'Freemium', tags: ['Automation', 'Workflow'], url: 'https://zapier.com', featured: true },
+  { name: 'n8n', domain: 'n8n.io', emoji: '🔄', score: 9.2, description: 'Low-code automation tool for technical teams.', category: 'Automation & Agents', pricing: 'Free/Paid', tags: ['Automation', 'Open Source'], url: 'https://n8n.io' },
+  { name: 'CrewAI', domain: 'crewai.com', emoji: '👥', score: 9.3, description: 'Framework for orchestrating role-playing AI agents.', category: 'Automation & Agents', pricing: 'Free', tags: ['Agents', 'Python'], url: 'https://crewai.com' },
+
+  // --- Developer Tools ---
+  { name: 'Groq', domain: 'groq.com', emoji: '🏎️', score: 9.8, description: 'The world\'s fastest inference engine for LLMs.', category: 'Developer Tools', pricing: 'Freemium', tags: ['API', 'Speed'], url: 'https://groq.com', featured: true },
+  { name: 'Pinecone', domain: 'pinecone.io', emoji: '🌲', score: 9.4, description: 'Vector database for high-performance AI applications.', category: 'Developer Tools', pricing: 'Freemium', tags: ['Vector', 'DB'], url: 'https://pinecone.io' },
+  { name: 'LangChain', domain: 'langchain.com', emoji: '🦜', score: 9.5, description: 'The leading framework for building LLM applications.', category: 'Developer Tools', pricing: 'Free', tags: ['Framework', 'Python'], url: 'https://langchain.com' },
+  { name: 'Firecrawl', domain: 'firecrawl.dev', emoji: '🔥', score: 9.3, description: 'Turn websites into LLM-ready clean data.', category: 'Developer Tools', pricing: 'Freemium', tags: ['Scraping', 'Data'], url: 'https://firecrawl.dev' },
 ]

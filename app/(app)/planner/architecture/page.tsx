@@ -4,7 +4,7 @@ import { auth, db } from '@/utils/firebase/client'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { StepIndicator, showToast } from '@/components/ui'
-import { ArrowRight, Box, Cpu, Settings2, Download, Trash2, MousePointer2, Link2, LayoutDashboard, ImageDown, Info } from 'lucide-react'
+import { ArrowRight, Box, Cpu, Settings2, Download, Trash2, MousePointer2, Link2, LayoutDashboard, ImageDown, Info, User, Users, X } from 'lucide-react'
 import ReactFlow, {
   ReactFlowProvider, addEdge, Background, Controls, MiniMap,
   useNodesState, useEdgesState, MarkerType, useReactFlow, ConnectionMode
@@ -47,6 +47,7 @@ function ArchitecturePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
   const [selectedToolConfig, setSelectedToolConfig] = useState<any>(null)
   const [loadingTools, setLoadingTools] = useState(false)
+  const [showSelectionModal, setShowSelectionModal] = useState(false)
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
@@ -164,12 +165,14 @@ function ArchitecturePage() {
         })
         
         // Connect to root
+        const edgeColors: Record<string, string> = { Frontend: '#6366f1', Backend: '#f97316', Data: '#06b6d4', DevOps: '#ec4899' }
+        const edgeColor = edgeColors[layer] || '#8b5cf6'
         newEdges.push({
           id: `edge-root-${nodeId}`,
           source: 'ai-root',
           target: nodeId,
           animated: true,
-          style: { stroke: '#5aa0a4', strokeWidth: 2 }
+          style: { stroke: edgeColor, strokeWidth: 2 }
         })
       })
     })
@@ -181,8 +184,8 @@ function ArchitecturePage() {
   const onConnect = useCallback((params: any) =>
     setEdges((eds: any[]) => addEdge({
       ...params, animated: true,
-      style: { stroke: '#5aa0a4', strokeWidth: 2 },
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#5aa0a4' }
+      style: { stroke: '#8b5cf6', strokeWidth: 2 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#8b5cf6' }
     }, eds)), [])
 
   const onDragStart = (event: any, tool: TechTool) => {
@@ -197,9 +200,9 @@ function ArchitecturePage() {
 
   const onDrop = useCallback((event: any) => {
     event.preventDefault()
-    const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect()
     const toolData = event.dataTransfer.getData('application/reactflow')
-    if (!toolData || !reactFlowBounds || !reactFlowInstance) return
+    if (!toolData || !reactFlowWrapper.current || !reactFlowInstance) return
+    const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect()
 
     const tool: any = JSON.parse(toolData)
     const position = reactFlowInstance.project({
@@ -283,8 +286,8 @@ function ArchitecturePage() {
           setEdges((eds: any[]) => addEdge({
             id: `e-${prevNode.id}-${newNode.id}`,
             source: prevNode.id, target: newNode.id,
-            animated: true, style: { stroke: '#5aa0a4', strokeWidth: 2 },
-            markerEnd: { type: MarkerType.ArrowClosed, color: '#5aa0a4' }
+            animated: true, style: { stroke: '#8b5cf6', strokeWidth: 2 },
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#8b5cf6' }
           }, eds))
         }
         return currentNodes
@@ -403,74 +406,74 @@ function ArchitecturePage() {
   const selectedTool: TechTool | undefined = selectedNode?.data?.tool
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 58px)', background: '#eef3f4' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 58px)', background: 'var(--bg)', color: 'var(--text)' }}>
 
       {/* Top Header */}
-      <div style={{ padding: '16px 24px 0 24px', borderBottom: '1px solid rgba(38,69,72,.1)' }}>
+      <div style={{ padding: '16px 24px 0 24px', borderBottom: '1px solid var(--border-subtle)' }}>
         <StepIndicator steps={['Idea', 'Features', 'Architecture', 'Prompts', 'Blueprint', 'Deploy']} current={2} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '14px' }}>
           <div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '20px', fontWeight: 800, marginBottom: '2px', color: '#172326' }}>
-              Architecture Builder — <span style={{ color: '#5aa0a4' }}>{project?.name}</span>
+            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '20px', fontWeight: 800, marginBottom: '2px', color: 'var(--text-heading)' }}>
+              Architecture Builder — <span style={{ color: 'var(--accent-teal)' }}>{project?.name}</span>
             </h1>
-            <p style={{ color: '#8a9a9d', fontSize: '12px' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
               Drag tech tools onto the canvas · Click a node to see AI recommendations
             </p>
           </div>
-          <button onClick={() => router.push(`/planner/architecture/guide?project=${projectId}`)}
-            style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none', borderRadius: '8px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 20px rgba(66,127,131,.3)' }}>
+          <button onClick={() => setShowSelectionModal(true)}
+            style={{ padding: '9px 18px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', border: 'none', borderRadius: '8px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 20px rgba(66,127,131,.3)' }}>
             Continue <ArrowRight size={14} />
           </button>
         </div>
       </div>
 
       {/* Toolbar strip */}
-      <div style={{ padding: '8px 24px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid rgba(38,69,72,.1)', background: 'rgba(9,8,15,.8)' }}>
+      <div style={{ padding: '8px 24px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--surface-overlay)', backdropFilter: 'var(--glass-blur)' }}>
         {[
           { label: 'Select', icon: <MousePointer2 size={14} />, id: 'select' },
           { label: 'Connect', icon: <Link2 size={14} />, id: 'connect' },
         ].map(t => (
           <button key={t.id} onClick={() => setMode(t.id as any)} style={{
-            padding: '6px 14px', borderRadius: '8px', border: `1px solid ${mode === t.id ? '#427f83' : 'rgba(38,69,72,.12)'}`,
+            padding: '6px 14px', borderRadius: '8px', border: `1px solid ${mode === t.id ? 'var(--accent-teal)' : 'var(--border-subtle)'}`,
             background: mode === t.id ? 'rgba(66,127,131,.15)' : 'transparent',
-            color: mode === t.id ? '#83b9bd' : '#607276', fontSize: '12px', fontWeight: 600,
+            color: mode === t.id ? 'var(--accent-teal)' : 'var(--text-muted)', fontSize: '12px', fontWeight: 600,
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
           }}>{t.icon} {t.label}</button>
         ))}
-        <div style={{ width: '1px', height: '20px', background: 'rgba(38,69,72,.12)' }} />
-        <button onClick={handleAutoLayout} style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(38,69,72,.12)', background: 'transparent', color: '#607276', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ width: '1px', height: '20px', background: 'var(--border-subtle)' }} />
+        <button onClick={handleAutoLayout} style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <LayoutDashboard size={14} /> Auto Layout
         </button>
-        <button onClick={handleClearAll} style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(38,69,72,.12)', background: 'transparent', color: '#607276', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <button onClick={handleClearAll} style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Trash2 size={14} /> Clear All
         </button>
-        <button onClick={handleExportPNG} style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(38,69,72,.12)', background: 'transparent', color: '#607276', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <ImageDown size={14} /> Export PNG
+        <button onClick={handleExportPNG} style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <ImageDown size={14} /> Export SVG
         </button>
       </div>
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
         {/* Left AI Tools Palette */}
-        <div style={{ width: '220px', background: '#eef3f4', borderRight: '1px solid rgba(38,69,72,.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ padding: '12px', borderBottom: '1px solid rgba(38,69,72,.1)', background: '#fbfcfc' }}>
-            <div style={{ fontSize: '10px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>🤖 AI Tools</div>
+        <div style={{ width: '220px', background: 'var(--bg)', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '12px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--surface-overlay)' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>🤖 AI Tools</div>
             <input
               placeholder="Search AI tools..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              style={{ width: '100%', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.2)', borderRadius: '6px', padding: '6px 10px', color: '#172326', fontSize: '11px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
+              style={{ width: '100%', background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '6px 10px', color: 'var(--text)', fontSize: '11px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
             />
           </div>
           
           {/* Category Tabs - All Categories */}
-          <div style={{ padding: '8px', borderBottom: '1px solid rgba(38,69,72,.1)', display: 'flex', gap: '4px', overflowX: 'auto', flexWrap: 'wrap' }}>
+          <div style={{ padding: '8px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', gap: '4px', overflowX: 'auto', flexWrap: 'wrap' }}>
             {['All', 'LLMs', 'Agents', 'Image', 'Speech', 'Search', 'Vector', 'Code', 'Embeddings', 'Video', 'Audio', '3D', 'Analytics', 'Automation', 'Design', 'Other'].map(cat => (
               <button key={cat} onClick={() => setSelectedCategory(cat)} style={{
                 padding: '4px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 600, whiteSpace: 'nowrap',
-                border: `1px solid ${selectedCategory === cat ? '#427f83' : 'rgba(38,69,72,.12)'}`,
+                border: `1px solid ${selectedCategory === cat ? 'var(--accent-teal)' : 'var(--border-subtle)'}`,
                 background: selectedCategory === cat ? 'rgba(66,127,131,.15)' : 'transparent',
-                color: selectedCategory === cat ? '#427f83' : '#8a9a9d',
+                color: selectedCategory === cat ? 'var(--accent-teal)' : 'var(--text-muted)',
                 cursor: 'pointer', transition: 'all 0.15s'
               }}>{cat}</button>
             ))}
@@ -479,12 +482,12 @@ function ArchitecturePage() {
           {/* All Available AI Tools List */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
             {loadingTools ? (
-              <div style={{ padding: '20px 10px', textAlign: 'center', color: '#8a9a9d', fontSize: '12px' }}>
+              <div style={{ padding: '20px 10px', textAlign: 'center', color: 'var(--text-subtle)', fontSize: '12px' }}>
                 <div style={{ animation: 'spin 0.7s linear infinite' }}>⚙️</div>
                 <div style={{ marginTop: '8px' }}>Loading world catalog...</div>
               </div>
             ) : allAvailableTools.length === 0 ? (
-              <div style={{ padding: '20px 10px', textAlign: 'center', color: '#8a9a9d', fontSize: '12px' }}>
+              <div style={{ padding: '20px 10px', textAlign: 'center', color: 'var(--text-subtle)', fontSize: '12px' }}>
                 📋 No tools found. Check back soon!
               </div>
             ) : (
@@ -500,20 +503,20 @@ function ArchitecturePage() {
                     e.dataTransfer.setData('application/reactflow', JSON.stringify({ ...tool, isDraggedTool: true }))
                   }}
                     style={{
-                      background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.15)',
+                      background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)',
                       padding: '9px', borderRadius: '8px', cursor: 'grab', marginBottom: '8px',
                       transition: 'all 0.15s'
                     }}
-                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.15)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.3)' }}
-                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(66,127,131,.08)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.15)' }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.1)'; e.currentTarget.style.borderColor = 'var(--accent-teal)' }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'var(--surface-overlay)'; e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
                     title={tool.description}
                   >
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#172326', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tool.name}</div>
-                    <div style={{ fontSize: '8px', color: '#8a9a9d', marginBottom: '3px', display: 'flex', gap: '6px', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tool.name}</div>
+                    <div style={{ fontSize: '8px', color: 'var(--text-muted)', marginBottom: '3px', display: 'flex', gap: '6px', justifyContent: 'space-between' }}>
                       <span>{tool.category}</span>
-                      <span style={{ color: '#5aa0a4', fontWeight: 600 }}>{tool.pricing}</span>
+                      <span style={{ color: 'var(--accent-teal)', fontWeight: 600 }}>{tool.pricing}</span>
                     </div>
-                    <div style={{ fontSize: '8px', color: '#607276', lineHeight: '1.3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: '8px', color: 'var(--text-subtle)', lineHeight: '1.3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {tool.description}
                     </div>
                   </div>
@@ -521,7 +524,7 @@ function ArchitecturePage() {
             )}
           </div>
           
-          <div style={{ padding: '10px', borderTop: '1px solid rgba(38,69,72,.1)', fontSize: '9px', color: '#8a9a9d', background: '#fbfcfc', lineHeight: '1.4' }}>
+          <div style={{ padding: '10px', borderTop: '1px solid var(--border-subtle)', fontSize: '9px', color: 'var(--text-muted)', background: 'var(--surface-overlay)', lineHeight: '1.4' }}>
             💡 <strong>Search</strong> 100+ tools • <strong>Drag</strong> to add • <strong>Click</strong> node to swap • <strong>Use tools you know best!</strong>
           </div>
         </div>
@@ -544,68 +547,76 @@ function ArchitecturePage() {
             fitView
             deleteKeyCode="Backspace"
           >
-            <Controls style={{ background: 'rgba(255,255,255,.62)', borderColor: 'rgba(38,69,72,.12)' }} />
+            <Controls style={{ background: 'var(--surface-overlay)', borderColor: 'var(--border-subtle)', color: 'var(--text)' }} />
             <MiniMap
-              style={{ background: 'rgba(255,255,255,.54)', border: '1px solid rgba(38,69,72,.12)' }}
-              nodeColor={() => '#427f83'}
-              maskColor="rgba(0,0,0,0.4)"
+              style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '12px' }}
+              nodeColor={(n: any) => {
+                const cat = n?.data?.tool?.category?.toLowerCase?.() || '';
+                const catColors: Record<string, string> = {
+                  frontend: '#6366f1', backend: '#f97316', database: '#06b6d4',
+                  auth: '#8b5cf6', ai: '#ec4899', storage: '#f59e0b',
+                  cdn: '#14b8a6', deployment: '#10b981', root: '#8b5cf6'
+                };
+                return catColors[cat] || '#8b5cf6';
+              }}
+              maskColor="rgba(0,0,0,0.15)"
             />
-            <Background color="#2d2b3b" gap={20} size={1} />
+            <Background color="var(--accent-teal)" gap={24} size={1.5} style={{ opacity: 0.1 }} />
           </ReactFlow>
           {nodes.length === 0 && (
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
-              <Box size={48} color="rgba(38,69,72,.12)" style={{ margin: '0 auto 16px' }} />
-              <div style={{ color: '#8a9a9d', fontSize: '15px', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>Drag a tool from the palette</div>
-              <div style={{ color: '#3d3a55', fontSize: '12px', marginTop: '6px' }}>Nodes auto-connect when you add matching layers</div>
+              <Box size={48} color="var(--border-subtle)" style={{ margin: '0 auto 16px' }} />
+              <div style={{ color: 'var(--text-muted)', fontSize: '15px', fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>Drag a tool from the palette</div>
+              <div style={{ color: 'var(--text-subtle)', fontSize: '12px', marginTop: '6px' }}>Nodes auto-connect when you add matching layers</div>
             </div>
           )}
         </div>
 
         {/* Right Configuration Panel */}
         <div style={{
-          width: '280px', background: '#eef3f4', borderLeft: '1px solid rgba(38,69,72,.1)',
+          width: '280px', background: 'var(--bg)', borderLeft: '1px solid var(--border-subtle)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden'
         }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(38,69,72,.1)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Settings2 size={14} color="#5aa0a4" />
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#172326', fontFamily: 'Syne, sans-serif' }}>Configuration</span>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--surface-overlay)' }}>
+            <Settings2 size={14} color="var(--accent-teal)" />
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-heading)', fontFamily: 'Syne, sans-serif' }}>Configuration</span>
           </div>
 
           {!selectedToolConfig ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', color: '#3d3a55' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', color: 'var(--text-subtle)' }}>
               <Info size={28} style={{ marginBottom: '12px', opacity: 0.4 }} />
-              <div style={{ fontSize: '12px', color: '#8a9a9d' }}>Click an AI tool node to see configuration</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Click an AI tool node to see configuration</div>
             </div>
           ) : (
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
 
               {/* Tool Name with Layer */}
-              <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(66,127,131,.12)', borderRadius: '10px', border: '1px solid rgba(66,127,131,.2)' }}>
-                <div style={{ fontSize: '20px', fontWeight: 800, color: '#172326', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(66,127,131,.1)', borderRadius: '10px', border: '1px solid rgba(66,127,131,.2)' }}>
+                <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span>{getLayerEmoji(selectedToolConfig.layer)}</span>
                   {selectedToolConfig.name}
                 </div>
-                <div style={{ fontSize: '11px', color: '#5aa0a4', fontWeight: 600 }}>
+                <div style={{ fontSize: '11px', color: 'var(--accent-teal)', fontWeight: 600 }}>
                   {selectedToolConfig.layer} Layer
                 </div>
               </div>
 
               {/* Category */}
               <div style={{ marginBottom: '14px' }}>
-                <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Category</div>
-                <div style={{ fontSize: '12px', color: '#607276', background: 'rgba(38,69,72,.07)', borderRadius: '6px', padding: '8px 12px', fontWeight: 600 }}>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Category</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-subtle)', background: 'var(--bg-2)', borderRadius: '6px', padding: '8px 12px', fontWeight: 600 }}>
                   {selectedToolConfig.category}
                 </div>
               </div>
 
               {/* Relevance Score */}
               <div style={{ marginBottom: '14px' }}>
-                <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Relevance Score</div>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Relevance Score</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ flex: 1, height: '8px', background: 'rgba(38,69,72,.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ width: `${selectedToolConfig.relevance}%`, height: '100%', background: 'linear-gradient(90deg, #427f83, #5aa0a4)', borderRadius: '4px', transition: 'width 0.3s' }} />
+                  <div style={{ flex: 1, height: '8px', background: 'var(--bg-2)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${selectedToolConfig.relevance}%`, height: '100%', background: 'linear-gradient(90deg, var(--accent-teal), var(--accent-cyan))', borderRadius: '4px', transition: 'width 0.3s' }} />
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#5aa0a4', minWidth: '35px', textAlign: 'right' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent-teal)', minWidth: '35px', textAlign: 'right' }}>
                     {selectedToolConfig.relevance}%
                   </div>
                 </div>
@@ -613,27 +624,27 @@ function ArchitecturePage() {
 
               {/* Why This Tool */}
               <div style={{ marginBottom: '14px' }}>
-                <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Why Recommended</div>
-                <div style={{ fontSize: '11px', color: '#607276', background: 'rgba(38,69,72,.07)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '8px', padding: '10px 12px', lineHeight: '1.6' }}>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>Why Recommended</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-subtle)', background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '10px 12px', lineHeight: '1.6' }}>
                   {selectedToolConfig.reason}
                 </div>
               </div>
 
               {/* How to Configure */}
               <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>How to Use & Configure</div>
-                <div style={{ fontSize: '11px', color: '#607276', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.15)', borderRadius: '8px', padding: '10px 12px', lineHeight: '1.6' }}>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>How to Use & Configure</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-subtle)', background: 'rgba(66,127,131,.05)', border: '1px solid rgba(66,127,131,.15)', borderRadius: '8px', padding: '10px 12px', lineHeight: '1.6' }}>
                   {selectedToolConfig.configuration}
                   <br /><br />
-                  <span style={{ color: '#5aa0a4', fontWeight: 600 }}>✓</span> Setup involves API key configuration, environment variables, and integration with your {selectedToolConfig.layer.toLowerCase()} services.
+                  <span style={{ color: 'var(--accent-teal)', fontWeight: 600 }}>✓</span> Setup involves API key configuration, environment variables, and integration with your {selectedToolConfig.layer.toLowerCase()} services.
                 </div>
               </div>
 
               {/* Swap Tool Section */}
               {allAvailableTools.length > 0 && (
                 <div style={{ marginBottom: '16px' }}>
-                  <div style={{ fontSize: '9px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>💱 Swap Tool</div>
-                  <div style={{ fontSize: '10px', color: '#607276', marginBottom: '8px', lineHeight: '1.4' }}>
+                  <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>💱 Swap Tool</div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '8px', lineHeight: '1.4' }}>
                     Know a tool better? Select from compatible options to swap it.
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '140px', overflowY: 'auto' }}>
@@ -642,23 +653,23 @@ function ArchitecturePage() {
                       .slice(0, 8)
                       .map(tool => (
                         <button key={tool.id} onClick={() => swapToolInNode(tool)} style={{
-                          padding: '8px 12px', textAlign: 'left', borderRadius: '8px', border: '1px solid rgba(66,127,131,.2)',
-                          background: 'rgba(66,127,131,.08)', color: '#172326', fontSize: '10px', fontWeight: 600,
+                          padding: '8px 12px', textAlign: 'left', borderRadius: '8px', border: '1px solid var(--border-subtle)',
+                          background: 'var(--bg-2)', color: 'var(--text-heading)', fontSize: '10px', fontWeight: 600,
                           cursor: 'pointer', transition: 'all 0.15s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                         }}
-                          onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.15)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.4)' }}
-                          onMouseOut={e => { e.currentTarget.style.background = 'rgba(66,127,131,.08)'; e.currentTarget.style.borderColor = 'rgba(66,127,131,.2)' }}
+                          onMouseOver={e => { e.currentTarget.style.background = 'rgba(66,127,131,.1)'; e.currentTarget.style.borderColor = 'var(--accent-teal)' }}
+                          onMouseOut={e => { e.currentTarget.style.background = 'var(--bg-2)'; e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
                         >
                           <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                             <div style={{ fontWeight: 700, marginBottom: '1px' }}>{tool.name}</div>
-                            <div style={{ fontSize: '9px', color: '#8a9a9d' }}>{tool.pricing}</div>
+                            <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{tool.pricing}</div>
                           </div>
                           <div style={{ fontSize: '14px', marginLeft: '8px' }}>→</div>
                         </button>
                       ))
                     }
                     {allAvailableTools.filter(t => t.category === selectedToolConfig.category && t.name !== selectedToolConfig.name).length === 0 && (
-                      <div style={{ padding: '12px', textAlign: 'center', color: '#8a9a9d', fontSize: '10px', background: 'rgba(38,69,72,.05)', borderRadius: '6px' }}>
+                      <div style={{ padding: '12px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '10px', background: 'var(--bg-2)', borderRadius: '6px' }}>
                         No alternatives available
                       </div>
                     )}
@@ -667,8 +678,8 @@ function ArchitecturePage() {
               )}
 
               {/* Continue button */}
-              <button onClick={() => router.push(`/planner/architecture/guide?project=${projectId}`)} style={{
-                width: '100%', padding: '11px', background: 'linear-gradient(135deg, #365f62, #83b9bd)',
+              <button onClick={() => setShowSelectionModal(true)} style={{
+                width: '100%', padding: '11px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))',
                 border: 'none', borderRadius: '10px', color: '#fff', fontFamily: 'Syne, sans-serif',
                 fontSize: '13px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(66,127,131,.28)', marginTop: 'auto'
@@ -681,10 +692,64 @@ function ArchitecturePage() {
 
       </div>
 
+      {/* Selection Modal */}
+      {showSelectionModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: 'var(--bg)', width: '100%', maxWidth: '580px', borderRadius: '24px', border: '1px solid var(--border-subtle)', overflow: 'hidden', boxShadow: '0 32px 64px rgba(0,0,0,0.6)', animation: 'fadeUp 0.3s ease-out' }}>
+            <div style={{ padding: '24px 32px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-overlay)' }}>
+              <div>
+                <h2 style={{ margin: 0, fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, color: 'var(--text-heading)' }}>Choose Your Path</h2>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>How do you want to build this project?</p>
+              </div>
+              <button onClick={() => setShowSelectionModal(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}><X size={20} /></button>
+            </div>
+            
+            <div style={{ padding: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              {/* Solo Path */}
+              <button onClick={() => router.push(`/planner/architecture/guide?project=${projectId}`)} style={{
+                padding: '32px 24px', background: 'var(--bg-2)', border: '1px solid var(--border-subtle)',
+                borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px'
+              }} className="path-card">
+                <div style={{ width: '56px', height: '56px', background: 'rgba(66,127,131,.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-teal)' }}>
+                  <User size={28} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, fontFamily: 'Syne, sans-serif', color: 'var(--text-heading)', marginBottom: '4px' }}>Solo Builder</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>Continue to the full step-by-step guide for individual developers.</div>
+                </div>
+              </button>
+
+              {/* Team Path */}
+              <button onClick={() => router.push(`/planner/architecture/team-guide?project=${projectId}`)} style={{
+                padding: '32px 24px', background: 'rgba(59,130,246,.05)', border: '1px solid rgba(59,130,246,.15)',
+                borderRadius: '16px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px'
+              }} className="path-card team">
+                <div style={{ width: '56px', height: '56px', background: 'rgba(59,130,246,.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                  <Users size={28} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, fontFamily: 'Syne, sans-serif', color: 'var(--text-heading)', marginBottom: '4px' }}>Team Leader</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>Generate role-specific guides and tasks for your entire team.</div>
+                </div>
+              </button>
+            </div>
+            
+            <div style={{ padding: '20px 32px', background: 'var(--surface-overlay)', borderTop: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace' }}>
+                💡 You can always switch between guides later from the dashboard.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
-        .react-flow__controls button { background: rgba(255,255,255,.62) !important; border: 1px solid rgba(38,69,72,.12) !important; color: #172326 !important; }
+        .react-flow__controls button { background: var(--surface-overlay) !important; border: 1px solid var(--border-subtle) !important; color: var(--text) !important; }
         .react-flow__controls button:hover { background: rgba(66,127,131,.2) !important; }
+        .path-card:hover { transform: translateY(-4px); border-color: var(--accent-teal) !important; background: var(--bg) !important; box-shadow: 0 12px 24px rgba(66,127,131,0.15); }
+        .path-card.team:hover { border-color: rgba(59,130,246,.4) !important; box-shadow: 0 12px 24px rgba(59,130,246,0.15); }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
     </div>
   )

@@ -81,11 +81,11 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Flame size={20} color={isActive ? '#f97316' : '#64748b'} />
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>
+            <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-heading)' }}>
               {streak.current_streak} Day Streak
             </span>
           </div>
-          <TrendingUp size={18} color={isActive ? '#f97316' : '#64748b'} />
+          <TrendingUp size={18} color={isActive ? 'var(--accent-orange)' : 'var(--text-subtle)'} />
         </div>
 
         {/* Mini Torus Visualization */}
@@ -97,31 +97,31 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
                 width: '24px',
                 height: '24px',
                 borderRadius: '50%',
-                background: 'conic-gradient(from 0deg, #8b5cf6, #ec4899)',
+                background: 'conic-gradient(from 0deg, var(--primary), var(--accent-orange))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '10px',
                 boxShadow: '0 0 6px rgba(139, 92, 246, 0.4)',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
+                border: '1px solid var(--border-subtle)'
               }}
             >
               ⭕
             </div>
           ))}
           {torusCount > 3 && (
-            <div style={{ fontSize: '11px', color: '#8a9a9d', display: 'flex', alignItems: 'center' }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
               +{torusCount - 3} more
             </div>
           )}
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          <div style={{ fontSize: '11px', color: '#8a9a9d' }}>
-            Current: <span style={{ fontWeight: 600, color: '#f97316' }}>{streak.current_streak}d</span>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            Current: <span style={{ fontWeight: 600, color: 'var(--accent-orange)' }}>{streak.current_streak}d</span>
           </div>
-          <div style={{ fontSize: '11px', color: '#8a9a9d' }}>
-            Best: <span style={{ fontWeight: 600, color: '#8b5cf6' }}>{streak.max_streak}d</span>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            Best: <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{streak.max_streak}d</span>
           </div>
         </div>
 
@@ -130,7 +130,7 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
             marginTop: '12px',
             fontSize: '11px',
             fontWeight: 500,
-            color: isActive ? '#f97316' : '#64748b',
+            color: isActive ? 'var(--accent-orange)' : 'var(--text-subtle)',
             display: 'flex',
             alignItems: 'center',
             gap: '4px'
