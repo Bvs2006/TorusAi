@@ -31,7 +31,7 @@ cp .env.example .env.local
 ```
 
 ### 4. Run database migrations
-Go to **Supabase → SQL Editor** and run the entire contents of `db/migrations.sql`.
+Go to **firebase → SQL Editor** and run the entire contents of `db/migrations.sql`.
 
 ### 5. Start SearXNG (web search)
 ```bash
@@ -103,7 +103,7 @@ based on search results + user context
        ↓
 Generate 7-phase build plan
        ↓
-Save to Supabase (projects + phases + features)
+Save to firebase (projects + phases + features)
        ↓
 User navigates through phases
        ↓
@@ -133,7 +133,7 @@ npx vercel --prod
 ```
 Add all env vars in Vercel dashboard. Update `SEARXNG_BASE_URL` to Railway URL.
 
-### 4. Configure Supabase for production
+### 4. Configure firebase for production
 - Authentication → URL Configuration → add your Vercel URL
 - Redirect URLs → add `https://yourdomain.vercel.app/api/auth/callback`
 
@@ -144,7 +144,7 @@ Add all env vars in Vercel dashboard. Update `SEARXNG_BASE_URL` to Railway URL.
 | Layer | Technology | Cost |
 |-------|-----------|------|
 | Frontend | Next.js 14 (App Router) | Free |
-| Database + Auth | Supabase | Free (500MB) |
+| Database + Auth | firebase | Free (500MB) |
 | AI Inference | Groq (Llama 3.3 70B) | Free (14.4k req/day) |
 | AI Fallback | Google Gemini Flash | Free (1.5k req/day) |
 | Web Search | SearXNG (self-hosted) | Free |
