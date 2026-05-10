@@ -118,33 +118,56 @@ function ArchitecturePage() {
     const newNodes: any[] = []
     const newEdges: any[] = []
     
-    // Root node
+    // Root node (Center Hub)
     const rootNode = {
       id: 'ai-root',
       type: 'techNode',
       position: { x: 0, y: 0 },
-      data: { tool: { name: 'AI Tool IDE', category: 'root', description: 'Recommended AI Tools Hub', layer: 'root' }, isValid: true }
+      data: { 
+        tool: { name: 'Cursor IDE', category: 'root', description: 'Central Development Hub (Cursor / VS Code)', layer: 'root' }, 
+        isValid: true 
+      }
     }
     newNodes.push(rootNode)
     
     // Group tools by layer
-    const layers: { [key: string]: any[] } = { Frontend: [], Backend: [], Data: [], DevOps: [] }
+    const layers: { [key: string]: any[] } = { 
+      Frontend: [], 
+      Backend: [], 
+      Data: [], 
+      DevOps: [] 
+    }
+    
     tools.forEach((tool: any) => {
       const layer = tool.layer || 'Backend'
       if (layers[layer]) layers[layer].push(tool)
+      else layers['Backend'].push(tool)
     })
     
-    let yOffset = -250
-    let xOffset = -400
-    const layerSpacing = 200
-    const toolSpacing = 100
+    // Layout constants
+    const RADIUS = 400
+    const BOX_SIZE = 250
     
-    // Create nodes for each layer
-    Object.entries(layers).forEach(([layer, toolsList]: [string, any[]]) => {
+    // Quadrant Positions
+    const QUADRANTS: Record<string, { x: number, y: number, color: string }> = {
+      Frontend: { x: -RADIUS, y: -RADIUS, color: '#6366f1' },
+      Backend: { x: RADIUS, y: -RADIUS, color: '#f97316' },
+      Data: { x: RADIUS, y: RADIUS, color: '#06b6d4' },
+      DevOps: { x: -RADIUS, y: RADIUS, color: '#ec4899' }
+    }
+    
+    // Create nodes for each quadrant
+    Object.entries(layers).forEach(([layer, toolsList]) => {
+      const config = QUADRANTS[layer] || QUADRANTS['Backend']
+      
       toolsList.forEach((tool: any, idx: number) => {
         const nodeId = `tool-${tool.id}`
-        const xPos = xOffset + (Object.keys(layers).indexOf(layer) * layerSpacing)
-        const yPos = yOffset + (idx * toolSpacing)
+        
+        // Arrange tools in a small square within their quadrant
+        const row = Math.floor(idx / 2)
+        const col = idx % 2
+        const xPos = config.x + (col * 180)
+        const yPos = config.y + (row * 140)
         
         newNodes.push({
           id: nodeId,
@@ -164,15 +187,13 @@ function ArchitecturePage() {
           }
         })
         
-        // Connect to root
-        const edgeColors: Record<string, string> = { Frontend: '#6366f1', Backend: '#f97316', Data: '#06b6d4', DevOps: '#ec4899' }
-        const edgeColor = edgeColors[layer] || '#8b5cf6'
+        // Connect to root hub
         newEdges.push({
           id: `edge-root-${nodeId}`,
           source: 'ai-root',
           target: nodeId,
           animated: true,
-          style: { stroke: edgeColor, strokeWidth: 2 }
+          style: { stroke: config.color, strokeWidth: 2 }
         })
       })
     })
