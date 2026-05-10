@@ -19,7 +19,7 @@ Tech Stack Being Used:
 - AI: ${stack.ai?.name}
 - Deployment: ${stack.deployment?.name}` : ''
 
-    const prompt = `You are Torus AI. Write a specific, detailed prompt for a developer to use in ${tool}.
+    const prompt = `You are Torus AI. Write an Optimized AI Prompt for a developer to paste into ${tool}.
 
 Project: "${projectIdea}"
 Current Phase: ${phase.name} (Phase ${phase.phase_number}/7)
@@ -27,13 +27,17 @@ Developer Experience: ${experience || 'intermediate'}
 Features to build: ${features?.join(', ') || 'core features'}
 ${techContext}
 
+CRITICAL BEST PRACTICES TO FOLLOW FOR THIS PROMPT:
+1. Provide Context First: The generated prompt must start by explaining the goal, architecture, and tech stack to the AI IDE.
+2. Break Down Tasks: Instruct the AI IDE to execute this phase step-by-step, verifying each step.
+3. Define "Definition of Done" (DoD): Instruct the AI IDE on what the exact acceptance criteria are (e.g. responsiveness, error handling, edge cases).
+4. High-Fidelity Details: Be highly specific. Provide concrete file names, reference actual tech from the stack, and specify constraints.
+5. Standardize Workflows: Specify coding style guidelines, error handling rules, and any strict architectural patterns (like TypeScript types).
+
 Write an EXACT prompt they can copy and paste into ${tool}. The prompt must:
-1. Be specific to THIS project, not generic
-2. Reference the actual technologies from the stack
-3. Include concrete file names, function names, and implementation details
-4. Be comprehensive enough to complete this entire phase
-5. Include error handling requirements
-6. Specify TypeScript types needed
+1. Be specific to THIS project, not generic.
+2. Be comprehensive enough to complete this entire phase.
+3. Adhere to the Best Practices listed above.
 
 Write ONLY the prompt text, no introduction or explanation. Start directly with the action.`
 
