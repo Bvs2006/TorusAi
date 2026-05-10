@@ -171,7 +171,10 @@ export default function RoleGuideDetailsPage() {
                         <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-heading)' }}>{roadmap[activeStep].tool}</span>
                       </div>
                       {roadmap[activeStep].usage && (
-                        <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>{roadmap[activeStep].usage}</div>
+                        <div style={{ marginTop: '12px' }}>
+                          <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--accent-teal)', textTransform: 'uppercase', marginBottom: '6px' }}>How to use this tool</div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>{roadmap[activeStep].usage}</div>
+                        </div>
                       )}
                     </div>
                   )}
@@ -193,7 +196,7 @@ export default function RoleGuideDetailsPage() {
 
                 {roadmap[activeStep].integration && (
                   <div style={{ marginBottom: '32px', background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '18px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '10px', textTransform: 'uppercase' }}>How to integrate safely</div>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '10px', textTransform: 'uppercase' }}>How to add it to your IDE safely</div>
                     <div style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{roadmap[activeStep].integration}</div>
                   </div>
                 )}
