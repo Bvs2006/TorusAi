@@ -1,14 +1,14 @@
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/signup', '/forgot-password', '/api/auth']
+const PUBLIC_PATHS = ['/', '/login', '/signup', '/forgot-password', '/api/auth']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const isPublic = PUBLIC_PATHS.some(p => pathname.startsWith(p))
+  const isPublic = PUBLIC_PATHS.some(p => p === '/' ? pathname === '/' : pathname.startsWith(p))
   const session = request.cookies.get('fb_session')?.value
 
-  if (!isPublic && !session) {
+  if (!isPublic && pathname !== '/' && !session) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
   if (session && (pathname === '/login' || pathname === '/signup')) {

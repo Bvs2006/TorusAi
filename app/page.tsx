@@ -2,60 +2,32 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import {
-  ArrowDownToLine,
+  Sparkles,
+  Code2,
+  Rocket,
   ArrowRight,
-  Command,
-  Eye,
-  FileCode2,
-  GitFork,
-  Menu,
-  Search,
-  Star,
-  Upload,
-  Users,
+  BrainCircuit,
+  Wrench
 } from 'lucide-react'
 
-const kits = [
-  {
-    name: 'Atlas Product UI',
-    author: 'Mira Chen',
-    category: 'SaaS',
-    downloads: '18.4k',
-    stars: '4.9',
-    tokens: ['React', 'Figma', 'Tokens'],
-    preview: ['#6366F1', '#0A0A0A', '#E8E8EC'],
-  },
-  {
-    name: 'Northstar Mobile Kit',
-    author: 'Devon Park',
-    category: 'Mobile',
-    downloads: '12.1k',
-    stars: '4.8',
-    tokens: ['iOS', 'Android', 'Dark'],
-    preview: ['#10B981', '#111827', '#F4F4F5'],
-  },
-  {
-    name: 'Ledger Admin System',
-    author: 'Ari Morgan',
-    category: 'Dashboard',
-    downloads: '9.7k',
-    stars: '4.7',
-    tokens: ['Tables', 'Charts', 'WCAG'],
-    preview: ['#F59E0B', '#0A0A0A', '#FAFAFA'],
-  },
-]
-
-const stats = [
-  ['2,840', 'published files'],
-  ['91k', 'monthly downloads'],
-  ['12k', 'contributors'],
-]
-
-const rows = [
-  ['DESIGN.md', 'Brand highlight standard', 'Published'],
-  ['tokens.json', 'Color, type, spacing exports', 'Synced'],
-  ['components.fig', 'Editable component library', 'Updated'],
-]
+const TorusShape = ({ size, color, thickness, left, top, right, bottom, delay, duration, reverse }: any) => (
+  <div 
+    className="torus-shape"
+    style={{
+      position: 'absolute',
+      left, top, right, bottom,
+      width: size, height: size,
+      border: `${thickness}px solid ${color}`,
+      borderRadius: '50%',
+      animation: `${reverse ? 'rotate3d-reverse' : 'rotate3d'} ${duration}s linear infinite`,
+      animationDelay: `${delay}s`,
+      opacity: 0.4,
+      zIndex: 0,
+      pointerEvents: 'none',
+      boxShadow: `inset 0 15px 30px rgba(0,0,0,0.04), 0 15px 30px rgba(0,0,0,0.04)`
+    }}
+  />
+)
 
 export default async function LandingPage() {
   const cookieStore = await cookies()
@@ -63,241 +35,144 @@ export default async function LandingPage() {
   if (session) redirect('/dashboard')
 
   return (
-    <div className="min-h-screen bg-bg text-text">
-      <nav className="sticky top-0 z-50 h-14 border-b border-surface-2 bg-surface/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
-          <Link href="/" className="font-display text-xl font-bold text-text no-underline">
-            Genesis
-          </Link>
-          <div className="hidden items-center gap-1 md:flex">
-            {[
-              ['#library', 'Library'],
-              ['#workflow', 'Workflow'],
-              ['#community', 'Community'],
-              ['/tools', 'Tool Hub'],
-            ].map(([href, label]) => (
-              <Link
-                key={href}
-                href={href}
-                className="rounded-md px-3 py-2 text-sm font-medium text-text-2 no-underline transition hover:bg-bg-2 hover:text-text"
-              >
-                {label}
-              </Link>
-            ))}
+    <div style={{ minHeight: '100vh', background: '#eef3f4', color: '#172326', fontFamily: 'DM Sans, sans-serif' }}>
+      {/* Navbar */}
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid rgba(38,69,72,.08)', background: 'rgba(238,243,244,0.8)', backdropFilter: 'blur(16px)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', height: '72px', padding: '0 24px' }}>
+          
+          {/* Left: Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '24px', fontWeight: 800, fontFamily: 'Syne, sans-serif', letterSpacing: '-1px' }}>
+            Torus<span style={{ color: '#5aa0a4' }}>AI</span>
           </div>
-          <div className="flex items-center gap-2">
+          
+          {/* Center: Nav Links */}
+          <div className="nav-links-container" style={{ alignItems: 'center', gap: '32px', justifyContent: 'center' }}>
+            <Link href="/" className="nav-link" style={{ fontSize: '14px', fontWeight: 600, color: '#607276', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'DM Sans, sans-serif' }}>Home</Link>
+            <Link href="#features" className="nav-link" style={{ fontSize: '14px', fontWeight: 600, color: '#607276', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'DM Sans, sans-serif' }}>Features</Link>
+            <Link href="/tools" className="nav-link" style={{ fontSize: '14px', fontWeight: 600, color: '#607276', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'DM Sans, sans-serif' }}>Tool Hub</Link>
+          </div>
+
+          {/* Right: Auth Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', justifyContent: 'flex-end' }}>
             <Link
               href="/login"
-              className="hidden h-[38px] items-center rounded-md border border-surface-2 px-4 text-sm font-medium text-text-2 no-underline transition hover:-translate-y-px hover:bg-bg-2 hover:text-text sm:flex"
+              className="login-link"
+              style={{ fontSize: '14px', fontWeight: 700, color: '#607276', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'Syne, sans-serif' }}
             >
-              Login
+              Sign In
             </Link>
             <Link
               href="/signup"
-              className="inline-flex h-[38px] items-center rounded-md bg-violet-DEFAULT px-4 text-sm font-medium text-white no-underline transition hover:-translate-y-px hover:bg-violet-2 hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]"
+              style={{
+                display: 'inline-flex', alignItems: 'center', height: '40px', padding: '0 20px',
+                background: 'linear-gradient(135deg, #365f62, #83b9bd)', borderRadius: '10px',
+                fontSize: '14px', fontWeight: 800, fontFamily: 'Syne, sans-serif', color: '#fff', textDecoration: 'none',
+                boxShadow: '0 4px 14px rgba(66,127,131,0.25)'
+              }}
             >
-              Publish a file
+              Start Free
             </Link>
-            <button title="Open navigation" className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-md border border-surface-2 bg-transparent text-text-2 md:hidden">
-              <Menu size={18} />
-            </button>
           </div>
         </div>
       </nav>
 
-      <main>
-        <section className="relative overflow-hidden border-b border-surface-2">
-          <div className="editorial-grid pointer-events-none absolute inset-0" />
-          <div className="mx-auto grid min-h-[calc(100vh-56px)] max-w-7xl items-center gap-12 px-6 py-16 lg:grid-cols-[1.03fr_.97fr]">
-            <div className="relative z-10">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-bg-2 px-3 py-1 text-xs font-medium text-text-2">
-                <span className="h-2 w-2 rounded-full bg-success" />
-                Community design systems
-              </div>
-              <h1 className="max-w-4xl font-display text-[52px] font-bold leading-[0.98] text-text sm:text-[60px] lg:text-[72px]">
-                Discover files that make product teams faster.
-              </h1>
-              <p className="mt-6 max-w-2xl text-[15px] leading-7 text-text-2">
-                Genesis is a precise publishing surface for developers to share, inspect, and download production-ready design system files.
-              </p>
-              <div className="mt-8 flex max-w-2xl items-center gap-3 rounded-xl border border-surface-2 bg-surface p-2">
-                <Search size={18} className="ml-3 text-text-3" />
-                <span className="flex-1 text-sm text-text-3">Search kits, tokens, components, authors</span>
-                <span className="inline-flex items-center gap-1 rounded border border-surface-2 bg-bg-2 px-2 py-1 font-mono text-[11px] text-text-2">
-                  <Command size={12} /> K
-                </span>
-              </div>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/signup"
-                  className="inline-flex h-11 items-center gap-2 rounded-md bg-violet-DEFAULT px-6 text-sm font-medium text-white no-underline transition hover:-translate-y-px hover:bg-violet-2 hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]"
-                >
-                  Start publishing <ArrowRight size={17} />
-                </Link>
-                <Link
-                  href="#library"
-                  className="inline-flex h-11 items-center gap-2 rounded-md border border-surface-2 px-6 text-sm font-medium text-text no-underline transition hover:-translate-y-px hover:bg-bg-2"
-                >
-                  Browse library
-                </Link>
-              </div>
-            </div>
+      {/* Hero Section */}
+      <main style={{ position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-150px', left: '50%', transform: 'translateX(-50%)', width: '800px', height: '800px', background: 'radial-gradient(circle, rgba(131,185,189,0.15) 0%, transparent 60%)', pointerEvents: 'none', zIndex: 0 }} />
+        
+        {/* Floating Torus Backgrounds */}
+        <TorusShape size={300} thickness={40} color="rgba(90,160,164,0.15)" left="-100px" top="50px" delay={0} duration={20} />
+        <TorusShape size={450} thickness={60} color="rgba(66,127,131,0.1)" right="-150px" top="-50px" delay={-5} duration={35} reverse={true} />
+        <TorusShape size={200} thickness={25} color="rgba(16,185,129,0.1)" left="20%" bottom="-50px" delay={-12} duration={25} />
+        <TorusShape size={120} thickness={16} color="rgba(90,160,164,0.2)" right="25%" top="180px" delay={-2} duration={15} />
 
-            <div className="relative z-10">
-              <div className="rounded-xl border border-surface-2 bg-surface">
-                <div className="flex items-center justify-between border-b border-surface-2 p-5">
-                  <div>
-                    <div className="font-mono text-[11px] uppercase text-text-3">Featured release</div>
-                    <div className="mt-1 font-display text-2xl font-bold">Interface OS</div>
-                  </div>
-                  <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-success">Published</span>
-                </div>
-                <div className="h-[200px] border-b border-surface-2 bg-bg-2 p-5">
-                  <div className="grid h-full grid-cols-4 gap-3">
-                    <div className="col-span-2 rounded-lg bg-surface p-4">
-                      <div className="mb-4 h-3 w-24 rounded bg-violet-DEFAULT" />
-                      <div className="space-y-2">
-                        <div className="h-3 rounded bg-[#D4D4D8]" />
-                        <div className="h-3 w-2/3 rounded bg-[#D4D4D8]" />
-                      </div>
-                    </div>
-                    <div className="rounded-lg bg-[#0A0A0A]" />
-                    <div className="grid gap-3">
-                      <div className="rounded-lg bg-violet-DEFAULT" />
-                      <div className="rounded-lg bg-[#E8E8EC]" />
-                    </div>
-                  </div>
-                </div>
-                <div className="divide-y divide-surface-2">
-                  {rows.map(([file, label, status]) => (
-                    <div key={file} className="flex items-center justify-between px-5 py-3 transition hover:bg-bg-2">
-                      <div className="flex items-center gap-3">
-                        <FileCode2 size={18} className={file === 'DESIGN.md' ? 'text-[#20970B]' : 'text-text-3'} />
-                        <div>
-                          <div className={file === 'DESIGN.md' ? 'font-mono text-sm font-medium text-[#20970B]' : 'font-mono text-sm font-medium text-text'}>
-                            {file}
-                          </div>
-                          <div className="text-xs text-text-3">{label}</div>
-                        </div>
-                      </div>
-                      <span className="rounded-full bg-bg-2 px-3 py-1 text-xs text-text-2">{status}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '1000px', margin: '0 auto', padding: '120px 24px 100px', textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(38,69,72,.12)', borderRadius: '20px', fontSize: '12px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: '#607276', marginBottom: '28px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <Sparkles size={14} color="#5aa0a4" />
+            The Ultimate Developer Workspace
           </div>
-        </section>
+          
+          <h1 style={{ fontSize: '64px', fontWeight: 800, fontFamily: 'Syne, sans-serif', lineHeight: 1.1, letterSpacing: '-1.5px', margin: '0 0 24px', color: '#172326' }}>
+            Architect your next app <br />
+            <span style={{ color: '#5aa0a4' }}>
+              in minutes, not days.
+            </span>
+          </h1>
+          
+          <p style={{ fontSize: '18px', color: '#607276', maxWidth: '600px', margin: '0 auto 40px', lineHeight: 1.6 }}>
+            Convert raw ideas into structured blueprints, generate AI prompts, follow step-by-step architecture guides, and deploy seamlessly.
+          </p>
 
-        <section id="library" className="mx-auto max-w-7xl px-6 py-16">
-          <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-            <div>
-              <div className="font-mono text-[11px] uppercase text-text-3">Library</div>
-              <h2 className="mt-3 font-display text-[32px] font-bold">Gallery-frame file cards</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {['All', 'SaaS', 'Mobile', 'Dashboard', 'Tokens'].map((chip, index) => (
-                <button
-                  key={chip}
-                  className={index === 0 ? 'rounded-full bg-violet-DEFAULT px-3 py-1 text-xs text-white' : 'rounded-full bg-bg-2 px-3 py-1 text-xs text-text-2 transition hover:text-text'}
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+            <Link
+              href="/signup"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px', height: '56px', padding: '0 36px',
+                background: 'linear-gradient(135deg, #365f62, #83b9bd)', color: '#fff', borderRadius: '14px', fontSize: '16px', fontWeight: 800,
+                fontFamily: 'Syne, sans-serif', textDecoration: 'none', transition: 'transform 0.2s', boxShadow: '0 8px 24px rgba(66,127,131,0.25)'
+              }}
+            >
+              Start Building <ArrowRight size={18} />
+            </Link>
+            <Link
+              href="/login"
+              style={{
+                display: 'inline-flex', alignItems: 'center', height: '56px', padding: '0 36px',
+                background: 'rgba(255,255,255,0.6)', color: '#172326', border: '1px solid rgba(38,69,72,.12)',
+                borderRadius: '14px', fontSize: '16px', fontWeight: 700, fontFamily: 'Syne, sans-serif', textDecoration: 'none'
+              }}
+            >
+              Log in
+            </Link>
           </div>
+        </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {kits.map(kit => (
-              <article key={kit.name} className="overflow-hidden rounded-xl border border-surface-2 bg-surface transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
-                <div className="h-[200px] border-b border-surface-2 bg-bg-2 p-4">
-                  <div className="grid h-full grid-cols-3 gap-3">
-                    {kit.preview.map(color => (
-                      <div key={color} className="rounded-lg" style={{ backgroundColor: color }} />
-                    ))}
+        {/* Features Grid */}
+        <div id="features" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px 120px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+            {[
+              { icon: BrainCircuit, title: 'Idea Analyzer', desc: 'Type what you want to build. Torus AI instantly generates a complete tech stack and workflow.' },
+              { icon: Code2, title: 'Step-by-Step Architecture', desc: 'Get a distraction-free, actionable guide for every phase of your project, with exact AI prompts.' },
+              { icon: Wrench, title: 'Error Fix Assistant', desc: 'Hit a bug? Paste your terminal output and our AI Bot will explain the error and provide the fix.' },
+              { icon: Rocket, title: 'Deploy with Confidence', desc: 'Project-aware deployment guides that recommend the best platform and give you the CLI commands.' },
+            ].map((feature, i) => {
+              const Icon = feature.icon
+              return (
+                <div key={i} style={{ padding: '36px', background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(38,69,72,.08)', borderRadius: '24px', boxShadow: '0 8px 32px rgba(16,24,40,0.02)' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(66,127,131,.1), rgba(16,185,129,.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', color: '#427f83', border: '1px solid rgba(66,127,131,.15)' }}>
+                    <Icon size={26} />
                   </div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 800, fontFamily: 'Syne, sans-serif', margin: '0 0 12px', color: '#172326' }}>{feature.title}</h3>
+                  <p style={{ margin: 0, fontSize: '14px', color: '#607276', lineHeight: 1.6 }}>{feature.desc}</p>
                 </div>
-                <div className="p-5">
-                  <div className="mb-4 flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-display text-xl font-bold">{kit.name}</h3>
-                      <p className="mt-1 text-sm text-text-2">{kit.category} system by {kit.author}</p>
-                    </div>
-                    <div className="h-9 w-9 rounded-full bg-bg-2 text-center text-sm font-medium leading-9 text-text">
-                      {kit.author.split(' ').map(part => part[0]).join('')}
-                    </div>
-                  </div>
-                  <div className="mb-5 flex flex-wrap gap-2">
-                    {kit.tokens.map(token => (
-                      <span key={token} className="rounded-full bg-bg-2 px-3 py-1 text-xs text-text-2">{token}</span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between border-t border-surface-2 pt-4 text-sm text-text-2">
-                    <span className="inline-flex items-center gap-1"><ArrowDownToLine size={15} /> {kit.downloads}</span>
-                    <span className="inline-flex items-center gap-1"><Star size={15} /> {kit.stars}</span>
-                    <button title={`Preview ${kit.name}`} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-surface-2 text-text-2 transition hover:bg-bg-2 hover:text-text">
-                      <Eye size={15} />
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
+              )
+            })}
           </div>
-        </section>
-
-        <section id="workflow" className="border-y border-surface-2 bg-surface">
-          <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 lg:grid-cols-[.8fr_1.2fr]">
-            <div>
-              <div className="font-mono text-[11px] uppercase text-text-3">Workflow</div>
-              <h2 className="mt-3 font-display text-[32px] font-bold">A publishing flow with useful density.</h2>
-              <p className="mt-4 text-[15px] leading-7 text-text-2">
-                Upload files, attach metadata, validate tokens, and give teams enough context to use the system without a handoff meeting.
-              </p>
-            </div>
-            <div className="divide-y divide-surface-2 rounded-lg border border-surface-2">
-              {[
-                [Upload, 'Submit source files', 'Figma libraries, token JSON, docs, and implementation snippets.'],
-                [GitFork, 'Track versions', 'Show breaking changes, maintainers, and compatible package versions.'],
-                [Users, 'Build trust', 'Surface author history, adoption, and community review signals.'],
-              ].map(([Icon, title, body]) => {
-                const RowIcon = Icon as typeof Upload
-                return (
-                  <div key={title as string} className="flex items-start justify-between gap-6 px-5 py-4 transition hover:bg-bg-2">
-                    <div className="flex gap-4">
-                      <span className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-bg-2 text-violet-DEFAULT">
-                        <RowIcon size={19} />
-                      </span>
-                      <div>
-                        <h3 className="font-display text-lg font-bold">{title as string}</h3>
-                        <p className="mt-1 text-sm leading-6 text-text-2">{body as string}</p>
-                      </div>
-                    </div>
-                    <ArrowRight size={17} className="mt-3 text-text-3" />
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section id="community" className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid gap-5 md:grid-cols-3">
-            {stats.map(([value, label]) => (
-              <div key={label} className="rounded-lg border border-surface-2 bg-surface p-6">
-                <div className="font-display text-[60px] font-bold leading-none">{value}</div>
-                <div className="mt-3 text-sm text-text-2">{label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+        </div>
       </main>
 
-      <footer className="border-t border-surface-2 bg-surface px-6 py-8 text-sm text-text-2">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 md:flex-row md:items-center">
-          <div className="font-display text-lg font-bold text-text">Genesis</div>
-          <div>Design systems for teams that care about the details.</div>
+      <footer style={{ borderTop: '1px solid rgba(38,69,72,.1)', padding: '40px 24px', textAlign: 'center', color: '#8a9a9d', fontSize: '13px', fontFamily: 'DM Mono, monospace' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '12px', fontSize: '16px', fontFamily: 'Syne, sans-serif', fontWeight: 800, color: '#172326' }}>
+          Torus<span style={{ color: '#5aa0a4' }}>AI</span>
         </div>
+        © {new Date().getFullYear()} Torus AI Workspace. All rights reserved.
       </footer>
+      <style>{`
+        .nav-link:hover, .login-link:hover { color: #172326 !important; }
+        .nav-links-container { display: flex; }
+        @media (max-width: 768px) {
+          .nav-links-container { display: none !important; }
+        }
+        html { scroll-behavior: smooth; }
+        @keyframes rotate3d {
+          0% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+          100% { transform: perspective(1000px) rotateX(360deg) rotateY(180deg) rotateZ(360deg); }
+        }
+        @keyframes rotate3d-reverse {
+          0% { transform: perspective(1000px) rotateX(360deg) rotateY(180deg) rotateZ(360deg); }
+          100% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+        }
+      `}</style>
     </div>
   )
 }

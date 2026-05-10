@@ -62,6 +62,8 @@ export interface Feature {
   priority: 'must' | 'nice'
   complexity: 'low' | 'medium' | 'high'
   sort_order: number
+  why_important?: string
+  suitability_score?: number
 }
 
 export interface Phase {

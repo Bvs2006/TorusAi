@@ -57,11 +57,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   const session = cookieStore.get('fb_session')?.value
   if (!session) redirect('/login')
 
-  let uid: string
+  let uid = ''
   try {
     const decoded = await adminAuth.verifySessionCookie(session!, true)
     uid = decoded.uid
   } catch { redirect('/login') as never }
+  if (!uid) redirect('/login')
 
   const tab = searchParams.tab
 

@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseServiceRole)
+function getSupabase() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !supabaseServiceRole) return null
+  return createClient(supabaseUrl, supabaseServiceRole)
+}
 
 export async function GET(req: NextRequest) {
   try {
+    const supabase = getSupabase()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase is not configured' }, { status: 500 })
+    }
+
     const userId = req.nextUrl.searchParams.get('user_id')
 
     if (!userId) {

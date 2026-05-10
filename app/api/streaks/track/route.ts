@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseServiceRole)
+function getSupabase() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !supabaseServiceRole) return null
+  return createClient(supabaseUrl, supabaseServiceRole)
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = getSupabase()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase is not configured' }, { status: 500 })
+    }
+
     const { user_id, activity_type, activity_data } = await req.json()
 
     if (!user_id || !activity_type) {
@@ -17,12 +24,12 @@ export async function POST(req: NextRequest) {
     const today = new Date().toISOString().split('T')[0]
 
     // Record user activity
-    await supabase.from('user_activity').insert([{
+    await supabase.from('user_activity').upsert([{
       user_id,
       activity_date: today,
       activity_type,
       activity_data: activity_data || {}
-    }]).onConflict('user_id,activity_date,activity_type').eq()
+    }], { onConflict: 'user_id,activity_date,activity_type' })
 
     // Get or create streak record
     const { data: existingStreak } = await supabase
@@ -75,7 +82,7 @@ export async function POST(req: NextRequest) {
         .eq('user_id', user_id)
 
       // Check for badge awards (every 30 days)
-      await checkAndAwardStreakBadges(user_id, newStreak)
+      await checkAndAwardStreakBadges(supabase, user_id, newStreak)
     }
 
     return NextResponse.json({ success: true, message: 'Streak tracked successfully' })
@@ -85,7 +92,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function checkAndAwardStreakBadges(user_id: string, currentStreak: number) {
+async function checkAndAwardStreakBadges(supabase: any, user_id: string, currentStreak: number) {
   const badges = [
     { days: 30, type: '1_month' },
     { days: 90, type: '3_months' },

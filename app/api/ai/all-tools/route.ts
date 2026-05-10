@@ -1,6 +1,8 @@
 // app/api/ai/all-tools/route.ts
 import { askGroq } from '@/lib/groq'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: Request) {
   try {
     const prompt = `You are an AI tools expert. Generate a comprehensive list of ALL available AI tools organized by category.

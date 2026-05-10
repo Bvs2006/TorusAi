@@ -23,10 +23,18 @@ function getResumeStep(project: any) {
   return 'features'
 }
 
-function getPhaseProgress(project: any) {
-  const phases = project.phases || []
-  if (!phases.length) return 0
-  return Math.round((phases.filter((p: any) => p.status === 'done').length / phases.length) * 100)
+function getProjectProgress(project: any) {
+  const step = getResumeStep(project)
+  switch (step) {
+    case 'idea': return 10;
+    case 'features': return 20;
+    case 'architecture': return 40;
+    case 'prompts': return 60;
+    case 'blueprint': return 80;
+    case 'deploy': return 90;
+    case 'done': return 100;
+    default: return 20;
+  }
 }
 
 export default function ActiveProjectList({ projects }: { projects: any[] }) {
@@ -100,7 +108,7 @@ export default function ActiveProjectList({ projects }: { projects: any[] }) {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
               <div style={{ fontSize: '11px', color: '#5aa0a4', fontWeight: 600, padding: '4px 10px', background: 'rgba(90,160,164,.1)', borderRadius: '6px', whiteSpace: 'nowrap' }}>
-                {getPhaseProgress(proj)}%
+                {getProjectProgress(proj)}%
               </div>
               <button
                 type="button"

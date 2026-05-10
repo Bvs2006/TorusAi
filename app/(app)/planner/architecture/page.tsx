@@ -114,8 +114,8 @@ function ArchitecturePage() {
   }
 
   const createAIToolNodes = (tools: any[]) => {
-    const newNodes = []
-    const newEdges = []
+    const newNodes: any[] = []
+    const newEdges: any[] = []
     
     // Root node
     const rootNode = {
@@ -179,7 +179,7 @@ function ArchitecturePage() {
   }
 
   const onConnect = useCallback((params: any) =>
-    setEdges((eds) => addEdge({
+    setEdges((eds: any[]) => addEdge({
       ...params, animated: true,
       style: { stroke: '#5aa0a4', strokeWidth: 2 },
       markerEnd: { type: MarkerType.ArrowClosed, color: '#5aa0a4' }
@@ -208,7 +208,7 @@ function ArchitecturePage() {
     })
 
     // Check if dropping on an existing node to swap
-    const nodesAtPosition = reactFlowInstance.getNodes().filter(n => {
+    const nodesAtPosition = reactFlowInstance.getNodes().filter((n: any) => {
       const distance = Math.sqrt(
         Math.pow(n.position.x - position.x, 2) + Math.pow(n.position.y - position.y, 2)
       )
@@ -218,8 +218,8 @@ function ArchitecturePage() {
     if (nodesAtPosition.length > 0 && nodesAtPosition[0].id !== 'ai-root') {
       // Swap tool on existing node
       const targetNode = nodesAtPosition[0]
-      setNodes((nds) =>
-        nds.map(n =>
+      setNodes((nds: any[]) =>
+        nds.map((n: any) =>
           n.id === targetNode.id
             ? {
                 ...n,
@@ -271,16 +271,16 @@ function ArchitecturePage() {
       position,
       data: { tool, isValid, reason },
     }
-    setNodes((nds) => nds.concat(newNode))
+    setNodes((nds: any[]) => nds.concat(newNode))
 
     const categoryOrder = ['frontend', 'backend', 'database', 'auth', 'ai', 'storage', 'deployment']
     const currentIndex = categoryOrder.indexOf(tool.category)
     if (currentIndex > 0) {
       const prevCategory = categoryOrder[currentIndex - 1]
-      setNodes((currentNodes) => {
-        const prevNode = currentNodes.find(n => n.data.tool.category === prevCategory)
+      setNodes((currentNodes: any[]) => {
+        const prevNode = currentNodes.find((n: any) => n.data.tool.category === prevCategory)
         if (prevNode) {
-          setEdges((eds) => addEdge({
+          setEdges((eds: any[]) => addEdge({
             id: `e-${prevNode.id}-${newNode.id}`,
             source: prevNode.id, target: newNode.id,
             animated: true, style: { stroke: '#5aa0a4', strokeWidth: 2 },
@@ -295,12 +295,12 @@ function ArchitecturePage() {
   const handleAutoLayout = useCallback(() => {
     const categoryOrder = ['frontend', 'backend', 'database', 'auth', 'ai', 'storage', 'cdn', 'deployment']
     const grouped: Record<string, any[]> = {}
-    nodes.forEach(n => {
+    nodes.forEach((n: any) => {
       const cat = n.data.tool.category
       if (!grouped[cat]) grouped[cat] = []
       grouped[cat].push(n)
     })
-    const updated = nodes.map(n => {
+    const updated = nodes.map((n: any) => {
       const cat = n.data.tool.category
       const colIdx = categoryOrder.indexOf(cat)
       const rowIdx = grouped[cat].indexOf(n)
@@ -335,8 +335,8 @@ function ArchitecturePage() {
     if (!selectedNode) return
     
     // Update the selected node with new tool data
-    setNodes((nds) =>
-      nds.map(n =>
+    setNodes((nds: any[]) =>
+      nds.map((n: any) =>
         n.id === selectedNode.id
           ? {
               ...n,
@@ -417,7 +417,7 @@ function ArchitecturePage() {
               Drag tech tools onto the canvas · Click a node to see AI recommendations
             </p>
           </div>
-          <button onClick={() => router.push(`/planner/blueprint?project=${projectId}`)}
+          <button onClick={() => router.push(`/planner/architecture/guide?project=${projectId}`)}
             style={{ padding: '9px 18px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', border: 'none', borderRadius: '8px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '13px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 20px rgba(66,127,131,.3)' }}>
             Continue <ArrowRight size={14} />
           </button>
@@ -667,7 +667,7 @@ function ArchitecturePage() {
               )}
 
               {/* Continue button */}
-              <button onClick={() => router.push(`/planner/blueprint?project=${projectId}`)} style={{
+              <button onClick={() => router.push(`/planner/architecture/guide?project=${projectId}`)} style={{
                 width: '100%', padding: '11px', background: 'linear-gradient(135deg, #365f62, #83b9bd)',
                 border: 'none', borderRadius: '10px', color: '#fff', fontFamily: 'Syne, sans-serif',
                 fontSize: '13px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center',
