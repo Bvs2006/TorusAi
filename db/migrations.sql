@@ -110,6 +110,40 @@ CREATE TABLE IF NOT EXISTS proposals (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 9. Streak Tracking
+CREATE TABLE IF NOT EXISTS user_activity (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  activity_date DATE NOT NULL,
+  activity_type TEXT NOT NULL CHECK (activity_type IN ('project_created','feature_added','phase_completed','error_fixed','ai_plan_generated','prompt_generated')),
+  activity_data JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, activity_date, activity_type)
+);
+
+-- 10. Streak Management
+CREATE TABLE IF NOT EXISTS streaks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL UNIQUE,
+  current_streak INT DEFAULT 0,
+  max_streak INT DEFAULT 0,
+  last_activity_date DATE,
+  streak_started_at TIMESTAMPTZ,
+  streak_ends_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 11. Streak Badges (Torus Badges)
+CREATE TABLE IF NOT EXISTS streak_badges (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  badge_type TEXT NOT NULL CHECK (badge_type IN ('1_month','3_months','6_months','12_months','24_months')),
+  earned_at TIMESTAMPTZ DEFAULT NOW(),
+  streak_value INT NOT NULL,
+  UNIQUE(user_id, badge_type)
+);
+
 -- =============================================
 -- ROW LEVEL SECURITY
 -- =============================================
@@ -122,6 +156,9 @@ ALTER TABLE organisations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE org_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE client_portals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE proposals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_activity ENABLE ROW LEVEL SECURITY;
+ALTER TABLE streaks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE streak_badges ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 CREATE POLICY "Users read own profile" ON profiles FOR SELECT USING (auth.uid() = id);
@@ -163,6 +200,18 @@ CREATE POLICY "Org members manage proposals" ON proposals FOR ALL
   USING (org_id IN (
     SELECT org_id FROM org_members WHERE user_id = auth.uid()
   ));
+
+-- User Activity policies
+CREATE POLICY "Users manage own activity" ON user_activity FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users read own activity" ON user_activity FOR SELECT USING (auth.uid() = user_id);
+
+-- Streaks policies
+CREATE POLICY "Users manage own streak" ON streaks FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users read own streak" ON streaks FOR SELECT USING (auth.uid() = user_id);
+
+-- Streak Badges policies
+CREATE POLICY "Users manage own badges" ON streak_badges FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users read own badges" ON streak_badges FOR SELECT USING (auth.uid() = user_id);
 
 -- =============================================
 -- AUTO-CREATE PROFILE ON SIGNUP

@@ -9,6 +9,35 @@ export interface User {
   created_at: string
 }
 
+export interface Streak {
+  id: string
+  user_id: string
+  current_streak: number
+  max_streak: number
+  last_activity_date: string
+  streak_started_at: string
+  streak_ends_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface UserActivity {
+  id: string
+  user_id: string
+  activity_date: string
+  activity_type: 'project_created' | 'feature_added' | 'phase_completed' | 'error_fixed' | 'ai_plan_generated' | 'prompt_generated'
+  activity_data: Record<string, any>
+  created_at: string
+}
+
+export interface StreakBadge {
+  id: string
+  user_id: string
+  badge_type: '1_month' | '3_months' | '6_months' | '12_months' | '24_months'
+  earned_at: string
+  streak_value: number
+}
+
 export interface Project {
   id: string
   user_id: string
