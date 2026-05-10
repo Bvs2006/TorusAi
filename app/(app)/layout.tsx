@@ -1,5 +1,6 @@
 // app/(app)/layout.tsx
 import { cookies } from 'next/headers'
+export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { adminAuth, adminDb } from '@/utils/firebase/admin'
 import Navbar from '@/components/Navbar'
