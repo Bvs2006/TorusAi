@@ -116,19 +116,6 @@ function ArchitecturePage() {
 
   const createAIToolNodes = (tools: any[]) => {
     const newNodes: any[] = []
-    const newEdges: any[] = []
-    
-    // Root node (Center Hub)
-    const rootNode = {
-      id: 'ai-root',
-      type: 'techNode',
-      position: { x: 0, y: 0 },
-      data: { 
-        tool: { name: 'Cursor IDE', category: 'root', description: 'Central Development Hub (Cursor / VS Code)', layer: 'root' }, 
-        isValid: true 
-      }
-    }
-    newNodes.push(rootNode)
     
     // Group tools by layer
     const layers: { [key: string]: any[] } = { 
@@ -145,33 +132,66 @@ function ArchitecturePage() {
     })
     
     // Layout constants
-    const RADIUS = 400
-    const BOX_SIZE = 250
+    const RADIUS = 450
+    const GROUP_WIDTH = 380
+    const GROUP_HEIGHT = 320
     
-    // Quadrant Positions
-    const QUADRANTS: Record<string, { x: number, y: number, color: string }> = {
-      Frontend: { x: -RADIUS, y: -RADIUS, color: '#6366f1' },
-      Backend: { x: RADIUS, y: -RADIUS, color: '#f97316' },
-      Data: { x: RADIUS, y: RADIUS, color: '#06b6d4' },
-      DevOps: { x: -RADIUS, y: RADIUS, color: '#ec4899' }
+    // Container Quadrants
+    const QUADRANTS: Record<string, { x: number, y: number, color: string, label: string }> = {
+      Frontend: { x: -RADIUS - 100, y: -RADIUS, color: '#6366f1', label: 'Frontend AI Tools' },
+      Backend: { x: RADIUS - 200, y: -RADIUS, color: '#f97316', label: 'Backend AI Tools' },
+      Data: { x: RADIUS - 200, y: RADIUS - 200, color: '#06b6d4', label: 'Database & Storage' },
+      DevOps: { x: -RADIUS - 100, y: RADIUS - 200, color: '#ec4899', label: 'DevOps & Pipeline' }
     }
+
+    // 1. Create central IDE Hub (No container needed for this one or small one)
+    newNodes.push({
+      id: 'ai-root',
+      type: 'techNode',
+      position: { x: 0, y: 0 },
+      data: { 
+        tool: { name: 'Cursor IDE', category: 'root', description: 'Central Development Hub', layer: 'root' }, 
+        isValid: true 
+      }
+    })
     
-    // Create nodes for each quadrant
+    // 2. Create Group Containers and tool nodes
     Object.entries(layers).forEach(([layer, toolsList]) => {
       const config = QUADRANTS[layer] || QUADRANTS['Backend']
+      const groupId = `group-${layer.toLowerCase()}`
+
+      // Create Parent Group Node
+      newNodes.push({
+        id: groupId,
+        data: { label: config.label },
+        position: { x: config.x, y: config.y },
+        style: {
+          width: GROUP_WIDTH,
+          height: GROUP_HEIGHT,
+          backgroundColor: 'rgba(66,127,131, 0.03)',
+          border: `2px dashed ${config.color}`,
+          borderRadius: '24px',
+          padding: '20px',
+        },
+        type: 'group',
+      })
       
+      // Create children within the group
       toolsList.forEach((tool: any, idx: number) => {
         const nodeId = `tool-${tool.id}`
         
-        // Arrange tools in a small square within their quadrant
         const row = Math.floor(idx / 2)
         const col = idx % 2
-        const xPos = config.x + (col * 180)
-        const yPos = config.y + (row * 140)
+        
+        // Relative position inside the group
+        const xPos = 20 + (col * 170)
+        const yPos = 50 + (row * 130)
         
         newNodes.push({
           id: nodeId,
           type: 'techNode',
+          parentNode: groupId,
+          extent: 'parent',
           position: { x: xPos, y: yPos },
           data: { 
             tool: { 
@@ -180,26 +200,17 @@ function ArchitecturePage() {
               layer: layer,
               description: `${tool.category} - ${tool.reason}`,
               displayName: `${getLayerEmoji(layer)} ${tool.name}`,
-              configuration: tool.configuration || `Configure ${tool.name} by setting up API keys and connecting it to your ${layer.toLowerCase()} services.`
+              configuration: tool.configuration || `Configure ${tool.name} by setting up API keys.`
             },
             isValid: true,
             relevance: tool.relevance
           }
         })
-        
-        // Connect to root hub
-        newEdges.push({
-          id: `edge-root-${nodeId}`,
-          source: 'ai-root',
-          target: nodeId,
-          animated: true,
-          style: { stroke: config.color, strokeWidth: 2 }
-        })
       })
     })
     
     setNodes(newNodes)
-    setEdges(newEdges)
+    setEdges([]) // Clear all automated edges as per user request
   }
 
   const onConnect = useCallback((params: any) =>
