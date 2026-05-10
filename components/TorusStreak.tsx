@@ -19,6 +19,7 @@ interface TorusStreakProps {
 
 export default function TorusStreak({ streak, badges }: TorusStreakProps) {
   const [isActive, setIsActive] = useState(true)
+  const torusPalette = ['#60a5fa', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444']
 
   useEffect(() => {
     // Check if streak is still active (activity today or yesterday)
@@ -56,12 +57,12 @@ export default function TorusStreak({ streak, badges }: TorusStreakProps) {
               width: '48px',
               height: '48px',
               borderRadius: '50%',
-              background: `conic-gradient(from 0deg, #8b5cf6, #ec4899, #f59e0b, #8b5cf6)`,
+              background: `conic-gradient(from 0deg, ${torusPalette[i % torusPalette.length]}, ${torusPalette[(i + 1) % torusPalette.length]}, ${torusPalette[(i + 2) % torusPalette.length]}, ${torusPalette[i % torusPalette.length]})`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '24px',
-              boxShadow: '0 0 12px rgba(139, 92, 246, 0.4)',
+              boxShadow: `0 0 12px ${torusPalette[i % torusPalette.length]}66`,
               position: 'relative',
               border: '2px solid rgba(255, 255, 255, 0.1)'
             }}
@@ -77,7 +78,7 @@ export default function TorusStreak({ streak, badges }: TorusStreakProps) {
                 justifyContent: 'center'
               }}
             >
-              ⭕
+              {i + 1}
             </div>
           </div>
         ))}
@@ -89,7 +90,7 @@ export default function TorusStreak({ streak, badges }: TorusStreakProps) {
               width: '48px',
               height: '48px',
               borderRadius: '50%',
-              background: `conic-gradient(from 0deg, #8b5cf6 0deg, #8b5cf6 ${(remainingDays / 30) * 360}deg, #4b5563 ${(remainingDays / 30) * 360}deg)`,
+              background: `conic-gradient(from 0deg, #8b5cf6 0deg, #ec4899 ${(remainingDays / 30) * 360}deg, #4b5563 ${(remainingDays / 30) * 360}deg)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -177,27 +178,58 @@ export default function TorusStreak({ streak, badges }: TorusStreakProps) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
             {badges.map(badge => {
               const config = badgeConfig[badge.badge_type as keyof typeof badgeConfig]
+              const color = config?.color || '#8b5cf6'
               return (
                 <div
                   key={badge.id}
                   style={{
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px',
-                    borderRadius: '12px',
-                    background: `${config?.color}15`,
-                    border: `1px solid ${config?.color}40`,
+                    gap: '12px',
+                    padding: '14px',
+                    borderRadius: '16px',
+                    background: `linear-gradient(135deg, ${color}18, rgba(14, 12, 26, 0.95))`,
+                    border: `1px solid ${color}40`,
                     flex: '1 0 calc(50% - 6px)'
                   }}
                 >
-                  <div style={{ fontSize: '32px' }}>{config?.icon}</div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: config?.color }}>
-                    {config?.label}
+                  <div
+                    style={{
+                      width: '52px',
+                      height: '52px',
+                      borderRadius: '50%',
+                      background: `conic-gradient(from 0deg, ${color}, ${color}66, ${color})`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: `0 0 16px ${color}40`,
+                      flexShrink: 0
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: '#0e0c1a',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color,
+                        fontSize: '11px',
+                        fontWeight: 700
+                      }}
+                    >
+                      {config?.icon}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '10px', color: '#8a9a9d' }}>
-                    Earned on {new Date(badge.earned_at).toLocaleDateString()}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color }}>
+                      {config?.label}
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#8a9a9d', marginTop: '4px' }}>
+                      Earned on {new Date(badge.earned_at).toLocaleDateString()}
+                    </div>
                   </div>
                 </div>
               )

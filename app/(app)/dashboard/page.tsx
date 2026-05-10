@@ -3,7 +3,9 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { adminAuth, adminDb } from '@/utils/firebase/admin'
-import { Plus, Zap, ArrowRight, Clock } from 'lucide-react'
+import { Plus, Zap, ArrowRight, Clock, Flame } from 'lucide-react'
+import StreakWidget from '@/components/StreakWidget'
+import ActiveProjectList from '@/components/ActiveProjectList'
 
 const getPhaseProgress = (project: any) => {
   const phases = project.phases || []
@@ -97,7 +99,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
     return renderRecentProjects({ projects })
   }
 
-  return renderDeveloperDashboard({ greeting, username, projects, allPhases, profile })
+  return renderDeveloperDashboard({ greeting, username, projects, allPhases, profile, uid })
 }
 
 function renderRecentProjects({ projects }: { projects: any[] }) {
@@ -165,7 +167,7 @@ function renderRecentProjects({ projects }: { projects: any[] }) {
   )
 }
 
-function renderDeveloperDashboard({ greeting, username, projects, allPhases, profile }: any) {
+function renderDeveloperDashboard({ greeting, username, projects, allPhases, profile, uid }: any) {
   const totalProjects = projects?.length || 0
   const completedProjects = projects?.filter((p: any) => p.status === 'completed').length || 0
   const activeProjects = projects?.filter((p: any) => p.status === 'active').length || 0
@@ -226,6 +228,15 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
           ))}
         </div>
 
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', color: '#172326', fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 800 }}>
+            <Flame size={18} color="#f97316" /> Streak Torus
+          </div>
+          <div style={{ maxWidth: '560px' }}>
+            <StreakWidget userId={uid} />
+          </div>
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginBottom: '32px' }}>
           <div style={{ background: 'rgba(255,255,255,.54)', backdropFilter: 'blur(16px)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '20px', padding: '24px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -233,29 +244,7 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
                 <Clock color="#427f83" size={20} /> Active Projects
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {projects.filter((p: any) => p.status === 'active').length > 0 ? (
-                projects.filter((p: any) => p.status === 'active').map((proj: any) => {
-                  const resumeStep = getResumeStep(proj)
-                  const stepPath = `/planner/${resumeStep}?project=${proj.id}`
-                  return (
-                    <Link key={proj.id} href={stepPath} style={{ textDecoration: 'none' }}>
-                      <div className="active-project-card" style={{ padding: '14px 16px', background: 'rgba(66,127,131,.08)', border: '1px solid rgba(66,127,131,.2)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
-                        <div>
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326' }}>{proj.name || 'Untitled Project'}</div>
-                          <div style={{ fontSize: '11px', color: '#8a9a9d', marginTop: '3px' }}>{proj.idea?.substring(0, 50) || 'No description'}...</div>
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#5aa0a4', fontWeight: 600, padding: '4px 10px', background: 'rgba(90,160,164,.1)', borderRadius: '6px' }}>{getPhaseProgress(proj)}%</div>
-                      </div>
-                    </Link>
-                  )
-                })
-              ) : (
-                <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <div style={{ color: '#607276', fontSize: '14px' }}>No active projects. Time to build!</div>
-                </div>
-              )}
-            </div>
+            <ActiveProjectList projects={projects} />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>

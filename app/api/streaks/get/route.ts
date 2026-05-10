@@ -22,7 +22,36 @@ export async function GET(req: NextRequest) {
       .single()
 
     if (streakError) {
-      return NextResponse.json({ error: 'Streak not found' }, { status: 404 })
+      const today = new Date().toISOString().split('T')[0]
+      const { data: createdStreak, error: createError } = await supabase
+        .from('streaks')
+        .insert([
+          {
+            user_id: userId,
+            current_streak: 0,
+            max_streak: 0,
+            last_activity_date: today,
+            streak_started_at: new Date().toISOString(),
+          },
+        ])
+        .select('*')
+        .single()
+
+      if (createError || !createdStreak) {
+        return NextResponse.json({ error: 'Failed to initialize streak' }, { status: 500 })
+      }
+
+      const { data: badges } = await supabase
+        .from('streak_badges')
+        .select('*')
+        .eq('user_id', userId)
+        .order('earned_at', { ascending: false })
+
+      return NextResponse.json({
+        streak: createdStreak,
+        badges: badges || [],
+        recentActivity: []
+      })
     }
 
     // Get streak badges

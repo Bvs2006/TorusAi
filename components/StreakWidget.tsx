@@ -1,7 +1,6 @@
 'use client'
 
 import { Flame, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 interface StreakWidgetProps {
@@ -55,7 +54,7 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
   const remainingDays = streak.current_streak % 30
 
   return (
-    <Link href="/badges">
+    <a href="/badges" style={{ textDecoration: 'none', display: 'block' }}>
       <div
         style={{
           background: isActive
@@ -140,6 +139,6 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
           {isActive ? '🔥 Keep going!' : '⚠️ Streak ended'}
         </div>
       </div>
-    </Link>
+    </a>
   )
 }

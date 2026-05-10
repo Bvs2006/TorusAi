@@ -1,8 +1,10 @@
 'use client'
 
-import { Trophy, Star, Zap, Code, Shield, Flame } from 'lucide-react'
+import { Trophy, Flame } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import TorusStreak from '@/components/TorusStreak'
+import { auth } from '@/utils/firebase/client'
+import { onAuthStateChanged } from 'firebase/auth'
 
 interface StreakData {
   streak: {
@@ -23,12 +25,13 @@ interface StreakData {
   }>
 }
 
-const BADGES = [
-  { id: 'first_project', title: 'First Project', description: 'Created your first AI project on Torus.', icon: Star, unlocked: true, color: '#f59e0b' },
-  { id: 'architect', title: 'Code Architect', description: 'Successfully generated a system blueprint.', icon: Code, unlocked: true, color: '#3b82f6' },
-  { id: 'power_user', title: 'Power User', description: 'Spent over 10 hours in the Vibe Workspace.', icon: Zap, unlocked: false, color: '#8b5cf6' },
-  { id: 'defender', title: 'Defender', description: 'Fixed 5 errors using the Robot Fixer.', icon: Shield, unlocked: false, color: '#10b981' },
-]
+const TORUS_BADGE_META: Record<string, { label: string; color: string }> = {
+  '1_month': { label: '1 Month', color: '#60a5fa' },
+  '3_months': { label: '3 Months', color: '#8b5cf6' },
+  '6_months': { label: '6 Months', color: '#ec4899' },
+  '12_months': { label: '1 Year', color: '#f59e0b' },
+  '24_months': { label: '2 Years', color: '#ef4444' },
+}
 
 export default function BadgesPage() {
   const [streakData, setStreakData] = useState<StreakData | null>(null)
@@ -36,35 +39,34 @@ export default function BadgesPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchStreakData = async () => {
+    const unsubscribe = onAuthStateChanged(auth, async user => {
       try {
-        // Get current user ID from auth
-        const { data: { user } } = await (await import('@supabase/supabase-js')).createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        ).auth.getUser()
-
-        if (!user?.id) {
+        if (!user?.uid) {
           setError('User not authenticated')
+          setStreakData(null)
           return
         }
 
-        const response = await fetch(`/api/streaks/get?user_id=${user.id}`)
-        if (response.ok) {
-          const data = await response.json()
-          setStreakData(data)
-        } else {
+        const response = await fetch(`/api/streaks/get?user_id=${user.uid}`)
+        if (!response.ok) {
           setError('Failed to load streak data')
+          setStreakData(null)
+          return
         }
+
+        const data = await response.json()
+        setStreakData(data)
+        setError(null)
       } catch (err) {
         console.error('Error fetching streak data:', err)
         setError('Error loading streak information')
+        setStreakData(null)
       } finally {
         setLoading(false)
       }
-    }
+    })
 
-    fetchStreakData()
+    return () => unsubscribe()
   }, [])
 
   return (
@@ -85,15 +87,15 @@ export default function BadgesPage() {
       </div>
 
       {/* Streak Section */}
-      {!loading && streakData && (
-        <div style={{ marginBottom: '40px' }}>
-          <TorusStreak streak={streakData.streak} badges={streakData.badges} />
-        </div>
-      )}
-
       {loading && (
         <div style={{ textAlign: 'center', padding: '40px', color: '#8a9a9d' }}>
           <p>Loading streak information...</p>
+        </div>
+      )}
+
+      {!loading && streakData && (
+        <div style={{ marginBottom: '40px' }}>
+          <TorusStreak streak={streakData.streak} badges={streakData.badges} />
         </div>
       )}
 
@@ -110,60 +112,61 @@ export default function BadgesPage() {
         </div>
       )}
 
-      {/* Achievement Badges */}
-      <div>
-        <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '20px', color: '#fff' }}>Achievements</h2>
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px'
-        }}>
-          {BADGES.map(badge => {
-            const Icon = badge.icon
-            return (
-              <div key={badge.id} style={{
-                background: '#0e0c1a', border: '1px solid rgba(38,69,72,.1)',
-                borderRadius: '20px', padding: '28px',
-                display: 'flex', gap: '20px',
-                opacity: badge.unlocked ? 1 : 0.6,
-                transition: 'all 0.2s ease',
-                cursor: 'default',
-                boxShadow: badge.unlocked ? '0 4px 20px rgba(0,0,0,0.2)' : 'none'
-              }}
-                onMouseOver={e => { if (badge.unlocked) e.currentTarget.style.transform = 'translateY(-4px)' }}
-                onMouseOut={e => { if (badge.unlocked) e.currentTarget.style.transform = 'translateY(0)' }}
-              >
-                <div style={{
-                  width: '56px', height: '56px', borderRadius: '50%', flexShrink: 0,
-                  background: badge.unlocked ? `${badge.color}15` : 'rgba(255,255,255,.62)',
-                  border: badge.unlocked ? `1px solid ${badge.color}30` : '1px solid #2d2b3b',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: badge.unlocked ? badge.color : '#8a9a9d',
-                  boxShadow: badge.unlocked ? `0 0 20px ${badge.color}20` : 'none'
+      {!loading && streakData?.badges?.length ? (
+        <div style={{ marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '20px', color: '#172326' }}>Torus Badges</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+            {streakData.badges.map(badge => {
+              const meta = TORUS_BADGE_META[badge.badge_type] || { label: badge.badge_type, color: '#8b5cf6' }
+              return (
+                <div key={badge.id} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  padding: '16px',
+                  borderRadius: '18px',
+                  background: `linear-gradient(135deg, ${meta.color}16, rgba(14, 12, 26, 0.96))`,
+                  border: `1px solid ${meta.color}40`,
+                  boxShadow: `0 12px 32px ${meta.color}14`
                 }}>
-                  <Icon size={28} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: badge.unlocked ? '#fff' : '#607276', marginBottom: '6px' }}>
-                    {badge.title}
-                  </div>
-                  <div style={{ fontSize: '14px', color: '#8a9a9d', lineHeight: 1.5 }}>
-                    {badge.description}
-                  </div>
-                  {badge.unlocked ? (
-                    <div style={{ marginTop: '16px', fontSize: '12px', fontWeight: 700, color: badge.color, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: badge.color }} />
-                      Unlocked
+                  <div style={{
+                    width: '54px',
+                    height: '54px',
+                    borderRadius: '50%',
+                    background: `conic-gradient(from 0deg, ${meta.color}, ${meta.color}80, ${meta.color})`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: `0 0 18px ${meta.color}40`
+                  }}>
+                    <div style={{
+                      width: '34px',
+                      height: '34px',
+                      borderRadius: '50%',
+                      background: '#0e0c1a',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: meta.color,
+                      fontSize: '11px',
+                      fontWeight: 800
+                    }}>
+                      {meta.label.replace('Month', 'M')}
                     </div>
-                  ) : (
-                    <div style={{ marginTop: '16px', fontSize: '12px', fontWeight: 600, color: '#3a3360', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                      Locked
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{meta.label} Torus</div>
+                    <div style={{ fontSize: '12px', color: '#8a9a9d', marginTop: '4px' }}>
+                      Earned on {new Date(badge.earned_at).toLocaleDateString()}
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Streak Information */}
       <div style={{ marginTop: '40px', padding: '24px', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '16px' }}>
