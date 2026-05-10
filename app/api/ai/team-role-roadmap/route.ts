@@ -4,7 +4,7 @@ export async function POST(req: Request) {
   try {
     const { projectIdea, role, stack } = await req.json()
 
-    const prompt = `You are a senior technical lead. Create a highly specific, 5-step implementation roadmap for a "${role}" developer.
+    const prompt = `You are a senior technical lead and AI architect. Create a highly specific, 5-step implementation roadmap for a "${role}" developer.
 
 Project Idea: "${projectIdea}"
 Assigned Stack: ${JSON.stringify(stack)}
@@ -13,11 +13,14 @@ For each step in the roadmap, provide:
 1. Title: A concise name for the phase (e.g., "Schema Design", "UI Component Library").
 2. Description: A clear explanation of what the developer needs to build in this step.
 3. Goal: The expected outcome or definition of done for this step.
-4. AI Prompt: A detailed, context-aware prompt that the developer can paste into an AI coding assistant (like Cursor, v0, or ChatGPT) to generate the code/infrastructure for this specific step.
+4. AI Tool: The single best AI tool to use for this specific step (e.g., "v0.dev", "Cursor", "Firebase Console", "Midjourney").
+5. Sub-Steps: A list of 3-4 specific technical sub-tasks to complete during this phase.
+6. AI Prompt: A high-fidelity, context-aware prompt that the developer can paste into the recommended AI tool to generate the code, UI, or infrastructure for this specific step.
 
 Requirements:
 - The roadmap must be tailored specifically to the responsibilities of a "${role}".
-- Prompts should be professional and include best practices for the given stack.
+- Prompts should be professional, including technical requirements from the stack.
+- Tool recommendations should be modern and highly effective for the task.
 
 Format your response as ONLY valid JSON (no preamble, no markdown):
 {
@@ -26,6 +29,8 @@ Format your response as ONLY valid JSON (no preamble, no markdown):
       "title": "Step 1: ...",
       "description": "...",
       "goal": "...",
+      "tool": "...",
+      "subSteps": ["...", "...", "..."],
       "prompt": "..."
     }
   ]

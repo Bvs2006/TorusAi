@@ -144,14 +144,42 @@ export default function RoleGuideDetailsPage() {
                   </div>
                 </div>
 
-                <div style={{ marginBottom: '32px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--success)', fontSize: '13px', fontWeight: 800, marginBottom: '12px' }}>
-                    <CheckCircle2 size={16} /> GOAL / DEFINITION OF DONE
+                <div style={{ marginBottom: '32px', display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: '240px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--success)', fontSize: '13px', fontWeight: 800, marginBottom: '12px' }}>
+                      <CheckCircle2 size={16} /> GOAL / DEFINITION OF DONE
+                    </div>
+                    <div style={{ fontSize: '14px', color: 'var(--text)', fontWeight: 600 }}>
+                      {roadmap[activeStep].goal}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '14px', color: 'var(--text)', fontWeight: 600 }}>
-                    {roadmap[activeStep].goal}
-                  </div>
+                  
+                  {roadmap[activeStep].tool && (
+                    <div style={{ width: '220px', background: 'rgba(66,127,131,.05)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '16px' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--accent-teal)', textTransform: 'uppercase', marginBottom: '8px' }}>Recommended AI Tool</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '32px', height: '32px', background: 'var(--accent-teal)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                          <Zap size={16} />
+                        </div>
+                        <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-heading)' }}>{roadmap[activeStep].tool}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
+
+                {roadmap[activeStep].subSteps && (
+                  <div style={{ marginBottom: '32px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '16px', textTransform: 'uppercase' }}>Implementation Sub-steps</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
+                      {roadmap[activeStep].subSteps.map((sub: string, idx: number) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-3)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                          <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 800 }}>{idx + 1}</div>
+                          <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{sub}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ marginTop: '40px', borderTop: '1px solid var(--border-subtle)', paddingTop: '32px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
