@@ -19,29 +19,52 @@ Tech Stack Being Used:
 - AI: ${stack.ai?.name}
 - Deployment: ${stack.deployment?.name}` : ''
 
-    const prompt = `You are Torus AI. Write an Optimized AI Prompt for a developer to paste into ${tool}.
+    const prompt = `You are Torus AI, an elite Principal Software Engineer and AI Architect. Your objective is to write the ultimate, most comprehensive, high-fidelity AI prompt that a human developer will copy and paste directly into their AI IDE (${tool}, like Cursor or Windsurf) to execute the current phase of their project.
 
-Project: "${projectIdea}"
-Current Phase: ${phase.name} (Phase ${phase.phase_number}/7)
-Developer Experience: ${experience || 'intermediate'}
-Features to build: ${features?.join(', ') || 'core features'}
+The prompt you generate must act as a Senior Engineering Manager guiding an AI coding assistant. It needs to be extremely lengthy, specific, and structured.
+
+=== PROJECT CONTEXT ===
+Project Idea: "${projectIdea}"
+Current Phase: ${phase.name} (Phase ${phase.phase_number} out of 7)
+Developer Experience Level: ${experience || 'intermediate'}
+Target Features: ${features?.join(', ') || 'core features'}
 ${techContext}
 
-CRITICAL BEST PRACTICES TO FOLLOW FOR THIS PROMPT:
-1. Provide Context First: The generated prompt must start by explaining the goal, architecture, and tech stack to the AI IDE.
-2. Break Down Tasks: Instruct the AI IDE to execute this phase step-by-step, verifying each step.
-3. Define "Definition of Done" (DoD): Instruct the AI IDE on what the exact acceptance criteria are (e.g. responsiveness, error handling, edge cases).
-4. High-Fidelity Details: Be highly specific. Provide concrete file names, reference actual tech from the stack, and specify constraints.
-5. Standardize Workflows: Specify coding style guidelines, error handling rules, and any strict architectural patterns (like TypeScript types).
+=== THE 5 PILLARS OF YOUR GENERATED PROMPT ===
+You MUST structure the generated prompt strictly using the following 5 pillars (Best Practices for Guiding Developers):
 
-Write an EXACT prompt they can copy and paste into ${tool}. The prompt must:
-1. Be specific to THIS project, not generic.
-2. Be comprehensive enough to complete this entire phase.
-3. Adhere to the Best Practices listed above.
+1. CONTEXT FIRST (The "Why" and "Where"):
+   - Start the prompt by explicitly stating the overall goal of the project and the specific goal of this phase.
+   - Explain the architecture: where does this feature fit within the existing system?
+   - Reiterate the tech stack and explicitly declare the frameworks, libraries, and design systems to be used.
 
-Write ONLY the prompt text, no introduction or explanation. Start directly with the action.`
+2. BREAK DOWN TASKS (The "How"):
+   - Instruct the AI IDE to NEVER write monolithic code. It must break down this phase into 3-5 hyper-specific, sequential implementation steps.
+   - Command the AI to pause and verify after each step before moving to the next.
 
-    const generatedPrompt = await askGroq(prompt, 800)
+3. DEFINITION OF DONE (DoD) & ACCEPTANCE CRITERIA:
+   - Provide an exact checklist of what constitutes "Done" for this phase.
+   - Specify required edge-case handling (e.g., API failures, empty states, loading skeletons).
+   - Specify UI/UX requirements (e.g., mobile responsiveness, accessibility, theme variables).
+
+4. HIGH-FIDELITY TECHNICAL CONSTRAINTS:
+   - Command the AI IDE to use specific file paths and naming conventions.
+   - Provide explicit code context constraints (e.g., "Use Next.js 14 App Router, server components by default, client components only when using hooks").
+   - Ban the use of deprecated libraries or external CSS libraries if Tailwind is specified.
+
+5. STANDARDIZED WORKFLOWS & STYLE GUIDELINES:
+   - Enforce strict typing (e.g., "Use strict TypeScript interfaces for all data models, no 'any' types").
+   - Specify exact error handling patterns (e.g., "Wrap all async calls in try/catch blocks and use a standard error toast notification").
+   - Enforce modular, reusable component design.
+
+=== FORMATTING RULES FOR YOUR OUTPUT ===
+- DO NOT wrap your response in introductory text. Start directly with the prompt content.
+- Use markdown formatting, clear headings, and bullet points to make the generated prompt highly readable.
+- The prompt you write must be written from the perspective of the developer speaking to the AI IDE. (e.g., "You are an expert AI assistant. Your task is to build... Follow these strict constraints...")
+- Make it LENGTHY and EXHAUSTIVE. A prompt that is too short will fail. Provide extreme detail.
+- Ensure the prompt is perfectly optimized for ${tool}.`
+
+    const generatedPrompt = await askGroq(prompt, 2500)
 
     // Generate follow-up tips
     const tipsPrompt = `Give 3 SHORT tips for what to do after completing "${phase.name}" with ${tool} for a ${projectIdea} project. 

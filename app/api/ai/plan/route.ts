@@ -47,6 +47,17 @@ PROJECT DETAILS:
 - Target Users: ${targetUsers || 'General users'}
 - Key Features: ${features?.join(', ') || 'Standard features'}
 
+CRITICAL BEST PRACTICES TO FOLLOW:
+1. Break Down Tasks: You MUST break the project into exactly 7 distinct, verifiable phases.
+   - Phase 1: Setup and dependencies
+   - Phase 2: Core backend logic and data models
+   - Phase 3: UI components and state management
+   - Phase 4: Integration and testing
+   - Phase 5: Edge Cases & Error Handling
+   - Phase 6: Testing & Polish
+   - Phase 7: Deployment
+2. Context & Standardization: Ensure the recommended stack represents a standardized workflow with predictable tools.
+
 CURRENT SEARCH RESULTS:
 Frontend options: ${formatSearchResults(frontendResults)}
 
@@ -72,13 +83,13 @@ Respond with ONLY valid JSON, no markdown:
     "deployment": {"name": "Vercel", "reason": "Zero-config Next.js, free tier", "free": true}
   },
   "phases": [
-    {"phase_number": 1, "name": "Project Setup & Config", "tool": "Cursor", "duration": "2-3h"},
-    {"phase_number": 2, "name": "Authentication System", "tool": "Windsurf", "duration": "3-4h"},
-    {"phase_number": 3, "name": "Database Schema & API", "tool": "Cursor", "duration": "4-5h"},
-    {"phase_number": 4, "name": "Core UI Components", "tool": "v0 + Windsurf", "duration": "5-6h"},
-    {"phase_number": 5, "name": "Business Logic", "tool": "Windsurf", "duration": "4-5h"},
-    {"phase_number": 6, "name": "AI & Real-time Features", "tool": "Cursor", "duration": "3-4h"},
-    {"phase_number": 7, "name": "Testing & Deployment", "tool": "Vercel", "duration": "2-3h"}
+    {"phase_number": 1, "name": "Setup and dependencies", "tool": "Cursor", "duration": "2-3h"},
+    {"phase_number": 2, "name": "Core backend logic and data models", "tool": "Windsurf", "duration": "4-5h"},
+    {"phase_number": 3, "name": "UI components and state management", "tool": "v0 + Cursor", "duration": "5-6h"},
+    {"phase_number": 4, "name": "Integration and testing", "tool": "Windsurf", "duration": "4-5h"},
+    {"phase_number": 5, "name": "Edge Cases & Error Handling", "tool": "Cursor", "duration": "2-3h"},
+    {"phase_number": 6, "name": "Testing & Polish", "tool": "Windsurf", "duration": "3-4h"},
+    {"phase_number": 7, "name": "Deployment", "tool": "Vercel", "duration": "1-2h"}
   ],
   "estimated_hours": 23,
   "complexity": "medium"
