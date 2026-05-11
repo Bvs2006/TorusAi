@@ -10,6 +10,160 @@ import { db } from '@/utils/firebase/client'
 
 const STEPS = ['Idea', 'Features', 'Architecture', 'Prompts', 'Blueprint', 'Deploy']
 
+type DeploymentRecommendation = {
+  platform: string
+  url: string
+  reason: string
+  bestFor: string[]
+  watchOut: string
+  commands: string[]
+  alternatives: { name: string; reason: string }[]
+}
+
+const platformLinks: Record<string, string> = {
+  vercel: 'https://vercel.com/new',
+  netlify: 'https://app.netlify.com/start',
+  railway: 'https://railway.app/new',
+  render: 'https://dashboard.render.com/select-repo?type=web',
+  firebase: 'https://console.firebase.google.com/',
+  cloudflare: 'https://dash.cloudflare.com/'
+}
+
+const platformCommands: Record<string, string[]> = {
+  vercel: ['npm install -g vercel', 'vercel', '# Or connect GitHub repo at vercel.com', '# Auto-deploys on every git push'],
+  netlify: ['npm install -g netlify-cli', 'netlify login', 'netlify init', 'netlify deploy --prod'],
+  railway: ['npm i -g @railway/cli', 'railway login', 'railway link', 'railway up'],
+  render: ['# Open Render dashboard', '# New Web Service -> Connect GitHub repo', '# Build command: npm run build', '# Start command: npm start'],
+  firebase: ['npm install -g firebase-tools', 'firebase login', 'firebase init hosting', 'npm run build', 'firebase deploy'],
+  cloudflare: ['npm create cloudflare@latest', 'npm run build', 'npx wrangler pages deploy .vercel/output/static']
+}
+
+function getStackName(project: any, key: string) {
+  const value = project?.stack?.[key]
+  if (!value) return ''
+  if (typeof value === 'string') return value
+  return value.name || value.aiRecommended || ''
+}
+
+function hasText(source: string, words: string[]) {
+  return words.some(word => source.includes(word))
+}
+
+function getDeploymentRecommendation(project: any): DeploymentRecommendation {
+  const stack = {
+    frontend: getStackName(project, 'frontend'),
+    backend: getStackName(project, 'backend'),
+    database: getStackName(project, 'database'),
+    auth: getStackName(project, 'auth'),
+    ai: getStackName(project, 'ai'),
+    deployment: getStackName(project, 'deployment')
+  }
+  const source = JSON.stringify({ stack, features: project?.features, name: project?.name, idea: project?.idea }).toLowerCase()
+  const savedPlatform = stack.deployment || 'Vercel'
+
+  const isNext = hasText(source, ['next.js', 'nextjs', 'next js'])
+  const isStatic = hasText(source, ['static site', 'landing page', 'portfolio']) && !hasText(source, ['api route', 'backend', 'database'])
+  const usesFirebase = hasText(source, ['firebase', 'firestore'])
+  const usesEdge = hasText(source, ['edge', 'worker', 'cloudflare'])
+  const hasBackend = hasText(source, ['express', 'node.js', 'nodejs', 'fastapi', 'django', 'api route', 'backend', 'server'])
+  const hasDatabase = hasText(source, ['postgres', 'postgresql', 'mysql', 'mongodb', 'redis', 'database', 'supabase'])
+  const hasLongRunningWork = hasText(source, ['websocket', 'queue', 'cron', 'background job', 'docker', 'worker'])
+
+  if (usesFirebase && !hasLongRunningWork && !hasBackend) {
+    return {
+      platform: 'Firebase Hosting',
+      url: platformLinks.firebase,
+      reason: 'Best fit because the project already uses Firebase/Firestore and can keep auth, database, hosting, and env setup in one console.',
+      bestFor: ['Firebase auth projects', 'Firestore apps', 'student demos with simple hosting'],
+      watchOut: 'Use Vercel or Render instead if your app needs custom server routes, long-running workers, or Docker.',
+      commands: platformCommands.firebase,
+      alternatives: [
+        { name: 'Vercel', reason: 'Better if the app is a Next.js app with API routes.' },
+        { name: 'Netlify', reason: 'Good for static React sites and simple serverless functions.' }
+      ]
+    }
+  }
+
+  if (usesEdge) {
+    return {
+      platform: 'Cloudflare Pages',
+      url: platformLinks.cloudflare,
+      reason: 'Best fit when the app needs global edge performance, lightweight APIs, or Worker-style deployment.',
+      bestFor: ['Edge APIs', 'high-speed global apps', 'static frontend plus Workers'],
+      watchOut: 'Some Node.js packages do not work on the edge runtime, so verify dependencies before moving fully to Workers.',
+      commands: platformCommands.cloudflare,
+      alternatives: [
+        { name: 'Vercel', reason: 'Simpler for standard Next.js deployments.' },
+        { name: 'Render', reason: 'Better for traditional Node servers or Docker apps.' }
+      ]
+    }
+  }
+
+  if ((hasBackend && hasDatabase && !isNext) || hasLongRunningWork) {
+    return {
+      platform: hasLongRunningWork ? 'Render' : 'Railway',
+      url: hasLongRunningWork ? platformLinks.render : platformLinks.railway,
+      reason: hasLongRunningWork
+        ? 'Best fit because this project may need a persistent server, workers, scheduled jobs, WebSockets, or Docker-style deployment.'
+        : 'Best fit because this project has backend and database needs that are easier to run together on Railway.',
+      bestFor: hasLongRunningWork
+        ? ['Docker apps', 'WebSockets', 'background workers', 'persistent backend services']
+        : ['Node/Python backends', 'Postgres services', 'API plus database projects'],
+      watchOut: hasLongRunningWork
+        ? 'Free instances may sleep or have resource limits. Use a paid instance for production demos that must stay awake.'
+        : 'Railway free credits are limited, so monitor usage before sharing the app widely.',
+      commands: hasLongRunningWork ? platformCommands.render : platformCommands.railway,
+      alternatives: [
+        { name: 'Vercel', reason: 'Better if the backend is only Next.js API routes.' },
+        { name: 'Render', reason: 'Good when you need a more traditional always-on web service.' }
+      ]
+    }
+  }
+
+  if (isStatic) {
+    return {
+      platform: 'Netlify',
+      url: platformLinks.netlify,
+      reason: 'Best fit because this looks like a static or mostly frontend project where fast Git-based hosting is enough.',
+      bestFor: ['Static React sites', 'landing pages', 'portfolio projects', 'simple forms'],
+      watchOut: 'Move to Vercel or Render if the app later adds heavy server logic or database-backed API routes.',
+      commands: platformCommands.netlify,
+      alternatives: [
+        { name: 'Vercel', reason: 'Excellent if you are using Next.js.' },
+        { name: 'Cloudflare Pages', reason: 'Strong option for global static hosting.' }
+      ]
+    }
+  }
+
+  if (isNext || savedPlatform.toLowerCase().includes('vercel')) {
+    return {
+      platform: 'Vercel',
+      url: platformLinks.vercel,
+      reason: project?.stack?.deployment?.reason || 'Best fit for this project because Vercel gives zero-config Next.js deploys, preview URLs, env vars, serverless API routes, and automatic GitHub deployments.',
+      bestFor: ['Next.js apps', 'React dashboards', 'serverless API routes', 'fast demos and mentor reviews'],
+      watchOut: hasDatabase ? 'Keep database credentials in Vercel environment variables and confirm production database rules before sharing.' : 'Add environment variables before redeploying, especially API keys.',
+      commands: platformCommands.vercel,
+      alternatives: [
+        { name: 'Railway', reason: 'Better for a separate backend plus database service.' },
+        { name: 'Netlify', reason: 'Good for simpler static frontend projects.' }
+      ]
+    }
+  }
+
+  return {
+    platform: savedPlatform,
+    url: platformLinks[savedPlatform.toLowerCase()] || platformLinks.vercel,
+    reason: project?.stack?.deployment?.reason || 'Best fit from your selected architecture stack.',
+    bestFor: ['Your selected project stack', 'GitHub-based deployments', 'quick project demos'],
+    watchOut: 'Before going live, add environment variables, run a production build, and test auth, database, and AI routes on the deployed URL.',
+    commands: platformCommands[savedPlatform.toLowerCase()] || ['# Connect your GitHub repository directly on the platform dashboard', '# Select the main branch', '# Click Deploy'],
+    alternatives: [
+      { name: 'Vercel', reason: 'Best default for Next.js and React apps.' },
+      { name: 'Render', reason: 'Good default for backend services.' }
+    ]
+  }
+}
+
 export default function DeployPage() {
   const searchParams = useSearchParams()
   const projectId = searchParams.get('project')
@@ -65,16 +219,9 @@ export default function DeployPage() {
     )
   }
 
-  const recommendedPlatform = project?.stack?.deployment?.name || 'Vercel'
-  const recommendedReason = project?.stack?.deployment?.reason || 'Zero-config Next.js, free tier'
-  
-  let platformUrl = 'https://vercel.com/new'
-  const lowerPlatform = recommendedPlatform.toLowerCase()
-  if (lowerPlatform.includes('railway')) platformUrl = 'https://railway.app/new'
-  if (lowerPlatform.includes('netlify')) platformUrl = 'https://app.netlify.com/start'
-  if (lowerPlatform.includes('render')) platformUrl = 'https://dashboard.render.com/select-repo?type=web'
-  if (lowerPlatform.includes('aws')) platformUrl = 'https://aws.amazon.com/amplify/'
-  if (lowerPlatform.includes('firebase')) platformUrl = 'https://console.firebase.google.com/'
+  const deploymentRecommendation = getDeploymentRecommendation(project)
+  const recommendedPlatform = deploymentRecommendation.platform
+  const platformUrl = deploymentRecommendation.url
 
   const dynamicDeploySteps = [
     {
@@ -89,12 +236,8 @@ export default function DeployPage() {
     },
     {
       n: 3, title: `Deploy to ${recommendedPlatform}`, emoji: '🚀',
-      commands: lowerPlatform.includes('vercel') 
-        ? ['npm install -g vercel', 'vercel', '# Or: connect GitHub repo at vercel.com', '# Auto-deploys on every git push']
-        : lowerPlatform.includes('railway')
-        ? ['npm i -g @railway/cli', 'railway login', 'railway link', 'railway up']
-        : ['# Connect your GitHub repository directly on the platform dashboard', '# Select the main branch', '# Click Deploy'],
-      notes: `${recommendedPlatform} will automatically detect your framework and install dependencies.`
+      commands: deploymentRecommendation.commands,
+      notes: `${recommendedPlatform} is recommended for this project. ${deploymentRecommendation.watchOut}`
     },
     {
       n: 4, title: 'Set Environment Variables', emoji: '🔑',
@@ -141,31 +284,53 @@ export default function DeployPage() {
         borderRadius: '20px', 
         padding: '24px', 
         marginBottom: '32px', 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
         boxShadow: 'var(--card-shadow)'
       }}>
-        <div>
-          <div style={{ fontSize: '11px', color: 'var(--accent-teal)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '1px', fontFamily: 'DM Mono, monospace' }}>Recommended Platform</div>
-          <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '4px', fontFamily: 'Syne, sans-serif' }}>{recommendedPlatform}</div>
-          <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{recommendedReason}</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', alignItems: 'flex-start', marginBottom: '20px' }}>
+          <div>
+            <div style={{ fontSize: '11px', color: 'var(--accent-teal)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '1px', fontFamily: 'DM Mono, monospace' }}>Recommended Platform</div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '4px', fontFamily: 'Syne, sans-serif' }}>{recommendedPlatform}</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.55 }}>{deploymentRecommendation.reason}</div>
+          </div>
+          <a 
+            href={platformUrl}
+            target="_blank" 
+            rel="noreferrer"
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', 
+              background: 'var(--text-heading)', color: 'var(--bg)', textDecoration: 'none', 
+              borderRadius: '12px', fontSize: '14px', fontWeight: 700, transition: 'all 0.2s',
+              fontFamily: 'Syne, sans-serif', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', whiteSpace: 'nowrap'
+            }}
+            onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            Open {recommendedPlatform} <ExternalLink size={16} />
+          </a>
         </div>
-        <a 
-          href={platformUrl}
-          target="_blank" 
-          rel="noreferrer"
-          style={{ 
-            display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', 
-            background: 'var(--text-heading)', color: 'var(--bg)', textDecoration: 'none', 
-            borderRadius: '12px', fontSize: '14px', fontWeight: 700, transition: 'all 0.2s',
-            fontFamily: 'Syne, sans-serif', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-          }}
-          onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          Open {recommendedPlatform} <ExternalLink size={16} />
-        </a>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+          <div style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '16px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-subtle)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px', fontFamily: 'DM Mono, monospace' }}>Best for this project</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {deploymentRecommendation.bestFor.map(item => (
+                <span key={item} style={{ fontSize: '12px', color: 'var(--accent-teal)', background: 'var(--focus)', border: '1px solid var(--border-subtle)', borderRadius: '999px', padding: '6px 10px', fontWeight: 700 }}>
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div style={{ background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '16px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-subtle)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '10px', fontFamily: 'DM Mono, monospace' }}>Other good options</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {deploymentRecommendation.alternatives.map(item => (
+                <div key={item.name} style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                  <strong style={{ color: 'var(--text-heading)' }}>{item.name}:</strong> {item.reason}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {dynamicDeploySteps.map(step => {
