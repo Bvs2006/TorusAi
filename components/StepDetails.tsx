@@ -503,6 +503,7 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({})
   const [project, setProject] = useState<Project | null>(null)
   const [features, setFeatures] = useState<Feature[]>([])
+  const [architectureTools, setArchitectureTools] = useState<any[]>([])
 
   useEffect(() => {
     if (!projectId) return
@@ -510,11 +511,43 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
       getDoc(doc(db as any, 'projects', projectId)),
       getDocs(query(collection(db as any, 'features'), where('project_id', '==', projectId)))
     ]).then(([projectSnap, featureSnap]) => {
-      if (projectSnap.exists()) setProject({ id: projectSnap.id, ...projectSnap.data() } as Project)
+      const projectData = projectSnap.exists() ? ({ id: projectSnap.id, ...projectSnap.data() } as Project) : null
+      if (projectData) setProject(projectData)
       const loadedFeatures = featureSnap.docs
         .map((d: any) => ({ id: d.id, ...d.data() }))
         .sort((a: Feature, b: Feature) => (a.sort_order || 0) - (b.sort_order || 0))
       setFeatures(loadedFeatures as Feature[])
+
+      if (projectData) {
+        const cacheKey = `torus-architecture-tools:${projectId}`
+        try {
+          const cached = sessionStorage.getItem(cacheKey)
+          if (cached) {
+            const parsed = JSON.parse(cached)
+            if (Array.isArray(parsed.tools)) setArchitectureTools(parsed.tools)
+          }
+        } catch {
+          sessionStorage.removeItem(cacheKey)
+        }
+
+        fetch('/api/ai/recommend-tools', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectIdea: projectData.idea,
+            features: loadedFeatures,
+            platform: projectData.platform,
+            stack: projectData.stack || {},
+          })
+        }).then(res => res.json())
+          .then(data => {
+            if (Array.isArray(data.tools)) {
+              setArchitectureTools(data.tools)
+              sessionStorage.setItem(cacheKey, JSON.stringify({ tools: data.tools, generatedAt: Date.now() }))
+            }
+          })
+          .catch(() => {})
+      }
     })
   }, [projectId])
 
@@ -599,6 +632,51 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'feature'
   }
 
+  function slugForFeature(feature?: Feature) {
+    const name = feature?.name || 'feature'
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'feature'
+  }
+
+  function phaseToolLayer() {
+    if (phaseId === 3) return 'Frontend'
+    if (phaseId === 4) return 'Backend'
+    if (phaseId === 5) return 'Data'
+    if (phaseId === 7) return 'Backend'
+    if (phaseId === 8) return 'DevOps'
+    if (phaseId === 9) return 'DevOps'
+    return ''
+  }
+
+  function architectureToolForPhase(stepTool: string) {
+    const layer = phaseToolLayer()
+    const matching = architectureTools.find((tool: any) => layer && String(tool.layer || '').toLowerCase() === layer.toLowerCase())
+      || architectureTools.find((tool: any) => String(tool.name || '').toLowerCase().includes(getPhaseTool(stepTool).toLowerCase()))
+      || architectureTools[0]
+
+    return matching || {
+      name: getPhaseTool(stepTool),
+      layer: layer || 'General',
+      reason: `Use ${getPhaseTool(stepTool)} for this phase.`,
+      configuration: 'Follow the selected architecture and project stack.',
+    }
+  }
+
+  function architectureToolSummary(stepTool: string) {
+    if (!architectureTools.length) {
+      return `Recommended tool for this phase: ${getPhaseTool(stepTool)}.`
+    }
+
+    const layer = phaseToolLayer()
+    const relevant = architectureTools
+      .filter((tool: any) => !layer || String(tool.layer || '').toLowerCase() === layer.toLowerCase())
+      .slice(0, 3)
+    const tools = (relevant.length ? relevant : architectureTools.slice(0, 3))
+      .map((tool: any) => `${tool.name}${tool.layer ? ` (${tool.layer})` : ''}: ${tool.reason || tool.description || 'Recommended from architecture.'}`)
+      .join('; ')
+
+    return `Architecture AI tools to consider: ${tools}.`
+  }
+
   function withProjectContext(text: string) {
     const selectedFeature = primaryFeature?.name || 'the selected feature'
     const selectedDescription = primaryFeature?.description || 'the feature described in the project plan'
@@ -621,7 +699,8 @@ Project context:
 - Backend stack: ${stackName('backend', 'selected backend stack')}
 - Database: ${stackName('database', 'selected database')}
 - Authentication: ${stackName('auth', 'selected auth provider')}
-- AI tool/provider: ${stackName('ai', 'selected AI provider')}`
+- AI tool/provider: ${stackName('ai', 'selected AI provider')}
+- Architecture AI tools: ${architectureToolSummary(getPhaseTool('Cursor'))}`
   }
 
   function shortText(text: string) {
@@ -714,6 +793,82 @@ Project context:
 
   function contextualHandoff(step: StepData) {
     return `${step.handoff || 'Commit the completed work and write down anything the next phase depends on.'} Note what changed for "${projectName}", which feature was completed, and what is still pending.`
+  }
+
+  function phaseFeatureWork(feature: Feature) {
+    const featureName = feature.name
+    const featureDescription = feature.description || 'No extra description provided.'
+    const route = slugForFeature(feature)
+
+    if (phaseId === 3) {
+      return `Frontend UI work for "${featureName}": create or update the page/component route for /${route}; include all forms, input labels, primary buttons, secondary links, empty state, loading state, error state, success state, and responsive mobile layout. If this feature is login/auth, include email/password fields, sign in button, sign up link, forgot password link, validation messages, and disabled loading button. If this feature is dashboard, include metric cards, recent activity/list/table area, navigation actions, and empty data state.`
+    }
+    if (phaseId === 4) {
+      return `Backend work for "${featureName}": create /api/${route} route handlers with GET/POST or the methods this feature needs; validate the request body, return typed JSON, handle auth/session if needed, and connect the route shape to the frontend UI.`
+    }
+    if (phaseId === 5) {
+      return `Database work for "${featureName}": design fields, ownership/user_id, timestamps, status fields, indexes, and sample seed data in ${stackName('database', 'the selected database')}; map every UI input to a stored field.`
+    }
+    if (phaseId === 6) {
+      return `Authentication and permission work for "${featureName}": decide which screens/routes are public or protected, add redirects, session checks, user-owned reads/writes, and permission error states.`
+    }
+    if (phaseId === 7) {
+      return `AI integration work for "${featureName}": only add AI where it improves the feature; create a server-side AI route, define prompt inputs/outputs, loading/error UI, rate-limit/error fallback behavior, and keep API keys server-only.`
+    }
+    if (phaseId === 8) {
+      return `Testing work for "${featureName}": test the full user flow, invalid input, loading state, empty state, API error state, database persistence, and auth restrictions if protected.`
+    }
+    if (phaseId === 9) {
+      return `Documentation/demo work for "${featureName}": document the UI route, API endpoint, database fields, auth rules, AI behavior if used, and exact demo clicks.`
+    }
+    if (phaseId === 2) {
+      return `Environment/setup work for "${featureName}": create the route folder, component placeholder, API placeholder, types, and env variable notes needed before implementation.`
+    }
+    return `Planning work for "${featureName}": break it into UI, backend, database, auth, AI, test, and demo tasks.`
+  }
+
+  function featurePrompt(step: StepData, feature: Feature, index: number) {
+    const tool = architectureToolForPhase(step.tool)
+    const route = slugForFeature(feature)
+    return `You are my AI coding assistant in ${tool.name}. Build the next implementation slice for my project.
+
+Project: ${projectName}
+Idea: ${projectIdea}
+Platform: ${projectPlatform}
+Developer level: ${experienceLevel}
+Phase: ${phase.title}
+Step: ${step.title}
+Feature ${index + 1}: ${feature.name}
+Feature description: ${feature.description || 'Use the feature name and project idea to infer the required behavior.'}
+
+Selected stack:
+- Frontend: ${stackName('frontend', 'selected frontend stack')}
+- Backend: ${stackName('backend', 'selected backend stack')}
+- Database: ${stackName('database', 'selected database')}
+- Auth: ${stackName('auth', 'selected auth provider')}
+- AI provider: ${stackName('ai', 'selected AI provider')}
+
+Architecture tool context:
+- Recommended tool: ${tool.name}
+- Layer: ${tool.layer || phaseToolLayer() || 'General'}
+- Why: ${tool.reason || tool.description || 'Recommended by the architecture guide.'}
+- Setup/configuration: ${tool.configuration || 'Use the project architecture and existing stack.'}
+
+Exact work to do:
+${phaseFeatureWork(feature)}
+
+Expected files/artifacts:
+- Frontend route/component for /${route} if this phase touches UI.
+- API route /api/${route} if this phase touches backend logic.
+- Shared TypeScript types for request/response/data model where useful.
+- Clear loading, success, error, and empty states where the user interacts.
+- Do not invent unrelated features. Use only this feature plus the project context.
+
+Definition of done:
+- The output is specific to "${feature.name}", not a generic template.
+- It explains which files to create or edit.
+- It includes implementation steps and code-level constraints.
+- It lists how I should verify the feature in the browser or API test.`
   }
 
   function featureGuideLabel() {
@@ -860,6 +1015,55 @@ Project context:
               <div style={{ background: '#0f172a', color: '#e2e8f0', padding: 20, borderRadius: 8, fontSize: 14, fontFamily: 'monospace', lineHeight: 1.6, overflowX: 'auto', border: '1px solid #334155' }}>
                 {withProjectContext(s.prompt)}
               </div>
+
+              {featureFocus.length > 0 && (
+                <div style={{ marginTop: 18 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>Feature-specific prompts</div>
+                      <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>
+                        Use these after the master prompt so every feature gets concrete UI, API, database, auth, AI, test, or documentation work.
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => copyPrompt(featureFocus.slice(0, 5).map((feature, featureIdx) => featurePrompt(s, feature, featureIdx)).join('\n\n---\n\n'))}
+                      style={{ padding: '6px 12px', background: '#ecfeff', color: '#155e75', border: '1px solid #a5f3fc', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Copy All Feature Prompts
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    {featureFocus.slice(0, 5).map((feature, featureIdx) => {
+                      const prompt = featurePrompt(s, feature, featureIdx)
+                      const tool = architectureToolForPhase(s.tool)
+                      return (
+                        <div key={`${s.id}-${feature.id || feature.name}`} style={{ border: '1px solid #cbd5e1', borderRadius: 10, overflow: 'hidden', background: '#f8fafc' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', borderBottom: '1px solid #e2e8f0', gap: 12 }}>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
+                                {featureIdx + 1}. {feature.name}
+                              </div>
+                              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                                Tool: {tool.name} {tool.layer ? `- ${tool.layer}` : ''}
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => copyPrompt(prompt)}
+                              style={{ padding: '6px 10px', background: '#fff', color: '#334155', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
+                            >
+                              Copy
+                            </button>
+                          </div>
+                          <div style={{ background: '#111827', color: '#d1d5db', padding: 14, fontSize: 12, fontFamily: 'monospace', lineHeight: 1.55, whiteSpace: 'pre-wrap', maxHeight: 260, overflowY: 'auto' }}>
+                            {prompt}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>

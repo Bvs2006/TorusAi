@@ -12,6 +12,7 @@ export default function RoleGuideDetailsPage() {
   const projectId = searchParams.get('project')
   const roleTitle = searchParams.get('role')
   const teamGuideHref = `/planner/architecture/team-guide?project=${projectId || ''}`
+  const roadmapStorageKey = projectId && roleTitle ? `torus-role-guide:${projectId}:${roleTitle}` : ''
   
   const [project, setProject] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -20,6 +21,30 @@ export default function RoleGuideDetailsPage() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [activeStep, setActiveStep] = useState(0)
 
+  function readCachedRoadmap() {
+    if (!roadmapStorageKey) return null
+    try {
+      const saved = sessionStorage.getItem(roadmapStorageKey) || localStorage.getItem(roadmapStorageKey)
+      if (!saved) return null
+      const parsed = JSON.parse(saved)
+      return Array.isArray(parsed.roadmap) && parsed.roadmap.length > 0 ? parsed.roadmap : null
+    } catch {
+      sessionStorage.removeItem(roadmapStorageKey)
+      localStorage.removeItem(roadmapStorageKey)
+      return null
+    }
+  }
+
+  function saveCachedRoadmap(nextRoadmap: any[]) {
+    if (!roadmapStorageKey || !Array.isArray(nextRoadmap) || nextRoadmap.length === 0) return
+    const snapshot = {
+      roadmap: nextRoadmap,
+      generatedAt: Date.now(),
+    }
+    sessionStorage.setItem(roadmapStorageKey, JSON.stringify(snapshot))
+    localStorage.setItem(roadmapStorageKey, JSON.stringify(snapshot))
+  }
+
   useEffect(() => {
     if (!projectId || !roleTitle) { router.push('/planner'); return }
     
@@ -27,6 +52,12 @@ export default function RoleGuideDetailsPage() {
       if (s.exists()) {
         const data = { id: s.id, ...s.data() as any }
         setProject(data)
+        const cachedRoadmap = readCachedRoadmap()
+        if (cachedRoadmap) {
+          setRoadmap(cachedRoadmap)
+          setLoading(false)
+          return
+        }
         handleGenerateRoadmap(data)
       } else {
         setLoading(false)
@@ -82,6 +113,7 @@ export default function RoleGuideDetailsPage() {
       const data = await res.json()
       if (data.roadmap) {
         setRoadmap(data.roadmap)
+        saveCachedRoadmap(data.roadmap)
       }
     } catch (err) {
       console.error(err)

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Sparkles, Users, User, ArrowRight, Zap, ChevronLeft, Building2, LayoutGrid, CheckCircle2 } from 'lucide-react'
 import { StepIndicator, showToast } from '@/components/ui'
-import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/utils/firebase/client'
 
 export default function TeamGuidePage() {
@@ -17,29 +17,60 @@ export default function TeamGuidePage() {
   const [teamSize, setTeamSize] = useState(3)
   const [generating, setGenerating] = useState(false)
   const [roles, setRoles] = useState<any[] | null>(null)
+  const [restoringRoles, setRestoringRoles] = useState(true)
   const storageKey = projectId ? `torus-team-guide:${projectId}` : ''
+
+  function restoreSavedGuide(projectData?: any) {
+    if (Array.isArray(projectData?.team_guide_roles) && projectData.team_guide_roles.length > 0) {
+      setRoles(projectData.team_guide_roles)
+      if (projectData.team_guide_name) setTeamName(projectData.team_guide_name)
+      if (projectData.team_guide_size) setTeamSize(projectData.team_guide_size)
+      return
+    }
+
+    try {
+      const saved = sessionStorage.getItem(storageKey) || localStorage.getItem(storageKey)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed.roles) && parsed.roles.length > 0) setRoles(parsed.roles)
+        if (parsed.teamName) setTeamName(parsed.teamName)
+        if (parsed.teamSize) setTeamSize(parsed.teamSize)
+      }
+    } catch {
+      sessionStorage.removeItem(storageKey)
+      localStorage.removeItem(storageKey)
+    }
+  }
+
+  function saveGuideSnapshot(nextRoles: any[]) {
+    if (!storageKey) return
+    const snapshot = {
+      roles: nextRoles,
+      teamName,
+      teamSize,
+      generatedAt: Date.now(),
+    }
+
+    sessionStorage.setItem(storageKey, JSON.stringify(snapshot))
+    localStorage.setItem(storageKey, JSON.stringify(snapshot))
+  }
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
     
     getDoc(doc(db as any, 'projects', projectId)).then(async (s) => {
       if (s.exists()) {
-        setProject({ id: s.id, ...s.data() as any })
+        const projectData = { id: s.id, ...s.data() as any }
+        setProject(projectData)
+        restoreSavedGuide(projectData)
       }
       setLoading(false)
+      setRestoringRoles(false)
+    }).catch(() => {
+      restoreSavedGuide()
+      setLoading(false)
+      setRestoringRoles(false)
     })
-
-    try {
-      const saved = sessionStorage.getItem(`torus-team-guide:${projectId}`)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed.roles)) setRoles(parsed.roles)
-        if (parsed.teamName) setTeamName(parsed.teamName)
-        if (parsed.teamSize) setTeamSize(parsed.teamSize)
-      }
-    } catch {
-      sessionStorage.removeItem(`torus-team-guide:${projectId}`)
-    }
   }, [projectId, router])
 
   async function handleGenerateRoles(e: React.FormEvent) {
@@ -75,13 +106,14 @@ export default function TeamGuidePage() {
       const data = await res.json()
       if (data.roles) {
         setRoles(data.roles)
-        if (storageKey) {
-          sessionStorage.setItem(storageKey, JSON.stringify({
-            roles: data.roles,
-            teamName,
-            teamSize,
-            generatedAt: Date.now(),
-          }))
+        saveGuideSnapshot(data.roles)
+        if (projectId) {
+          updateDoc(doc(db as any, 'projects', projectId), {
+            team_guide_roles: data.roles,
+            team_guide_name: teamName,
+            team_guide_size: teamSize,
+            team_guide_updated_at: new Date().toISOString(),
+          }).catch((saveError) => console.warn('Could not persist team guide roles:', saveError))
         }
         showToast('✓ Team roles generated!')
       } else {
@@ -188,7 +220,13 @@ export default function TeamGuidePage() {
 
           {/* Roles Result Section */}
           <div style={{ flex: '1.2 1 400px' }}>
-            {!roles ? (
+            {restoringRoles ? (
+              <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', border: '2px dashed var(--border-subtle)', borderRadius: '24px', textAlign: 'center' }}>
+                <div style={{ width: '24px', height: '24px', border: '3px solid rgba(66,127,131,.2)', borderTopColor: '#427f83', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '16px' }} />
+                <h3 style={{ margin: 0, color: 'var(--text-muted)', fontSize: '18px', fontWeight: 700 }}>Restoring team roles...</h3>
+                <p style={{ color: 'var(--text-subtle)', fontSize: '13px', maxWidth: '320px', marginTop: '8px', lineHeight: 1.6 }}>Loading your generated role-wise guide for this project.</p>
+              </div>
+            ) : !roles ? (
               <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', border: '2px dashed var(--border-subtle)', borderRadius: '24px', textAlign: 'center' }}>
                 <LayoutGrid size={48} color="var(--border-subtle)" style={{ marginBottom: '16px' }} />
                 <h3 style={{ margin: 0, color: 'var(--text-muted)', fontSize: '18px', fontWeight: 700 }}>Roles will appear here</h3>
