@@ -30,14 +30,17 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true); setError('')
     try {
-      const cred = await createUserWithEmailAndPassword(auth, form.email, form.password)
+      const username = form.username.trim()
+      const email = form.email.trim()
+      const cred = await createUserWithEmailAndPassword(auth, email, form.password)
       await updateProfile(cred.user, { displayName: form.username })
       const token = await cred.user.getIdToken()
-      await createSession(token, form.username)
+      await createSession(token, username)
       setSuccess(true)
       setTimeout(() => router.push('/dashboard'), 900)
     } catch (err: any) {
-      setError(err.message?.replace('Firebase: ', '') || 'Sign up failed')
+      const message = err.message?.replace('Firebase: ', '') || 'Sign up failed'
+      setError(message.includes('initialize session') ? `${message}. Your account may already be created, so try signing in.` : message)
       setLoading(false)
     }
   }

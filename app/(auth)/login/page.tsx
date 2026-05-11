@@ -19,7 +19,9 @@ export default function LoginPage() {
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password)
       const token = await cred.user.getIdToken()
-      await fetch('/api/auth/session', { method: 'POST', body: JSON.stringify({ token }), headers: { 'Content-Type': 'application/json' } })
+      const res = await fetch('/api/auth/session', { method: 'POST', body: JSON.stringify({ token }), headers: { 'Content-Type': 'application/json' } })
+      const data = await res.json()
+      if (!res.ok || data.error) throw new Error(data.error || 'Failed to initialize session')
       router.push('/dashboard')
     } catch (err: any) {
       setError(err.message?.replace('Firebase: ', '') || 'Login failed')
@@ -32,7 +34,9 @@ export default function LoginPage() {
       const provider = new GoogleAuthProvider()
       const cred = await signInWithPopup(auth, provider)
       const token = await cred.user.getIdToken()
-      await fetch('/api/auth/session', { method: 'POST', body: JSON.stringify({ token }), headers: { 'Content-Type': 'application/json' } })
+      const res = await fetch('/api/auth/session', { method: 'POST', body: JSON.stringify({ token }), headers: { 'Content-Type': 'application/json' } })
+      const data = await res.json()
+      if (!res.ok || data.error) throw new Error(data.error || 'Failed to initialize session')
       router.push('/dashboard')
     } catch (err: any) {
       setError(err.message?.replace('Firebase: ', '') || 'Google sign-in failed')
