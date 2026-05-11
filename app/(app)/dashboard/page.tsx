@@ -13,6 +13,12 @@ const getPhaseProgress = (project: any) => {
   return Math.round((phases.filter((p: any) => p.status === 'done').length / phases.length) * 100)
 }
 
+const QUICK_TOOLS = [
+  { href: '/error-fix', icon: 'FX', label: 'Error Fixer', desc: 'Debug terminal output instantly' },
+  { href: '/master-prompt', icon: 'MP', label: 'Master Prompt', desc: 'Turn rough ideas into structured AI prompts' },
+  { href: '/tools', icon: 'AI', label: 'Tool Directory', desc: 'Find the best AI coding agents' }
+]
+
 const getResumeStep = (project: any) => {
   // First check if current_step is explicitly set
   if (project.current_step) return project.current_step
@@ -136,10 +142,7 @@ function renderRecentProjects({ projects }: { projects: any[] }) {
               <Zap size={18} color="var(--accent-cyan)" /> Quick Tools
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[
-                { href: '/error-fix', icon: '🔧', label: 'Error Fixer', desc: 'Debug terminal output instantly' },
-                { href: '/tools', icon: '⚡', label: 'Tool Directory', desc: 'Find the best AI coding agents' }
-              ].map(action => (
+              {QUICK_TOOLS.map(action => (
                 <Link key={action.href} href={action.href} style={{
                   display: 'flex', alignItems: 'center', gap: '14px', padding: '14px',
                   background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)',
@@ -256,10 +259,7 @@ function renderDeveloperDashboard({ greeting, username, projects, allPhases, pro
                 <Zap size={18} color="var(--accent-cyan)" /> Quick Tools
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {[
-                  { href: '/error-fix', icon: '🔧', label: 'Error Fixer', desc: 'Debug terminal output instantly' },
-                  { href: '/tools', icon: '⚡', label: 'Tool Directory', desc: 'Find the best AI coding agents' }
-                ].map(action => (
+                {QUICK_TOOLS.map(action => (
                   <Link key={action.href} href={action.href} style={{
                     display: 'flex', alignItems: 'center', gap: '14px', padding: '14px',
                     background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)',
