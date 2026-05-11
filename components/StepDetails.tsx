@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/utils/firebase/client'
-import type { Feature } from '@/types'
+import type { Feature, Project, Stack } from '@/types'
 
 interface StepDetailsProps {
   phaseId: number
@@ -501,7 +501,7 @@ const PHASES: PhaseData[] = [
 export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
   const phase = PHASES[phaseId - 1] || PHASES[0]
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({})
-  const [project, setProject] = useState<any>(null)
+  const [project, setProject] = useState<Project | null>(null)
   const [features, setFeatures] = useState<Feature[]>([])
 
   useEffect(() => {
@@ -510,7 +510,7 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
       getDoc(doc(db as any, 'projects', projectId)),
       getDocs(query(collection(db as any, 'features'), where('project_id', '==', projectId)))
     ]).then(([projectSnap, featureSnap]) => {
-      if (projectSnap.exists()) setProject(projectSnap.data())
+      if (projectSnap.exists()) setProject({ id: projectSnap.id, ...projectSnap.data() } as Project)
       const loadedFeatures = featureSnap.docs
         .map((d: any) => ({ id: d.id, ...d.data() }))
         .sort((a: Feature, b: Feature) => (a.sort_order || 0) - (b.sort_order || 0))
@@ -576,8 +576,12 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
   const primaryFeature = featureFocus[0]
   const featureNames = featureFocus.slice(0, 5).map(f => f.name)
   const allFeatureText = featureNames.length ? featureNames.join(', ') : 'the selected project features'
+  const projectName = project?.name || 'this project'
+  const projectIdea = project?.idea || 'the project idea'
+  const projectPlatform = project?.platform || 'the target platform'
+  const experienceLevel = project?.experience || 'your current'
 
-  function stackName(key: string, fallback: string) {
+  function stackName(key: keyof Stack, fallback: string) {
     return project?.stack?.[key]?.name || fallback
   }
 
@@ -603,11 +607,14 @@ export default function StepDetails({ phaseId, projectId }: StepDetailsProps) {
       .replace(/\[AI FEATURE NAME\]/g, selectedFeature)
       .replace(/\[API ROUTE\]/g, `/api/${apiSlug()}`)
 
-    if (!features.length) return replaced
+    if (!features.length && !project) return replaced
     return `${replaced}
 
 Project context:
-- Project idea: ${project?.idea || 'Not available'}
+- Project name: ${projectName}
+- Project idea: ${projectIdea}
+- Target platform: ${projectPlatform}
+- Developer experience: ${experienceLevel}
 - Main feature for this step: ${selectedFeature} - ${selectedDescription}
 - Selected features from previous step: ${allFeatureText}
 - Frontend stack: ${stackName('frontend', 'selected frontend stack')}
@@ -619,6 +626,94 @@ Project context:
 
   function shortText(text: string) {
     return withProjectContext(text).split('\n\nProject context:')[0]
+  }
+
+  function phaseFocus() {
+    const feature = primaryFeature?.name || 'the first core feature'
+    const dbName = stackName('database', 'your selected database')
+    const authName = stackName('auth', 'your selected auth provider')
+    const aiName = stackName('ai', 'your selected AI provider')
+
+    switch (phaseId) {
+      case 1:
+        return `Set up the solo developer workspace for "${projectName}" before coding. Keep the idea, target users, stack, and feature list visible so every prompt is grounded in this exact project.`
+      case 2:
+        return `Create the actual ${projectPlatform} foundation for "${projectName}" using ${stackName('frontend', 'the selected frontend stack')} and ${stackName('backend', 'the selected backend stack')}.`
+      case 3:
+        return `Build user-facing screens for ${allFeatureText}. Start with "${feature}" so the interface proves the main user flow early.`
+      case 4:
+        return `Implement backend routes and business logic that support ${allFeatureText}, starting with the API behavior behind "${feature}".`
+      case 5:
+        return `Design the ${dbName} data model for ${allFeatureText}, including fields, ownership, relationships, and read/write flow.`
+      case 6:
+        return `Use ${authName} to protect private screens and make sure each user's data for ${allFeatureText} is isolated.`
+      case 7:
+        return `Connect ${aiName} only where it improves "${projectName}", especially around "${feature}" if that feature needs generation, analysis, suggestions, or automation.`
+      case 8:
+        return `Test the complete solo developer path for "${projectName}": UI actions, API responses, database writes, auth checks, and AI behavior.`
+      case 9:
+        return `Prepare submission-ready documentation and a demo script that explains "${projectName}" through its real features: ${allFeatureText}.`
+      default:
+        return `Build "${projectName}" around its actual idea and selected features: ${allFeatureText}.`
+    }
+  }
+
+  function contextualGuide(step: StepData) {
+    const tool = getPhaseTool(step.tool)
+    const feature = primaryFeature?.name || 'the active feature'
+    const base = shortText(step.guide)
+
+    return `${base} For "${projectName}", focus this step on ${allFeatureText}. Use ${tool} with the project idea "${projectIdea}" and ask for output that matches ${projectPlatform}, ${stackName('frontend', 'your frontend')}, ${stackName('backend', 'your backend')}, ${stackName('database', 'your database')}, and ${stackName('auth', 'your auth')}. If the generated result is generic, ask the tool to rewrite it specifically for "${feature}" and the feature list above.`
+  }
+
+  function contextualExpected(step: StepData) {
+    if (phaseId === 3) return `Working UI for ${allFeatureText}, with screens, states, and copy that match "${projectName}".`
+    if (phaseId === 4) return `API/business logic that supports ${allFeatureText}, with typed request/response shapes and error handling.`
+    if (phaseId === 5) return `A ${stackName('database', 'database')} model for ${allFeatureText}, including ownership fields and test data.`
+    if (phaseId === 6) return `Protected routes and user-specific access rules for "${projectName}".`
+    if (phaseId === 7) return `A useful AI flow for "${projectName}" that connects frontend input to a server-side AI route.`
+    return `${shortText(step.expected)} The result should be specific to "${projectName}", not a reusable template.`
+  }
+
+  function contextualBeforeStart(step: StepData) {
+    const items = [...(step.beforeStart || [])]
+    return [
+      `Confirm the idea: ${projectIdea}`,
+      `Keep these features in scope: ${allFeatureText}`,
+      `Use the selected stack: ${stackName('frontend', 'frontend')}, ${stackName('backend', 'backend')}, ${stackName('database', 'database')}, ${stackName('auth', 'auth')}`,
+      ...items.slice(0, 2),
+    ]
+  }
+
+  function contextualVerify(step: StepData) {
+    const items = [...(step.verify || [step.expected])]
+    return [
+      `The output mentions "${projectName}" or its real feature names, not placeholder app names.`,
+      `At least one core feature is covered: ${allFeatureText}.`,
+      ...items.slice(0, 2),
+    ]
+  }
+
+  function contextualToolGuide(step: StepData) {
+    const items = [...(step.toolGuide || [])]
+    return [
+      `Open ${getPhaseTool(step.tool)} and paste the ready-made prompt with project context included.`,
+      `Ask for files, routes, schemas, and UI states for "${projectName}" specifically.`,
+      ...items.slice(0, 2),
+    ]
+  }
+
+  function contextualIdeGuide(step: StepData) {
+    const items = [...(step.ideGuide || [])]
+    return [
+      `Apply generated code only to files that belong to "${projectName}" and this phase.`,
+      `Rename placeholder entities to match ${allFeatureText}.`,
+      ...items.slice(0, 2),
+    ]
+  }
+
+  function contextualHandoff(step: StepData) {
+    return `${step.handoff || 'Commit the completed work and write down anything the next phase depends on.'} Note what changed for "${projectName}", which feature was completed, and what is still pending.`
   }
 
   function featureGuideLabel() {
@@ -637,7 +732,7 @@ Project context:
     <div>
       <h2 style={{ fontSize: 24, fontFamily: 'Syne, sans-serif', fontWeight: 800 }}>{phase.title}</h2>
       <div style={{ marginTop: 8, color: '#6b7280', fontSize: 14 }}>
-        This guide follows your selected architecture. Complete the preparation, build, verification, and handoff items before moving forward.
+        {phaseFocus()}
       </div>
 
       <div style={{ marginTop: 18, background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 12, padding: 16 }}>
@@ -704,7 +799,7 @@ Project context:
               {/* Expected Output */}
               <div style={{ background: '#f0fdf4', padding: 16, borderRadius: 8, border: '1px solid #bbf7d0' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', marginBottom: 6 }}>Expected Output</div>
-                <div style={{ fontSize: 14, color: '#15803d', lineHeight: 1.5 }}>{shortText(s.expected)}</div>
+                <div style={{ fontSize: 14, color: '#15803d', lineHeight: 1.5 }}>{contextualExpected(s)}</div>
               </div>
             </div>
 
@@ -712,13 +807,13 @@ Project context:
               <div style={{ background: '#fff7ed', padding: 16, borderRadius: 8, border: '1px solid #fed7aa' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#9a3412', textTransform: 'uppercase', marginBottom: 8 }}>Before you start</div>
                 <ul style={{ margin: 0, paddingLeft: 18, color: '#7c2d12', fontSize: 13, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {(s.beforeStart || ['Read the phase goal.', 'Open the relevant files.', 'Keep the app running while editing.']).map((item, i) => <li key={i}>{item}</li>)}
+                  {contextualBeforeStart(s).map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
               <div style={{ background: '#ecfeff', padding: 16, borderRadius: 8, border: '1px solid #a5f3fc' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#155e75', textTransform: 'uppercase', marginBottom: 8 }}>Verification checklist</div>
                 <ul style={{ margin: 0, paddingLeft: 18, color: '#164e63', fontSize: 13, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {(s.verify || [s.expected]).map((item, i) => <li key={i}>{item}</li>)}
+                  {contextualVerify(s).map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
             </div>
@@ -730,7 +825,7 @@ Project context:
                 AI Tool Integration Guide
               </div>
               <div style={{ color: '#4b5563', fontSize: 14, lineHeight: 1.6, background: '#eff6ff', padding: 16, borderRadius: 8, borderLeft: '4px solid #3b82f6' }}>
-                {shortText(s.guide)}
+                {contextualGuide(s)}
               </div>
             </div>
 
@@ -738,13 +833,13 @@ Project context:
               <div style={{ background: '#eef2ff', padding: 16, borderRadius: 8, border: '1px solid #c7d2fe' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#3730a3', textTransform: 'uppercase', marginBottom: 8 }}>How to use {getPhaseTool(s.tool)}</div>
                 <ol style={{ margin: 0, paddingLeft: 18, color: '#312e81', fontSize: 13, display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  {(s.toolGuide || ['Open the recommended tool.', 'Paste the ready-made prompt.', 'Ask follow-up questions until the output is clear.']).map((item, i) => <li key={i}>{item}</li>)}
+                  {contextualToolGuide(s).map((item, i) => <li key={i}>{item}</li>)}
                 </ol>
               </div>
               <div style={{ background: '#f0fdf4', padding: 16, borderRadius: 8, border: '1px solid #bbf7d0' }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', marginBottom: 8 }}>Add the output to your IDE</div>
                 <ol style={{ margin: 0, paddingLeft: 18, color: '#14532d', fontSize: 13, display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  {(s.ideGuide || ['Copy generated code into the correct project file.', 'Review imports, paths, and package names.', 'Run the app and fix any visible errors.']).map((item, i) => <li key={i}>{item}</li>)}
+                  {contextualIdeGuide(s).map((item, i) => <li key={i}>{item}</li>)}
                 </ol>
               </div>
             </div>
@@ -796,7 +891,7 @@ Project context:
 
             <div style={{ marginTop: 24, padding: 16, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#334155', textTransform: 'uppercase', marginBottom: 6 }}>Handoff note</div>
-              <div style={{ fontSize: 13, color: '#475569', lineHeight: 1.5 }}>{s.handoff || 'Commit the completed work and write down anything the next phase depends on.'}</div>
+              <div style={{ fontSize: 13, color: '#475569', lineHeight: 1.5 }}>{contextualHandoff(s)}</div>
             </div>
 
             {/* Error Fixer Link */}
