@@ -17,6 +17,7 @@ export default function TeamGuidePage() {
   const [teamSize, setTeamSize] = useState(3)
   const [generating, setGenerating] = useState(false)
   const [roles, setRoles] = useState<any[] | null>(null)
+  const storageKey = projectId ? `torus-team-guide:${projectId}` : ''
 
   useEffect(() => {
     if (!projectId) { router.push('/planner'); return }
@@ -27,6 +28,18 @@ export default function TeamGuidePage() {
       }
       setLoading(false)
     })
+
+    try {
+      const saved = sessionStorage.getItem(`torus-team-guide:${projectId}`)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed.roles)) setRoles(parsed.roles)
+        if (parsed.teamName) setTeamName(parsed.teamName)
+        if (parsed.teamSize) setTeamSize(parsed.teamSize)
+      }
+    } catch {
+      sessionStorage.removeItem(`torus-team-guide:${projectId}`)
+    }
   }, [projectId, router])
 
   async function handleGenerateRoles(e: React.FormEvent) {
@@ -38,9 +51,13 @@ export default function TeamGuidePage() {
     
     setGenerating(true)
     try {
-      // Fetch nodes and features for context
+      // Fetch features for context so generated roles match the actual project plan.
       const nodesSnap = await getDocs(query(collection(db as any, 'features'), where('project_id', '==', projectId)))
-      const features = nodesSnap.docs.map(d => d.data().title)
+      const features = nodesSnap.docs
+        .map(d => d.data())
+        .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+        .map((feature: any) => feature.name || feature.title)
+        .filter(Boolean)
 
       const res = await fetch('/api/ai/team-roles', {
         method: 'POST',
@@ -58,6 +75,14 @@ export default function TeamGuidePage() {
       const data = await res.json()
       if (data.roles) {
         setRoles(data.roles)
+        if (storageKey) {
+          sessionStorage.setItem(storageKey, JSON.stringify({
+            roles: data.roles,
+            teamName,
+            teamSize,
+            generatedAt: Date.now(),
+          }))
+        }
         showToast('✓ Team roles generated!')
       } else {
         throw new Error('Failed to generate roles')

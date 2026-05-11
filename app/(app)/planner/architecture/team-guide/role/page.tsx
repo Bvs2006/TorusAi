@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Terminal, Sparkles, User, Zap, ChevronLeft, Copy, CheckCircle2, LayoutList, ExternalLink, Play } from 'lucide-react'
 import { StepIndicator, showToast } from '@/components/ui'
-import { doc, getDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 import { db } from '@/utils/firebase/client'
 
 export default function RoleGuideDetailsPage() {
@@ -11,6 +11,7 @@ export default function RoleGuideDetailsPage() {
   const searchParams = useSearchParams()
   const projectId = searchParams.get('project')
   const roleTitle = searchParams.get('role')
+  const teamGuideHref = `/planner/architecture/team-guide?project=${projectId || ''}`
   
   const [project, setProject] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -36,11 +37,44 @@ export default function RoleGuideDetailsPage() {
   async function handleGenerateRoadmap(projectData: any) {
     setGenerating(true)
     try {
+      const featuresSnap = await getDocs(query(collection(db as any, 'features'), where('project_id', '==', projectId)))
+      const features = featuresSnap.docs
+        .map(d => d.data())
+        .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+        .map((feature: any) => ({
+          name: feature.name || feature.title,
+          description: feature.description || '',
+          priority: feature.priority || 'must',
+          complexity: feature.complexity || 'medium',
+        }))
+        .filter((feature: any) => feature.name)
+      let architectureTools: any[] = []
+      try {
+        const toolsRes = await fetch('/api/ai/recommend-tools', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectIdea: projectData.idea,
+            features,
+            platform: projectData.platform,
+            stack: projectData.stack || {},
+          })
+        })
+        const toolsData = await toolsRes.json()
+        if (Array.isArray(toolsData.tools)) architectureTools = toolsData.tools
+      } catch (toolError) {
+        console.warn('Could not load architecture tools for role guide:', toolError)
+      }
+
       const res = await fetch('/api/ai/team-role-roadmap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          projectName: projectData.name,
           projectIdea: projectData.idea,
+          platform: projectData.platform,
+          features,
+          architectureTools,
           role: roleTitle,
           stack: projectData.stack || {}
         })
@@ -77,7 +111,7 @@ export default function RoleGuideDetailsPage() {
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
-          <button onClick={() => router.back()} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={() => router.push(teamGuideHref)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
             <ChevronLeft size={16} /> Back to Team
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -255,7 +289,7 @@ export default function RoleGuideDetailsPage() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto 20px' }}>
                   Go back and open this role again, or regenerate the team guide if the AI service returned an empty response.
                 </p>
-                <button onClick={() => router.back()} style={{ background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }}>
+                <button onClick={() => router.push(teamGuideHref)} style={{ background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }}>
                   Back to Team Guide
                 </button>
               </div>

@@ -9,7 +9,7 @@ export async function POST(req: Request) {
 
 Project Idea: "${projectIdea}"
 Platform: ${platform}
-Features: ${features?.map((f: any) => f.name).join(', ') || 'Not specified'}
+Features: ${features?.map((f: any) => f.name || f.title).filter(Boolean).join(', ') || 'Not specified'}
 Tech Stack: ${JSON.stringify(stack)}
 
 Recommend AI tools organized by layer (Frontend, Backend, Data/ML, DevOps):

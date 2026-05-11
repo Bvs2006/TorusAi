@@ -3,11 +3,17 @@ import { generateAIResponse } from '@/lib/ai-router'
 
 export async function POST(req: Request) {
   try {
-    const { idea, stack, role } = await req.json()
+    const { idea, stack, role, platform, features } = await req.json()
 
     if (!role) {
       return NextResponse.json({ error: 'Role is required' }, { status: 400 })
     }
+
+    const roleLower = String(role || '').toLowerCase()
+    const isLeaderRole = roleLower.includes('lead') || roleLower.includes('leader') || roleLower.includes('manager') || roleLower.includes('cto')
+    const featureSummary = Array.isArray(features) && features.length
+      ? features.map((feature: any) => typeof feature === 'string' ? feature : `${feature.name || feature.title}: ${feature.description || ''}`).join('\n')
+      : 'No feature list provided. Infer only from the project idea.'
 
     const systemPrompt = `You are an expert Engineering Manager.
 Create a step-by-step development guide for a specific team member role to execute their part of the project.
@@ -18,6 +24,12 @@ CRITICAL BEST PRACTICES TO FOLLOW:
 3. Define the "Definition of Done" (DoD): Clearly state acceptance criteria, edge cases, and testing requirements in the description.
 4. High-Fidelity Prompts: Be specific, provide code context, and specify constraints in the AI prompt.
 5. Standardize Workflows: Include guidelines on code style, error handling, and version control.
+6. Project Specificity: Every responsibility, workflow step, and AI prompt must mention the actual project idea, selected stack, and relevant features. Do not return generic full-stack instructions.
+
+ROLE MODE:
+${isLeaderRole
+  ? 'This is a Team Leader / Lead Developer guide. Focus on planning, architecture ownership, task assignment, integration, code review, blockers, merge strategy, QA coordination, and demo/submission readiness.'
+  : 'This is an individual contributor guide. Focus on implementation ownership and what this role reports to the team leader after each phase.'}
 
 The workflow must follow this logical flow (7 Distinct Phases):
 1. Setup and dependencies.
@@ -44,7 +56,13 @@ Output exactly this structured JSON format. Output ONLY valid JSON:
 }
 Ensure output is ONLY parseable JSON.`
 
-    const userPrompt = `Project: ${idea}\nTech Stack: ${JSON.stringify(stack)}\nRole: ${role}\nGenerate the guide.`
+    const userPrompt = `Project: ${idea}
+Platform: ${platform || 'Not specified'}
+Tech Stack: ${JSON.stringify(stack)}
+Features:
+${featureSummary}
+Role: ${role}
+Generate a project-specific guide.`
 
     const result = await generateAIResponse(systemPrompt, userPrompt)
 
