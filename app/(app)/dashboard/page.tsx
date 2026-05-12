@@ -16,7 +16,8 @@ const getPhaseProgress = (project: any) => {
 const QUICK_TOOLS = [
   { href: '/error-fix', icon: 'FX', label: 'Error Fixer', desc: 'Debug terminal output instantly' },
   { href: '/master-prompt', icon: 'MP', label: 'Master Prompt', desc: 'Turn rough ideas into structured AI prompts' },
-  { href: '/tools', icon: 'AI', label: 'Tool Directory', desc: 'Find the best AI coding agents' }
+  { href: '/tools', icon: 'AI', label: 'Tool Directory', desc: 'Find the best AI coding agents' },
+  { href: '/mcp', icon: 'MC', label: 'Torus MCP', desc: 'Add Torus planning directly to your IDE' }
 ]
 
 const getResumeStep = (project: any) => {
