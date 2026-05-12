@@ -7,10 +7,17 @@ import {
   Rocket,
   ArrowRight,
   BrainCircuit,
+  Boxes,
+  ClipboardList,
+  ExternalLink,
+  GitBranch,
+  MonitorCog,
+  PlugZap,
+  ServerCog,
+  ShieldCheck,
+  TerminalSquare,
   Wrench,
   Users,
-  Mail,
-  Phone,
   Upload,
   Zap
 } from 'lucide-react'
@@ -65,6 +72,7 @@ export default async function LandingPage() {
           <div className="nav-links-container" style={{ alignItems: 'center', gap: '32px', justifyContent: 'center' }}>
             <Link href="/" className="nav-link" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'DM Sans, sans-serif' }}>Home</Link>
             <Link href="#features" className="nav-link" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'DM Sans, sans-serif' }}>Features</Link>
+            <Link href="#mcp" className="nav-link" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'DM Sans, sans-serif' }}>MCP</Link>
             <Link href="#about" className="nav-link" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'DM Sans, sans-serif' }}>About</Link>
             <Link href="/tools" className="nav-link" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'DM Sans, sans-serif' }}>Tool Hub</Link>
           </div>
@@ -183,6 +191,110 @@ export default async function LandingPage() {
           </div>
         </div>
 
+        {/* MCP Builder Section */}
+        <section id="mcp" style={{ padding: '120px 24px', background: 'var(--bg)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '-120px', left: '-120px', width: '420px', height: '420px', background: 'radial-gradient(circle, var(--accent-teal-transparent) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', right: '-120px', bottom: '-180px', width: '520px', height: '520px', background: 'radial-gradient(circle, var(--accent-orange-transparent) 0%, transparent 72%)', pointerEvents: 'none' }} />
+
+          <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.95fr) minmax(360px, 1.05fr)', gap: '48px', alignItems: 'center' }} className="mcp-layout">
+              <div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)', borderRadius: '20px', fontSize: '12px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: 'var(--accent-teal)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <PlugZap size={14} /> MCP Installation
+                </div>
+                <h2 style={{ fontSize: '48px', fontWeight: 800, fontFamily: 'Syne, sans-serif', color: 'var(--text-heading)', margin: '0 0 20px', letterSpacing: '-1px', lineHeight: 1.08 }}>
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '18px', margin: '0 0 32px', lineHeight: 1.6 }}>
+                  Add the Torus MCP to your IDE, type the idea you want to build, and get the same Torus workflow inside your editor: features, architecture, development guide, deployment guide, and recommended AI tools.
+                </p>
+
+                <div style={{ display: 'grid', gap: '14px', marginBottom: '32px' }}>
+                  {[
+                    { icon: BrainCircuit, title: 'Idea to MCP brief', desc: 'Convert a raw product idea into tools, resources, prompts, schemas, auth needs, and user workflows.' },
+                    { icon: GitBranch, title: 'Architecture of AI tools', desc: 'Plan the MCP host, client, server, transport, model provider, database, vector search, and deployment topology.' },
+                    { icon: ClipboardList, title: 'Guided development', desc: 'Generate a step-by-step build guide with SDK choices, API routes, testing checks, and packaging notes.' },
+                    { icon: Rocket, title: 'Deployment recommendation', desc: 'Suggest local stdio, Streamable HTTP, or remote server deployment based on user count, security, and hosting needs.' },
+                  ].map((item, i) => {
+                    const Icon = item.icon
+                    return (
+                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '44px 1fr', gap: '14px', padding: '16px', background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', borderRadius: '16px', boxShadow: 'var(--card-shadow)' }}>
+                        <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'var(--focus)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-teal)' }}>
+                          <Icon size={21} />
+                        </div>
+                        <div>
+                          <h3 style={{ margin: '0 0 6px', fontSize: '16px', fontWeight: 800, color: 'var(--text-heading)', fontFamily: 'Syne, sans-serif' }}>{item.title}</h3>
+                          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5 }}>{item.desc}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                  <Link href="/mcp" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minHeight: '48px', padding: '0 22px', borderRadius: '12px', background: 'var(--text-heading)', color: 'var(--bg)', fontWeight: 800, fontFamily: 'Syne, sans-serif', textDecoration: 'none' }}>
+                    Add MCP to IDE <PlugZap size={17} />
+                  </Link>
+                  <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minHeight: '48px', padding: '0 22px', borderRadius: '12px', border: '1px solid var(--border-subtle)', background: 'var(--surface-glass)', color: 'var(--text-heading)', fontWeight: 700, textDecoration: 'none' }}>
+                    MCP Docs <ExternalLink size={16} />
+                  </a>
+                </div>
+              </div>
+
+              <div style={{ background: 'linear-gradient(180deg, var(--surface-overlay), var(--surface-glass))', border: '1px solid var(--border-subtle)', borderRadius: '24px', boxShadow: 'var(--card-shadow)', overflow: 'hidden' }}>
+                <div style={{ padding: '22px 24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Install target</div>
+                    <h3 style={{ margin: 0, fontSize: '24px', color: 'var(--text-heading)', fontFamily: 'Syne, sans-serif' }}>Add MCP to IDE</h3>
+                  </div>
+                  <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                    <MonitorCog size={25} />
+                  </div>
+                </div>
+
+                <div style={{ padding: '24px', display: 'grid', gap: '16px' }}>
+                  {[
+                    { icon: TerminalSquare, name: 'VS Code + GitHub Copilot', text: 'Add Torus MCP, enter an app idea, and generate feature specs plus project architecture.', url: 'https://docs.github.com/en/copilot/concepts/about-mcp' },
+                    { icon: ServerCog, name: 'Cursor', text: 'Run the MCP from Cursor and ask for code-ready development steps, prompts, and file plans.', url: 'https://docs.cursor.com/advanced/model-context-protocol' },
+                    { icon: Boxes, name: 'Claude Desktop / Claude Code', text: 'Connect Torus MCP to produce tool recommendations, service links, and deployment guidance.', url: 'https://docs.claude.com/en/docs/claude-code/mcp' },
+                    { icon: ShieldCheck, name: 'Guided setup', text: 'Follow install, secrets, permissions, testing, and production deployment checks.', url: 'https://modelcontextprotocol.io/specification' },
+                  ].map((target, i) => {
+                    const Icon = target.icon
+                    return (
+                      <a key={i} href={target.url} target="_blank" rel="noopener noreferrer" className="mcp-target" style={{ display: 'grid', gridTemplateColumns: '46px 1fr 18px', gap: '14px', alignItems: 'center', padding: '16px', borderRadius: '16px', background: 'var(--bg)', border: '1px solid var(--border-subtle)', color: 'inherit', textDecoration: 'none', transition: 'all 0.2s ease' }}>
+                        <div style={{ width: '46px', height: '46px', borderRadius: '12px', background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-teal)' }}>
+                          <Icon size={21} />
+                        </div>
+                        <div>
+                          <div style={{ color: 'var(--text-heading)', fontSize: '15px', fontWeight: 800, marginBottom: '5px' }}>{target.name}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '13px', lineHeight: 1.45 }}>{target.text}</div>
+                        </div>
+                        <ExternalLink size={16} color="var(--text-subtle)" />
+                      </a>
+                    )
+                  })}
+                </div>
+
+                <div style={{ padding: '0 24px 24px' }}>
+                  <a href="/mcp" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', minHeight: '52px', marginBottom: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan) 58%, var(--accent-orange))', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '15px', fontWeight: 800, textDecoration: 'none', boxShadow: '0 10px 24px rgba(66,127,131,0.22)' }}>
+                    <PlugZap size={18} /> Add Torus MCP to IDE
+                  </a>
+                  <div style={{ borderRadius: '16px', background: '#0b1220', border: '1px solid rgba(255,255,255,0.08)', padding: '18px', color: '#dbeafe', fontFamily: 'DM Mono, monospace', fontSize: '12px', lineHeight: 1.7, overflow: 'auto' }}>
+                    <div style={{ color: '#67e8f9' }}>mcp.json</div>
+                    <div>{'{'}</div>
+                    <div>&nbsp;&nbsp;"servers": {'{'}</div>
+                    <div>&nbsp;&nbsp;&nbsp;&nbsp;"torus-ai-builder": {'{'}</div>
+                    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",</div>
+                    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["torus-mcp-server"]</div>
+                    <div>&nbsp;&nbsp;&nbsp;&nbsp;{'}'}</div>
+                    <div>&nbsp;&nbsp;{'}'}</div>
+                    <div>{'}'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Tool Hub Section */}
         <div id="tools" style={{ background: 'var(--bg-2)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)', padding: '120px 24px', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, right: 0, width: '400px', height: '400px', background: 'radial-gradient(circle, var(--accent-cyan-transparent) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -259,12 +371,12 @@ export default async function LandingPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '32px' }}>
               {[
-                { name: 'APPARI MOHAN VENKATA NIKHIL', role: 'Team Leader', branch: 'AIML', roll: '24B11AI016', short: 'NIKHIL', college: 'AUS', email: '24b11ai016@adityauniversity.in', phone: '9849117467', leader: true },
-                { name: 'BELLAMKONDA VENKATA SRUJITH', role: 'Member', branch: 'AIML', roll: '24B11AI033', short: 'SRUJITH', college: 'AUS', email: '24b11ai033@adityauniversity.in', phone: '8331893625' },
-                { name: 'KOLAPARTHI RAVITEJA', role: 'Member', branch: 'AIML', roll: '24B11AI187', short: 'RAVI', college: 'AUS', email: '24b11ai187@adityauniversity.in', phone: '9491359776' },
-                { name: 'PADALA SATYANARAYANA REDDY', role: 'Member', branch: 'AIML', roll: '24B11AI311', short: 'SATYA', college: 'AUS', email: '24b11ai311@adityauniversity.in', phone: '9133560677' },
-                { name: 'YALAMANCHILI AKHIL', role: 'Member', branch: 'AIML', roll: '24B11AI461', short: 'AKHIL', college: 'AUS', email: '24b11ai461@adityauniversity.in', phone: '9490437137' },
-                { name: 'YALLA SAI NAIDU', role: 'Member', branch: 'AIML', roll: '24B11AI464', short: 'SAI', college: 'AUS', email: '24b11ai464@adityauniversity.in', phone: '7032293645' },
+                { name: 'APPARI MOHAN VENKATA NIKHIL', role: 'Team Leader', branch: 'AIML', roll: '24B11AI016', short: 'NIKHIL', college: 'AUS', linkedin: 'https://www.linkedin.com/in/nikhil-appari-365810309/', leader: true },
+                { name: 'BELLAMKONDA VENKATA SRUJITH', role: 'Member', branch: 'AIML', roll: '24B11AI033', short: 'SRUJITH', college: 'AUS', linkedin: 'https://www.linkedin.com/in/venkata-srujith-bellamkonda-b78626336/' },
+                { name: 'KOLAPARTHI RAVITEJA', role: 'Member', branch: 'AIML', roll: '24B11AI187', short: 'RAVI', college: 'AUS', linkedin: 'https://www.linkedin.com/in/raviteja-kolaparthi-a061b6333/' },
+                { name: 'PADALA SATYANARAYANA REDDY', role: 'Member', branch: 'AIML', roll: '24B11AI311', short: 'SATYA', college: 'AUS', linkedin: 'https://www.linkedin.com/in/satya-narayana-reddy-padala-091503335/' },
+                { name: 'YALAMANCHILI AKHIL', role: 'Member', branch: 'AIML', roll: '24B11AI461', short: 'AKHIL', college: 'AUS', linkedin: 'https://www.linkedin.com/in/yalamanchili-akhil-562ba42a9/' },
+                { name: 'YALLA SAI NAIDU', role: 'Member', branch: 'AIML', roll: '24B11AI464', short: 'SAI', college: 'AUS', linkedin: 'https://www.linkedin.com/in/sai-naidu-yalla-491a42337/' },
               ].map((dev, i) => (
                 <div key={i} className="dev-card" style={{ 
                   padding: '40px', 
@@ -319,14 +431,28 @@ export default async function LandingPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-muted)', fontSize: '14px', padding: '10px 16px', background: 'var(--bg-2)', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                      <Mail size={16} style={{ color: '#ef4444' }} /> {dev.email}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-muted)', fontSize: '14px', padding: '10px 16px', background: 'var(--bg-2)', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                      <Phone size={16} style={{ color: '#ef4444' }} /> {dev.phone}
-                    </div>
-                  </div>
+                  {dev.linkedin && (
+                    <a
+                      href={dev.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        color: 'var(--text-heading)',
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        padding: '12px 16px',
+                        background: 'var(--bg-2)',
+                        borderRadius: '12px',
+                        border: '1px solid var(--border-subtle)',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      LinkedIn Profile <ExternalLink size={16} />
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
@@ -340,6 +466,15 @@ export default async function LandingPage() {
             .tool-card:hover {
               border-color: var(--accent-teal) !important;
               transform: translateY(-2px);
+            }
+            .mcp-target:hover {
+              border-color: var(--accent-teal) !important;
+              transform: translateY(-2px);
+            }
+            @media (max-width: 920px) {
+              .mcp-layout {
+                grid-template-columns: 1fr !important;
+              }
             }
           `}</style>
         </div>
