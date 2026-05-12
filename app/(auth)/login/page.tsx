@@ -18,6 +18,9 @@ export default function LoginPage() {
     setLoading(true); setError('')
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password)
+      if (!cred.user.emailVerified) {
+        throw new Error('Please verify your email from the link we sent before signing in.')
+      }
       const token = await cred.user.getIdToken()
       const res = await fetch('/api/auth/session', { method: 'POST', body: JSON.stringify({ token }), headers: { 'Content-Type': 'application/json' } })
       const data = await res.json()

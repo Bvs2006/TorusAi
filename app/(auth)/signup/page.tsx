@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from 'firebase/auth'
+import { createUserWithEmailAndPassword, sendEmailVerification, signInWithPopup, GoogleAuthProvider, updateProfile, signOut } from 'firebase/auth'
 import { auth } from '@/utils/firebase/client'
 import ThemeToggle from '@/components/ThemeToggle'
 
@@ -11,7 +11,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({ username: '', email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [verificationEmail, setVerificationEmail] = useState('')
 
   const inputStyle = { width: '100%', background: 'var(--bg-2)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '10px 14px', color: 'var(--text)', fontSize: '14px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: 'var(--text-muted)', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '6px' }
@@ -30,14 +30,14 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true); setError('')
     try {
-      const username = form.username.trim()
       const email = form.email.trim()
       const cred = await createUserWithEmailAndPassword(auth, email, form.password)
       await updateProfile(cred.user, { displayName: form.username })
-      const token = await cred.user.getIdToken()
-      await createSession(token, username)
-      setSuccess(true)
-      setTimeout(() => router.push('/dashboard'), 900)
+      await sendEmailVerification(cred.user, {
+        url: `${window.location.origin}/login?verified=1`,
+      })
+      await signOut(auth)
+      setVerificationEmail(email)
     } catch (err: any) {
       const message = err.message?.replace('Firebase: ', '') || 'Sign up failed'
       setError(message.includes('initialize session') ? `${message}. Your account may already be created, so try signing in.` : message)
@@ -57,12 +57,18 @@ export default function SignupPage() {
     }
   }
 
-  if (success) return (
+  if (verificationEmail) return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '56px', marginBottom: '16px' }}>🎉</div>
-        <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, marginBottom: '8px', color: 'var(--success)' }}>Welcome to Torus AI!</h2>
-        <p style={{ color: 'var(--text-muted)' }}>Opening your dashboard...</p>
+      <div style={{ width: '100%', maxWidth: '420px', textAlign: 'center', padding: '20px' }}>
+        <div style={{ background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '28px', boxShadow: 'var(--card-shadow)', backdropFilter: 'var(--glass-blur)' }}>
+          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: 800, marginBottom: '10px', color: 'var(--text-heading)' }}>Verify your email</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6, marginBottom: '18px' }}>
+            We sent a verification link to <strong style={{ color: 'var(--text-heading)' }}>{verificationEmail}</strong>. Open that email, verify the account, then sign in.
+          </p>
+          <Link href="/login" style={{ display: 'inline-block', width: '100%', padding: '12px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', borderRadius: '10px', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: 800, textDecoration: 'none' }}>
+            Go to Login
+          </Link>
+        </div>
       </div>
     </div>
   )

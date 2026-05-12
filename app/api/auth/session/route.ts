@@ -11,6 +11,14 @@ export async function POST(req: NextRequest) {
     const decoded = await adminAuth.verifyIdToken(token)
     const uid = decoded.uid
     const email = decoded.email
+    const isPasswordUser = decoded.firebase?.sign_in_provider === 'password'
+
+    if (isPasswordUser && decoded.email_verified !== true) {
+      return NextResponse.json(
+        { error: 'Please verify your email before signing in.' },
+        { status: 403 }
+      )
+    }
 
     // Ensure profile document exists securely on the server
     const { adminDb } = await import('@/utils/firebase/admin')
