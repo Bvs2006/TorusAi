@@ -281,10 +281,9 @@ export default async function LandingPage() {
                   <div style={{ borderRadius: '16px', background: '#0b1220', border: '1px solid rgba(255,255,255,0.08)', padding: '18px', color: '#dbeafe', fontFamily: 'DM Mono, monospace', fontSize: '12px', lineHeight: 1.7, overflow: 'auto' }}>
                     <div style={{ color: '#67e8f9' }}>mcp.json</div>
                     <div>{'{'}</div>
-                    <div>&nbsp;&nbsp;"servers": {'{'}</div>
+                    <div>&nbsp;&nbsp;"mcpServers": {'{'}</div>
                     <div>&nbsp;&nbsp;&nbsp;&nbsp;"torus-ai-builder": {'{'}</div>
-                    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",</div>
-                    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["torus-mcp-server"]</div>
+                    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"url": "https://your-domain.vercel.app/api/mcp"</div>
                     <div>&nbsp;&nbsp;&nbsp;&nbsp;{'}'}</div>
                     <div>&nbsp;&nbsp;{'}'}</div>
                     <div>{'}'}</div>

@@ -1,7 +1,7 @@
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
 
-const PUBLIC_PATHS = ['/', '/login', '/signup', '/forgot-password', '/api/auth', '/tools']
+const PUBLIC_PATHS = ['/', '/login', '/signup', '/forgot-password', '/api/auth', '/api/mcp', '/tools', '/mcp']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
