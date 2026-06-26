@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
+import McpIdeOptions from '@/components/McpIdeOptions'
 import {
   ArrowLeft,
   Boxes,
   ClipboardList,
   Code2,
-  ExternalLink,
   PlugZap,
   Rocket,
   ServerCog,
@@ -54,7 +54,7 @@ export default async function McpInstallPage() {
           <ArrowLeft size={16} /> Back to landing
         </Link>
 
-        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(360px, 0.8fr)', gap: '36px', alignItems: 'start' }} className="mcp-install-layout">
+        <section style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '36px', alignItems: 'start' }} className="mcp-install-layout">
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)', borderRadius: '20px', fontSize: '12px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: 'var(--accent-teal)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               <PlugZap size={14} /> IDE MCP install
@@ -63,19 +63,12 @@ export default async function McpInstallPage() {
               Add Torus MCP to your IDE.
             </h1>
             <p style={{ margin: '0 0 28px', color: 'var(--text-muted)', fontSize: '18px', lineHeight: 1.65, maxWidth: '720px' }}>
-              After installation, ask your IDE: “Use Torus to plan my idea.” The MCP tool returns features, architecture, development prompts, deployment steps, and recommended AI tools/services from your hosted Torus app.
+              Pick your IDE below — Cursor, VS Code, Claude Desktop, Windsurf, or any MCP-compatible editor. After install, ask: &ldquo;Use Torus to plan my idea.&rdquo;
             </p>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '36px' }}>
-              <a href={cursorInstallUrl} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '10px', minHeight: '52px', padding: '0 24px', borderRadius: '14px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan) 58%, var(--accent-orange))', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '15px', fontWeight: 800, textDecoration: 'none', boxShadow: '0 10px 24px rgba(66,127,131,0.22)' }}>
-                <PlugZap size={18} /> Add to Cursor
-              </a>
-              <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minHeight: '52px', padding: '0 22px', borderRadius: '14px', border: '1px solid var(--border-subtle)', background: 'var(--surface-overlay)', color: 'var(--text-heading)', fontWeight: 800, textDecoration: 'none' }}>
-                MCP Docs <ExternalLink size={16} />
-              </a>
-            </div>
+            <McpIdeOptions mcpUrl={mcpUrl} cursorInstallUrl={cursorInstallUrl} />
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginTop: '36px' }}>
               {[
                 { icon: Code2, title: 'Idea input', text: 'Type your app, product, or MCP idea directly inside the IDE.' },
                 { icon: Boxes, title: 'Features', text: 'Receive must-have and optional features with complexity and reasoning.' },
@@ -111,7 +104,7 @@ export default async function McpInstallPage() {
                 {isLocal ? (
                   <>Local dev: this points to <strong>{mcpUrl}</strong>. For production, deploy Torus to Vercel first, then swap the URL to your deployed <strong>/api/mcp</strong> endpoint.</>
                 ) : (
-                  <>Production ready: add this config to <strong>.cursor/mcp.json</strong> or your IDE&apos;s MCP settings. See deployment steps below.</>
+                  <>Works with <strong>Cursor</strong>, <strong>VS Code</strong>, <strong>Claude Desktop</strong>, <strong>Windsurf</strong>, and other MCP editors. Pick your IDE above for the exact config file path.</>
                 )}
               </div>
             </div>

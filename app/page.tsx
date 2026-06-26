@@ -232,7 +232,7 @@ export default async function LandingPage() {
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                   <Link href="/mcp" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minHeight: '48px', padding: '0 22px', borderRadius: '12px', background: 'var(--text-heading)', color: 'var(--bg)', fontWeight: 800, fontFamily: 'Syne, sans-serif', textDecoration: 'none' }}>
-                    Add MCP to IDE <PlugZap size={17} />
+                    Choose your IDE <PlugZap size={17} />
                   </Link>
                   <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minHeight: '48px', padding: '0 22px', borderRadius: '12px', border: '1px solid var(--border-subtle)', background: 'var(--surface-glass)', color: 'var(--text-heading)', fontWeight: 700, textDecoration: 'none' }}>
                     MCP Docs <ExternalLink size={16} />
@@ -276,7 +276,7 @@ export default async function LandingPage() {
 
                 <div style={{ padding: '0 24px 24px' }}>
                   <a href="/mcp" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', minHeight: '52px', marginBottom: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan) 58%, var(--accent-orange))', color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '15px', fontWeight: 800, textDecoration: 'none', boxShadow: '0 10px 24px rgba(66,127,131,0.22)' }}>
-                    <PlugZap size={18} /> Add Torus MCP to IDE
+                    <PlugZap size={18} /> Cursor · VS Code · Claude · Windsurf
                   </a>
                   <div style={{ borderRadius: '16px', background: '#0b1220', border: '1px solid rgba(255,255,255,0.08)', padding: '18px', color: '#dbeafe', fontFamily: 'DM Mono, monospace', fontSize: '12px', lineHeight: 1.7, overflow: 'auto' }}>
                     <div style={{ color: '#67e8f9' }}>mcp.json</div>
