@@ -9,6 +9,7 @@ import {
   PlugZap,
   Rocket,
   ServerCog,
+  TerminalSquare,
   Wrench
 } from 'lucide-react'
 
@@ -33,6 +34,18 @@ export default async function McpInstallPage() {
   const cursorConfig = Buffer.from(JSON.stringify(config.mcpServers['torus-ai-builder'])).toString('base64')
   const cursorInstallUrl = `cursor://anysphere.cursor-deeplink/mcp/install?name=torus-ai-builder&config=${encodeURIComponent(cursorConfig)}`
   const configText = JSON.stringify(config, null, 2)
+
+  const isLocal = host.includes('localhost')
+  const stdioConfig = {
+    mcpServers: {
+      'torus-ai-builder': {
+        command: 'node',
+        args: ['mcp/torus-mcp-server.mjs'],
+        env: { TORUS_BASE_URL: appUrl.replace(/\/$/, '') }
+      }
+    }
+  }
+  const stdioConfigText = JSON.stringify(stdioConfig, null, 2)
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', fontFamily: 'DM Sans, sans-serif', padding: '48px 24px 96px' }}>
@@ -95,10 +108,88 @@ export default async function McpInstallPage() {
                 {configText}
               </div>
               <div style={{ marginTop: '18px', color: 'var(--text-muted)', fontSize: '13px', lineHeight: 1.55 }}>
-                Deploy Torus to Vercel, then add this remote MCP config in your IDE settings. In local development this points to <strong>localhost:3000</strong>; in production it points to your deployed <strong>/api/mcp</strong> endpoint.
+                {isLocal ? (
+                  <>Local dev: this points to <strong>{mcpUrl}</strong>. For production, deploy Torus to Vercel first, then swap the URL to your deployed <strong>/api/mcp</strong> endpoint.</>
+                ) : (
+                  <>Production ready: add this config to <strong>.cursor/mcp.json</strong> or your IDE&apos;s MCP settings. See deployment steps below.</>
+                )}
               </div>
             </div>
           </aside>
+        </section>
+
+        {/* Deployment Guide */}
+        <section style={{ marginTop: '72px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)', borderRadius: '20px', fontSize: '12px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: 'var(--accent-teal)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <Rocket size={14} /> Deploy MCP
+          </div>
+          <h2 style={{ margin: '0 0 12px', color: 'var(--text-heading)', fontFamily: 'Syne, sans-serif', fontSize: '36px', letterSpacing: '-0.5px' }}>
+            How to deploy the MCP server
+          </h2>
+          <p style={{ margin: '0 0 40px', color: 'var(--text-muted)', fontSize: '16px', lineHeight: 1.65, maxWidth: '720px' }}>
+            Torus MCP ships with the app — no separate MCP hosting. Deploy the Next.js app and the <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '13px' }}>/api/mcp</code> endpoint goes live automatically.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '48px' }}>
+            {/* Remote HTTP */}
+            <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '20px', background: 'var(--surface-overlay)', overflow: 'hidden' }}>
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--focus)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  <ServerCog size={18} color="var(--accent-teal)" />
+                  <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: 800, color: 'var(--text-heading)' }}>Option A — Remote HTTP</span>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-teal)', background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)', borderRadius: '999px', padding: '3px 10px' }}>Recommended</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>Best for production and team sharing</p>
+              </div>
+              <ol style={{ margin: 0, padding: '20px 24px 20px 40px', fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+                <li style={{ marginBottom: '10px' }}>Deploy Torus to Vercel: <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px' }}>npx vercel --prod</code></li>
+                <li style={{ marginBottom: '10px' }}>Add env vars in Vercel (Firebase, Groq, SearXNG, <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px' }}>NEXT_PUBLIC_APP_URL</code>)</li>
+                <li style={{ marginBottom: '10px' }}>Verify: <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px' }}>curl https://your-app.vercel.app/api/mcp</code></li>
+                <li style={{ marginBottom: '10px' }}>Add the remote <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px' }}>mcp.json</code> config to Cursor or VS Code</li>
+                <li>Ask your IDE: &ldquo;Use Torus to plan my idea&rdquo;</li>
+              </ol>
+            </div>
+
+            {/* Local stdio */}
+            <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '20px', background: 'var(--surface-overlay)', overflow: 'hidden' }}>
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  <TerminalSquare size={18} color="var(--accent-cyan)" />
+                  <span style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: 800, color: 'var(--text-heading)' }}>Option B — Local stdio</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>Best for local dev when Torus runs on localhost</p>
+              </div>
+              <ol style={{ margin: 0, padding: '20px 24px 20px 40px', fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+                <li style={{ marginBottom: '10px' }}>Start Torus: <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px' }}>npm run dev</code></li>
+                <li style={{ marginBottom: '10px' }}>Use the stdio config below in <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px' }}>.cursor/mcp.json</code></li>
+                <li style={{ marginBottom: '10px' }}>Or run manually: <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px' }}>npm run mcp</code></li>
+                <li>Set <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px' }}>TORUS_BASE_URL</code> to your Vercel URL to point at production</li>
+              </ol>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+            <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '16px', overflow: 'hidden' }}>
+              <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-subtle)', fontFamily: 'DM Mono, monospace', fontSize: '12px', color: 'var(--text-subtle)', textTransform: 'uppercase' }}>
+                Remote HTTP mcp.json (production)
+              </div>
+              <pre style={{ margin: 0, padding: '18px', background: '#0b1220', color: '#dbeafe', fontFamily: 'DM Mono, monospace', fontSize: '12px', lineHeight: 1.7, overflow: 'auto' }}>
+                {configText}
+              </pre>
+            </div>
+            <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '16px', overflow: 'hidden' }}>
+              <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-subtle)', fontFamily: 'DM Mono, monospace', fontSize: '12px', color: 'var(--text-subtle)', textTransform: 'uppercase' }}>
+                Local stdio mcp.json (development)
+              </div>
+              <pre style={{ margin: 0, padding: '18px', background: '#0b1220', color: '#dbeafe', fontFamily: 'DM Mono, monospace', fontSize: '12px', lineHeight: 1.7, overflow: 'auto' }}>
+                {stdioConfigText}
+              </pre>
+            </div>
+          </div>
+
+          <p style={{ marginTop: '24px', fontSize: '14px', color: 'var(--text-muted)' }}>
+            Full guide: <code style={{ fontFamily: 'DM Mono, monospace' }}>mcp/README.md</code> in the repo.
+          </p>
         </section>
       </div>
 

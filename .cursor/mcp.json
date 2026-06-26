@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "torus-ai-builder": {
+      "url": "https://torusai.vercel.app/api/mcp"
+    }
+  }
+}

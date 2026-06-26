@@ -20,7 +20,7 @@ npm install
 ### 2. Create accounts (all free)
 | Service | URL | What for |
 |---------|-----|----------|
-| Supabase | supabase.com | Database + Auth |
+| Firebase | firebase.google.com | Database + Auth |
 | Groq | console.groq.com | AI (14,400 req/day free) |
 | Vercel | vercel.com | Hosting |
 
@@ -30,8 +30,8 @@ cp .env.example .env.local
 # Fill in your keys from each service
 ```
 
-### 4. Run database migrations
-Go to **firebase → SQL Editor** and run the entire contents of `db/migrations.sql`.
+### 4. Configure Firebase
+Enable **Authentication** and **Firestore Database** in the Firebase Console.
 
 ### 5. Start SearXNG (web search)
 ```bash
@@ -74,18 +74,17 @@ torus-ai/
 │       ├── ai/prompt/route.ts      # Phase prompt generator
 │       ├── ai/fix/route.ts         # Error fix
 │       ├── ai/propose/route.ts     # Client proposal (org)
-│       └── auth/callback/route.ts  # OAuth callback
+│       ├── auth/session/route.ts   # Firebase session cookie
 ├── components/
 │   ├── Navbar.tsx
 │   ├── Sidebar.tsx
 │   └── ui.tsx                      # All reusable components
 ├── lib/
-│   ├── supabase.ts                 # Supabase client
 │   ├── groq.ts                     # Groq client + Gemini fallback
 │   ├── searxng.ts                  # Web search + fallback
 │   └── utils.ts                    # Helpers + tools DB
 ├── types/index.ts                  # TypeScript types
-└── db/migrations.sql               # Full DB schema
+└── utils/firebase/                 # Firebase client/admin utilities
 ```
 
 ---
@@ -103,7 +102,7 @@ based on search results + user context
        ↓
 Generate 7-phase build plan
        ↓
-Save to firebase (projects + phases + features)
+Save to Firebase Firestore (projects + phases + features)
        ↓
 User navigates through phases
        ↓
@@ -112,6 +111,35 @@ for chosen tool (Cursor/Windsurf/Bolt.new)
        ↓
 User copies prompt → pastes into their IDE
 ```
+
+---
+
+## Torus MCP (IDE integration)
+
+Add Torus planning to Cursor, VS Code Copilot, or Claude Desktop.
+
+| Mode | When to use | Config |
+|------|-------------|--------|
+| **Remote HTTP** | Production (recommended) | `"url": "https://your-app.vercel.app/api/mcp"` |
+| **Local stdio** | Local dev | `npm run mcp` with `TORUS_BASE_URL=http://localhost:3000` |
+
+**Quick install:** run the app and open `/mcp` for a one-click Cursor install link and generated `mcp.json`.
+
+**Full MCP deploy guide:** see [mcp/README.md](mcp/README.md)
+
+Example remote config (`.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "torus-ai-builder": {
+      "url": "https://your-app.vercel.app/api/mcp"
+    }
+  }
+}
+```
+
+The MCP server deploys automatically with the Next.js app — no separate hosting step. After Vercel deploy, add the URL above to your IDE and ask: *"Use Torus to plan my idea."*
 
 ---
 
@@ -133,9 +161,9 @@ npx vercel --prod
 ```
 Add all env vars in Vercel dashboard. Update `SEARXNG_BASE_URL` to Railway URL.
 
-### 4. Configure firebase for production
+### 4. Configure Firebase for production
 - Authentication → URL Configuration → add your Vercel URL
-- Redirect URLs → add `https://yourdomain.vercel.app/api/auth/callback`
+- Add your Firebase env vars in Vercel, including `FIREBASE_SERVICE_ACCOUNT_JSON`
 
 ---
 
@@ -144,7 +172,7 @@ Add all env vars in Vercel dashboard. Update `SEARXNG_BASE_URL` to Railway URL.
 | Layer | Technology | Cost |
 |-------|-----------|------|
 | Frontend | Next.js 14 (App Router) | Free |
-| Database + Auth | firebase | Free (500MB) |
+| Database + Auth | Firebase | Free tier |
 | AI Inference | Groq (Llama 3.3 70B) | Free (14.4k req/day) |
 | AI Fallback | Google Gemini Flash | Free (1.5k req/day) |
 | Web Search | SearXNG (self-hosted) | Free |

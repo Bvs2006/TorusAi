@@ -9,6 +9,9 @@ type JsonRpcMessage = {
   params?: any
 }
 
+const SUPPORTED_PROTOCOL_VERSIONS = ['2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25']
+const DEFAULT_PROTOCOL_VERSION = '2025-03-26'
+
 const tool = {
   name: 'torus_build_idea',
   description: 'Turn a project idea into Torus AI features, architecture, development guide, deployment guide, and recommended AI tools.',
@@ -41,12 +44,23 @@ const tool = {
 
 export async function POST(req: NextRequest) {
   try {
+    const protocolVersion = req.headers.get('mcp-protocol-version') || DEFAULT_PROTOCOL_VERSION
     const message = await req.json()
-    const result = Array.isArray(message)
-      ? await Promise.all(message.map(item => handleMessage(item, req.nextUrl.origin)))
-      : await handleMessage(message, req.nextUrl.origin)
+    const origin = getOrigin(req)
 
-    return withCors(NextResponse.json(result))
+    if (Array.isArray(message)) {
+      const results = await Promise.all(
+        message.map(item => handleMessage(item, origin, protocolVersion))
+      )
+      return withCors(NextResponse.json(results.filter(Boolean)), protocolVersion)
+    }
+
+    const response = await handleMessage(message, origin, protocolVersion)
+    if (response === null) {
+      return withCors(new NextResponse(null, { status: 202 }), protocolVersion)
+    }
+
+    return withCors(NextResponse.json(response), protocolVersion)
   } catch (error: any) {
     return withCors(NextResponse.json({
       jsonrpc: '2.0',
@@ -66,6 +80,7 @@ export async function GET() {
     transport: 'streamable-http',
     endpoint: '/api/mcp',
     tools: [tool.name],
+    protocolVersions: SUPPORTED_PROTOCOL_VERSIONS,
   }))
 }
 
@@ -77,14 +92,36 @@ export async function DELETE() {
   return withCors(new NextResponse(null, { status: 204 }))
 }
 
-async function handleMessage(message: JsonRpcMessage, origin: string) {
+function getOrigin(req: NextRequest) {
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host')
+  const protocol = req.headers.get('x-forwarded-proto') || 'https'
+  if (host) return `${protocol}://${host}`
+  return req.nextUrl.origin
+}
+
+function negotiateProtocolVersion(requested?: string) {
+  if (!requested) return DEFAULT_PROTOCOL_VERSION
+  if (SUPPORTED_PROTOCOL_VERSIONS.includes(requested)) return requested
+  return DEFAULT_PROTOCOL_VERSION
+}
+
+async function handleMessage(
+  message: JsonRpcMessage,
+  origin: string,
+  protocolVersion: string
+) {
   if (!message?.method) {
     return error(message?.id ?? null, -32600, 'Invalid request')
   }
 
+  if (message.method.startsWith('notifications/')) {
+    return null
+  }
+
   if (message.method === 'initialize') {
+    const requested = message.params?.protocolVersion
     return result(message.id, {
-      protocolVersion: '2025-06-18',
+      protocolVersion: negotiateProtocolVersion(requested || protocolVersion),
       capabilities: {
         tools: {},
       },
@@ -95,14 +132,22 @@ async function handleMessage(message: JsonRpcMessage, origin: string) {
     })
   }
 
-  if (message.method === 'notifications/initialized') {
-    return null
+  if (message.method === 'ping') {
+    return result(message.id, {})
   }
 
   if (message.method === 'tools/list') {
     return result(message.id, {
       tools: [tool],
     })
+  }
+
+  if (message.method === 'resources/list') {
+    return result(message.id, { resources: [] })
+  }
+
+  if (message.method === 'prompts/list') {
+    return result(message.id, { prompts: [] })
   }
 
   if (message.method === 'tools/call') {
@@ -203,9 +248,12 @@ async function postJson(origin: string, path: string, body: any) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      cache: 'no-store',
     })
 
     if (!response.ok) return null
+    const contentType = response.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) return null
     return await response.json()
   } catch {
     return null
@@ -220,11 +268,12 @@ function error(id: JsonRpcMessage['id'], code: number, message: string) {
   return { jsonrpc: '2.0', id, error: { code, message } }
 }
 
-function withCors(response: NextResponse) {
+function withCors(response: NextResponse, protocolVersion = DEFAULT_PROTOCOL_VERSION) {
   response.headers.set('Access-Control-Allow-Origin', '*')
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Accept, MCP-Protocol-Version, Mcp-Session-Id')
-  response.headers.set('Access-Control-Expose-Headers', 'Mcp-Session-Id')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Accept, MCP-Protocol-Version, Mcp-Session-Id, Mcp-Method, Mcp-Name')
+  response.headers.set('Access-Control-Expose-Headers', 'Mcp-Session-Id, MCP-Protocol-Version')
+  response.headers.set('MCP-Protocol-Version', protocolVersion)
   response.headers.set('Cache-Control', 'no-store')
   return response
 }

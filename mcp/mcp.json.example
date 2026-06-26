@@ -1,0 +1,19 @@
+{
+  "_comment_remote": "Use this after deploying Torus to Vercel (recommended)",
+  "mcpServers_remote": {
+    "torus-ai-builder": {
+      "url": "https://YOUR-APP.vercel.app/api/mcp"
+    }
+  },
+
+  "_comment_local_stdio": "Use this for local dev with npm run dev",
+  "mcpServers_local": {
+    "torus-ai-builder": {
+      "command": "node",
+      "args": ["mcp/torus-mcp-server.mjs"],
+      "env": {
+        "TORUS_BASE_URL": "http://localhost:3000"
+      }
+    }
+  }
+}
