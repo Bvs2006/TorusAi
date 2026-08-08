@@ -1,7 +1,9 @@
 'use client'
 
 import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore'
-import { useEffect, useMemo, useState } from 'react'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { StepIndicator } from '@/components/ui'
 import { db } from '@/utils/firebase/client'
@@ -14,6 +16,7 @@ import {
   Cloud,
   Code2,
   Database,
+  Download,
   FileCode2,
   Layers3,
   LockKeyhole,
@@ -85,6 +88,8 @@ export default function ArchitecturePage() {
   const [features, setFeatures] = useState<any[]>([])
   const [aiTools, setAiTools] = useState<ArchitectureTool[]>([])
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
+  const pageRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (!projectId) {
@@ -158,6 +163,45 @@ export default function ArchitecturePage() {
     }, {})
   }, [aiTools])
 
+  async function handleDownloadPdf() {
+    if (!pageRef.current) return
+
+    setExporting(true)
+    try {
+      const canvas = await html2canvas(pageRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      })
+
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+      const imgWidth = pdfWidth - 16
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      let heightLeft = imgHeight
+      let position = 8
+
+      pdf.addImage(imgData, 'PNG', 8, position, imgWidth, imgHeight)
+      heightLeft -= pdfHeight - 16
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + 8
+        pdf.addPage()
+        pdf.addImage(imgData, 'PNG', 8, position, imgWidth, imgHeight)
+        heightLeft -= pdfHeight - 16
+      }
+
+      const filename = `${(project?.name || 'architecture').toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'architecture'}.pdf`
+      pdf.save(filename)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div style={{ padding: '28px 32px', display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-muted)' }}>
@@ -169,7 +213,7 @@ export default function ArchitecturePage() {
   }
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 58px)', background: 'var(--bg)', color: 'var(--text)' }}>
+    <div ref={pageRef} style={{ minHeight: 'calc(100vh - 58px)', background: 'var(--bg)', color: 'var(--text)' }}>
       <div style={{ padding: '18px 28px 0', borderBottom: '1px solid var(--border-subtle)', background: 'var(--surface-overlay)' }}>
         <StepIndicator steps={['Idea', 'Features', 'Architecture', 'Prompts', 'Blueprint', 'Deploy']} current={2} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, paddingBottom: 18 }}>
@@ -185,6 +229,9 @@ export default function ArchitecturePage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <button onClick={handleDownloadPdf} disabled={exporting} style={{ padding: '11px 16px', background: 'var(--bg-2)', color: 'var(--text-heading)', border: '1px solid var(--border-subtle)', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: exporting ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, opacity: exporting ? 0.8 : 1 }}>
+              <Download size={15} /> {exporting ? 'Preparing PDF…' : 'Download PDF'}
+            </button>
             <button onClick={() => router.push(`/planner/architecture/guide?project=${projectId}`)} style={{ padding: '11px 16px', background: 'var(--bg-2)', color: 'var(--text-heading)', border: '1px solid var(--border-subtle)', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
               <User size={15} /> Solo Guide
             </button>
