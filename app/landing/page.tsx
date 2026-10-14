@@ -155,7 +155,7 @@ export default function LandingPage() {
               </article>
               <article>
                 <strong>Integrations</strong>
-                <span>Use the tools you already love: Supabase, Vercel, and more.</span>
+                <span>Use the tools you already love: Firebase, Vercel, and more.</span>
               </article>
             </div>
           </div>

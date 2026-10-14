@@ -1,15 +1,46 @@
 'use client'
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, query, where } from 'firebase/firestore'
-import { auth, db } from '@/utils/firebase/client'
-import { useEffect, useState } from 'react'
+
+import { collection, getDocs, doc, getDoc, query, where, updateDoc } from 'firebase/firestore'
+import { db } from '@/utils/firebase/client'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { showToast } from '@/components/ui'
-import { Copy, Check, RefreshCw, Zap, Bot, ArrowRight, Folder, Database, CheckCircle2, FileCode, CheckSquare, Wrench, HelpCircle, LogOut } from 'lucide-react'
+import {
+  Copy,
+  Check,
+  RefreshCw,
+  Zap,
+  Bot,
+  ArrowRight,
+  Folder,
+  Database,
+  CheckCircle2,
+  FileCode,
+  CheckSquare,
+  Wrench,
+  HelpCircle,
+  LogOut,
+  ExternalLink,
+  ChevronRight,
+  Sparkles,
+  Terminal,
+  Layers,
+  ArrowLeft,
+  Flame,
+  Clock,
+  Code2
+} from 'lucide-react'
 import type { Project, Phase } from '@/types'
+import Link from 'next/link'
+import ThemeToggle from '@/components/ThemeToggle'
 
-import { Suspense } from 'react'
-
-const TOOLS = ['Cursor', 'Windsurf', 'Bolt.new', 'Lovable', 'Replit']
+const TOOLS = [
+  { name: 'Cursor', icon: '⚡', url: 'cursor://open' },
+  { name: 'Windsurf', icon: '🌊', url: 'windsurf://open' },
+  { name: 'Bolt.new', icon: '🔩', url: 'https://bolt.new' },
+  { name: 'Lovable', icon: '❤️', url: 'https://lovable.dev' },
+  { name: 'Replit', icon: '🌀', url: 'https://replit.com/new' },
+]
 
 function WorkspaceContent() {
   const router = useRouter()
@@ -30,25 +61,46 @@ function WorkspaceContent() {
   const [fixing, setFixing] = useState(false)
 
   useEffect(() => {
-    if (!projectId) { router.push('/planner'); return }
+    if (!projectId) {
+      router.push('/planner')
+      return
+    }
     loadData()
   }, [projectId])
 
   async function loadData() {
-    const [projSnap, phasesSnap] = await Promise.all([
-      getDoc(doc(db as any, 'projects', projectId!)),
-      getDocs(query(collection(db as any, 'phases'), where('project_id', '==', projectId)))
-    ])
-    if (!projSnap.exists()) { router.push('/dashboard'); return }
-    const proj = { id: projSnap.id, ...projSnap.data() as any }
-    const phaseData = phasesSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })).sort((a: any, b: any) => a.phase_number - b.phase_number)
-    setProject(proj as any)
-    setPhases(phaseData as any)
-    if (phaseData && phaseData.length > 0) {
-      if ((phaseData[0] as any).prompt) setPrompt((phaseData[0] as any).prompt)
-      else generatePrompt(proj as any, phaseData[0] as any, 'Cursor')
+    try {
+      const [projSnap, phasesSnap] = await Promise.all([
+        getDoc(doc(db as any, 'projects', projectId!)),
+        getDocs(query(collection(db as any, 'phases'), where('project_id', '==', projectId)))
+      ])
+
+      if (!projSnap.exists()) {
+        router.push('/dashboard')
+        return
+      }
+
+      const proj = { id: projSnap.id, ...projSnap.data() as any }
+      const phaseData = phasesSnap.docs
+        .map((d: any) => ({ id: d.id, ...d.data() }))
+        .sort((a: any, b: any) => a.phase_number - b.phase_number)
+
+      setProject(proj as any)
+      setPhases(phaseData as any)
+
+      if (phaseData && phaseData.length > 0) {
+        if ((phaseData[0] as any).prompt) {
+          setPrompt((phaseData[0] as any).prompt)
+        } else {
+          generatePrompt(proj as any, phaseData[0] as any, 'Cursor')
+        }
+      }
+    } catch (err) {
+      console.error('Error loading workspace data:', err)
+      showToast('Error loading project data')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   async function generatePrompt(proj: Project, phase: Phase, tool: string) {
@@ -60,7 +112,8 @@ function WorkspaceContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phase, tool,
+          phase,
+          tool,
           stack: proj.stack,
           projectIdea: proj.idea,
           features: features.map((f: any) => f.name) || [],
@@ -99,29 +152,24 @@ function WorkspaceContent() {
   async function copyPrompt() {
     await navigator.clipboard.writeText(prompt)
     setCopied(true)
-    showToast('✓ Prompt copied to clipboard!')
+    showToast('✓ Master prompt copied to clipboard!')
     setTimeout(() => setCopied(false), 3000)
   }
 
   async function markDone() {
-    const phaseId = phases[activePhase].id
-    await updateDoc(doc(db as any, 'phases', phaseId), { status: 'done', completed_at: new Date().toISOString() })
-    setPhases(prev => prev.map(p => p.id === phaseId ? { ...p, status: 'done' } : p))
+    const current = phases[activePhase]
+    if (!current) return
+    await updateDoc(doc(db as any, 'phases', current.id), { status: 'done', completed_at: new Date().toISOString() })
+    setPhases(prev => prev.map(p => p.id === current.id ? { ...p, status: 'done' } : p))
     showToast('🎉 Milestone verified & saved!')
     if (activePhase < phases.length - 1) selectPhase(activePhase + 1)
   }
 
-  async function openInTool(tool: string) {
-    const urls: Record<string, string> = {
-      'Cursor': 'cursor://open',
-      'Windsurf': 'windsurf://open',
-      'Bolt.new': 'https://bolt.new',
-      'Lovable': 'https://lovable.dev',
-      'Replit': 'https://replit.com/new',
-    }
+  async function openInTool(toolName: string) {
+    const toolObj = TOOLS.find(t => t.name === toolName)
     await navigator.clipboard.writeText(prompt)
-    showToast(`✓ Prompt copied! Opening ${tool}...`)
-    window.open(urls[tool] || urls['Bolt.new'], '_blank')
+    showToast(`✓ Prompt copied! Opening ${toolName}...`)
+    window.open(toolObj?.url || 'https://bolt.new', '_blank')
   }
 
   async function generateFixPrompt() {
@@ -152,301 +200,413 @@ function WorkspaceContent() {
     setFixing(false)
   }
 
-  if (loading) return (
-    <div style={{ padding: '28px 32px', display: 'flex', alignItems: 'center', gap: '10px', color: '#607276' }}>
-      <div style={{ width: '16px', height: '16px', border: '2px solid rgba(66,127,131,.3)', borderTopColor: '#427f83', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-      Loading Golden Grid Workspace...
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  )
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-neutral-50 dark:bg-[#08080c] flex items-center justify-center p-6 text-neutral-600 dark:text-neutral-400 font-mono text-sm">
+        <div className="w-6 h-6 border-2 border-purple-500/40 border-t-purple-500 rounded-full animate-spin mr-3" />
+        <span>Initializing Architecture Cockpit...</span>
+      </div>
+    )
+  }
 
   const currentPhase = phases[activePhase]
+  const completedCount = phases.filter(p => p.status === 'done').length
+  const progressPercent = phases.length ? Math.round((completedCount / phases.length) * 100) : 0
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: '#eef3f4' }}>
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-neutral-100 dark:bg-[#08080c] text-neutral-900 dark:text-white/90 font-sans selection:bg-purple-500/30 selection:text-white">
       
-      {/* Top Bar */}
-      <div style={{ height: '44px', background: '#eef3f4', borderBottom: '1px solid rgba(38,69,72,.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '15px', color: '#172326', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'linear-gradient(135deg, #365f62, #83b9bd)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ width: '8px', height: '8px', background: '#fff', borderRadius: '50%' }} />
-            </span>
-            Torus<span style={{ color: '#5aa0a4' }}>AI</span>
-          </div>
-          <div style={{ display: 'flex', gap: '16px', color: '#607276', fontSize: '12px' }}>
-            <span style={{ cursor: 'pointer' }}>File</span>
-            <span style={{ cursor: 'pointer' }}>Edit</span>
-            <span style={{ cursor: 'pointer' }}>View</span>
-            <span style={{ cursor: 'pointer' }}>Tools</span>
-          </div>
-        </div>
-        <div style={{ color: '#172326', fontSize: '13px', fontFamily: 'Syne, sans-serif' }}>
-          TorusAI Task-Based Workspace: The Cockpit of Your Project
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ background: 'rgba(38,69,72,.1)', border: '1px solid rgba(38,69,72,.14)', borderRadius: '6px', padding: '4px 12px', fontSize: '12px', color: '#607276', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-            Vibe: {currentPhase?.name || 'UI Development'} <span style={{ opacity: 0.5 }}>▼</span>
-          </div>
-          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'linear-gradient(135deg, #f43f5e, #83b9bd)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: '#fff', cursor: 'pointer' }}>
-            U
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      {/* ─────────────────────────────────────────────────────────────
+          1. COCKPIT TOP COMMAND BAR
+          ───────────────────────────────────────────────────────────── */}
+      <header className="h-14 bg-white/90 dark:bg-[#0c0d15]/90 border-b border-neutral-200/80 dark:border-white/10 px-4 sm:px-6 flex items-center justify-between gap-4 shrink-0 backdrop-blur-xl z-30">
         
-        {/* Activity Bar */}
-        <div style={{ width: '48px', background: '#eef3f4', borderRight: '1px solid rgba(38,69,72,.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 0', gap: '24px', flexShrink: 0 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
-            <FileCode size={20} color="#427f83" style={{ cursor: 'pointer' }} />
-            <CheckSquare size={20} color="#8a9a9d" style={{ cursor: 'pointer' }} />
-            <Folder size={20} color="#8a9a9d" style={{ cursor: 'pointer' }} />
-          </div>
-          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
-            <Wrench size={18} color="#8a9a9d" style={{ cursor: 'pointer' }} />
-            <HelpCircle size={18} color="#8a9a9d" style={{ cursor: 'pointer' }} />
-            <LogOut size={18} color="#8a9a9d" style={{ cursor: 'pointer' }} onClick={() => router.push('/dashboard')} />
+        {/* Left: Brand + Project Identity */}
+        <div className="flex items-center gap-4 min-w-0">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 text-xs font-mono text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+          >
+            <ArrowLeft size={14} /> Back
+          </Link>
+
+          <div className="w-[1px] h-4 bg-neutral-200 dark:bg-white/10" />
+
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <h1 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate">
+              {project?.name || 'Architecture Workspace'}
+            </h1>
+            <span className="hidden md:inline text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 shrink-0">
+              {project?.platform || 'Web'}
+            </span>
           </div>
         </div>
 
-        {/* Golden Grid */}
-        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '280px 1fr 300px', overflow: 'hidden' }}>
+        {/* Center: Live Roadmap Telemetry */}
+        <div className="hidden lg:flex items-center gap-3">
+          <div className="w-32 bg-neutral-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
+            {completedCount}/{phases.length} Phases ({progressPercent}%)
+          </span>
+        </div>
+
+        {/* Right: Quick Actions + Theme */}
+        <div className="flex items-center gap-3">
+          <ThemeToggle collapsed={true} />
           
-          {/* LEFT PANE: Adaptive Roadmap */}
-          <div style={{ background: '#eef3f4', borderRight: '1px solid rgba(38,69,72,.1)', padding: '20px', overflowY: 'auto' }}>
-        <div style={{ fontSize: '11px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '16px' }}>
-          Adaptive Roadmap
-        </div>
-        {phases.map((phase, i) => {
-          const isActive = activePhase === i
-          const isDone = phase.status === 'done'
-          return (
-            <button key={phase.id} onClick={() => selectPhase(i)} style={{
-              width: '100%', textAlign: 'left', padding: '12px', marginBottom: '8px',
-              borderRadius: '10px', border: isActive ? '1px solid #0ea5e9' : '1px solid rgba(38,69,72,.1)',
-              background: isActive ? 'rgba(14,165,233,.1)' : 'transparent',
-              boxShadow: isActive ? '0 0 15px rgba(14,165,233,.2)' : 'none',
-              cursor: 'pointer', transition: 'all 0.2s', position: 'relative'
-            }}>
-              {isActive && <div style={{ position: 'absolute', left: 0, top: '10%', height: '80%', width: '3px', background: '#38bdf8', borderRadius: '0 4px 4px 0', animation: 'pulse 2s infinite' }} />}
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <div style={{ marginTop: '2px' }}>
-                  {isDone ? <CheckCircle2 size={16} color="#10b981" /> : 
-                   isActive ? <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid #38bdf8' }} /> :
-                   <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid #8a9a9d' }} />}
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: isActive ? 700 : 500, color: isActive ? '#172326' : isDone ? '#607276' : '#8a9a9d', marginBottom: '2px' }}>
-                    {phase.name}
-                  </div>
-                  {isActive ? (
-                    <div style={{ fontSize: '10px', color: '#38bdf8', fontFamily: 'DM Mono, monospace', animation: 'pulse 2s infinite' }}>
-                      (Active, pulsing)
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: '10px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace' }}>
-                      Phase {phase.phase_number} · {phase.duration || '2-3h'}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </button>
-          )
-        })}
-      </div>
+          <button
+            onClick={() => openInTool(selectedTool)}
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
+          >
+            <ExternalLink size={13} />
+            <span>Open in {selectedTool}</span>
+          </button>
 
-      {/* CENTER PANE: Execution Block */}
-      <div style={{ background: 'rgba(255,255,255,.54)', padding: '24px 32px', overflowY: 'auto', position: 'relative' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <div>
-            <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '20px', fontWeight: 800, color: '#172326', margin: 0 }}>
-              {currentPhase?.phase_number}.{currentPhase?.phase_number} {currentPhase?.name}
-            </h2>
-            <div style={{ marginTop: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326', marginBottom: '6px' }}>Objective</div>
-              <p style={{ color: '#607276', fontSize: '13px', margin: 0, lineHeight: '1.5' }}>
-                Implement {currentPhase?.name.toLowerCase()} for the {project?.platform} app.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326', marginBottom: '8px' }}>Tool Recommendation</div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button onClick={() => openInTool(selectedTool)} style={{
-              background: 'rgba(14,165,233,.1)', border: '1px solid rgba(14,165,233,.3)', borderRadius: '8px',
-              padding: '8px 16px', color: '#38bdf8', fontSize: '12px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', transition: 'all 0.2s'
-            }}>
-              Open in {selectedTool} (Recommended)
-            </button>
-            <select value={selectedTool} onChange={e => switchTool(e.target.value)} style={{
-              background: 'rgba(38,69,72,.07)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '8px',
-              padding: '8px 12px', color: '#607276', fontSize: '12px', outline: 'none', cursor: 'pointer'
-            }}>
-              <option disabled>or open alternative other alternative tools</option>
-              {TOOLS.map(t => <option key={t} value={t} style={{ background: 'rgba(255,255,255,.54)' }}>{t}</option>)}
-            </select>
-          </div>
-        </div>
-
-        {/* The Master Prompt */}
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326', marginBottom: '8px' }}>The Master Prompt</div>
-          <div style={{ background: '#eef3f4', border: '1px solid rgba(38,69,72,.14)', borderRadius: '8px', padding: '16px', position: 'relative', marginBottom: '8px' }}>
-            <button onClick={copyPrompt} style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(38,69,72,.1)', border: '1px solid rgba(38,69,72,.14)', borderRadius: '6px', padding: '6px', cursor: 'pointer', color: '#607276', transition: 'all 0.2s' }}>
-              {copied ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
-            </button>
-            {generating ? (
-              <div style={{ minHeight: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                <div style={{ width: '20px', height: '20px', border: '2px solid rgba(14,165,233,.3)', borderTopColor: '#38bdf8', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                <div style={{ color: '#8a9a9d', fontSize: '12px', fontFamily: 'DM Mono, monospace' }}>Generating prompt...</div>
-              </div>
-            ) : (
-              <pre style={{ fontSize: '13px', color: '#172326', fontFamily: 'DM Mono, monospace', lineHeight: '1.6', whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, maxHeight: '200px', overflowY: 'auto', paddingRight: '30px' }}>
-                {prompt || 'Select a phase to generate a prompt.'}
-              </pre>
-            )}
-          </div>
-          <button onClick={copyPrompt} style={{
-            width: '100%', background: 'rgba(14,165,233,.15)', border: '1px solid rgba(14,165,233,.4)', borderRadius: '8px',
-            padding: '10px', color: '#38bdf8', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Syne, sans-serif', transition: 'all 0.2s'
-          }}>
-            Copy Master Prompt
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="p-1.5 text-neutral-400 hover:text-rose-500 transition-colors"
+            title="Exit Cockpit"
+          >
+            <LogOut size={16} />
           </button>
         </div>
 
-        {/* Process Guide */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326', marginBottom: '8px' }}>Process Guide</div>
-          <ol style={{ margin: 0, paddingLeft: '20px', color: '#172326', fontSize: '13px', lineHeight: '1.8' }}>
-            <li>Paste prompt into {selectedTool}.</li>
-            <li>Review and adjust {selectedTool} output.</li>
-            <li>Download generated code.</li>
-            <li>Place in <strong style={{ color: '#83b9bd' }}>/components/Dashboard</strong>.</li>
-          </ol>
-        </div>
+      </header>
 
-        {/* Validation */}
-        <div style={{ marginBottom: '40px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 700, color: '#172326', marginBottom: '8px' }}>Validation</div>
-          <div style={{ background: 'rgba(255,255,255,.02)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '12px', padding: '16px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 700, color: '#172326', marginBottom: '12px' }}>Verify & Unlock</div>
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginBottom: '16px' }}>
-              <input type="checkbox" checked={currentPhase?.status === 'done'} onChange={() => {}} style={{ marginTop: '3px', accentColor: '#38bdf8' }} />
-              <span style={{ fontSize: '13px', color: '#172326', lineHeight: '1.5' }}>Does the UI render without errors and respond correctly to screen sizes?</span>
-            </label>
-            <button onClick={markDone} disabled={currentPhase?.status === 'done'} style={{
-              padding: '8px 16px', background: currentPhase?.status === 'done' ? 'rgba(255,255,255,.62)' : 'rgba(38,69,72,.14)',
-              border: `1px solid ${currentPhase?.status === 'done' ? 'rgba(38,69,72,.1)' : 'rgba(255,255,255,.2)'}`,
-              borderRadius: '6px', color: currentPhase?.status === 'done' ? '#8a9a9d' : '#172326',
-              fontSize: '12px', cursor: currentPhase?.status === 'done' ? 'not-allowed' : 'pointer'
-            }}>
-              {currentPhase?.status === 'done' ? 'Milestone Saved' : 'Save Milestone'}
-            </button>
-          </div>
-        </div>
-
-        {/* Robot Fixer Floating Button */}
-        <button onClick={() => setShowRobot(!showRobot)} style={{
-          position: 'absolute', bottom: '24px', right: '32px', width: '50px', height: '50px',
-          borderRadius: '50%', background: '#f43f5e', border: 'none', color: '#fff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-          boxShadow: '0 10px 25px rgba(244,63,94,.4)', transition: 'transform 0.2s', zIndex: 10
-        }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} title="Robot Fixer">
-          <Bot size={24} />
-        </button>
-
-        {/* Robot Fixer Panel */}
-        {showRobot && (
-          <div style={{
-            position: 'absolute', bottom: '85px', right: '32px', width: '380px', background: 'rgba(255,255,255,.62)',
-            border: '1px solid #f43f5e', borderRadius: '16px', padding: '20px', boxShadow: '0 20px 50px rgba(0,0,0,.5)', zIndex: 10
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <Bot size={20} color="#f43f5e" />
-              <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff' }}>Robot Fixer</div>
+      {/* ─────────────────────────────────────────────────────────────
+          2. THREE-PANE ARCHITECTURE COCKPIT
+          ───────────────────────────────────────────────────────────── */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+        
+        {/* ── LEFT PANE: 7-PHASE ROADMAP (col-span-3) ── */}
+        <aside className="lg:col-span-3 bg-white/70 dark:bg-[#0c0d15]/60 border-r border-neutral-200/80 dark:border-white/10 p-4 overflow-y-auto flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200/60 dark:border-white/5">
+              <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                Phase Navigator
+              </span>
+              <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded">
+                Live Roadmap
+              </span>
             </div>
-            <p style={{ fontSize: '12px', color: '#607276', marginBottom: '16px' }}>
-              Hit a snag? Paste your error code below and I'll generate a recovery prompt for {selectedTool}.
-            </p>
-            <textarea
-              value={errorLog} onChange={e => setErrorLog(e.target.value)}
-              placeholder="Paste terminal error or bug description here..."
-              style={{ width: '100%', height: '100px', background: '#eef3f4', border: '1px solid rgba(38,69,72,.14)', borderRadius: '8px', padding: '10px', color: '#172326', fontSize: '12px', fontFamily: 'DM Mono, monospace', outline: 'none', resize: 'none', marginBottom: '16px' }}
-            />
-            <button onClick={generateFixPrompt} disabled={!errorLog || fixing} style={{
-              width: '100%', padding: '10px', background: '#f43f5e', border: 'none', borderRadius: '8px',
-              color: '#fff', fontWeight: 700, fontSize: '13px', cursor: (!errorLog || fixing) ? 'not-allowed' : 'pointer', opacity: (!errorLog || fixing) ? 0.5 : 1
-            }}>
-              {fixing ? 'Generating Fix...' : 'Generate Fix Prompt'}
+
+            <div className="space-y-2">
+              {phases.map((phase, i) => {
+                const isActive = activePhase === i
+                const isDone = phase.status === 'done'
+
+                return (
+                  <button
+                    key={phase.id}
+                    onClick={() => selectPhase(i)}
+                    className={`w-full text-left p-3 rounded-xl border transition-all relative flex items-start gap-3 ${
+                      isActive
+                        ? 'bg-purple-50/80 dark:bg-purple-500/10 border-purple-500/50 shadow-md shadow-purple-500/5'
+                        : isDone
+                        ? 'bg-neutral-50/80 dark:bg-white/[0.02] border-neutral-200/60 dark:border-white/5 text-neutral-500 hover:border-neutral-300 dark:hover:border-white/20'
+                        : 'bg-transparent border-transparent hover:bg-neutral-100/80 dark:hover:bg-white/[0.03] text-neutral-600 dark:text-neutral-400'
+                    }`}
+                  >
+                    {/* Status Circle / Checkmark */}
+                    <div className="mt-0.5 shrink-0">
+                      {isDone ? (
+                        <CheckCircle2 size={16} className="text-emerald-500" />
+                      ) : isActive ? (
+                        <div className="w-4 h-4 rounded-full border-2 border-purple-500 flex items-center justify-center">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                        </div>
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border border-neutral-400 dark:border-neutral-600 flex items-center justify-center text-[9px] font-mono">
+                          {phase.phase_number}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className={`text-xs font-semibold truncate ${
+                        isActive ? 'text-purple-700 dark:text-purple-300' : isDone ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-600 dark:text-neutral-400'
+                      }`}>
+                        Phase {phase.phase_number}: {phase.name}
+                      </div>
+                      <div className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500 mt-0.5">
+                        {isDone ? 'Completed' : isActive ? 'Active Phase' : phase.duration || '2-3h build'}
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-neutral-200/60 dark:border-white/5 text-center">
+            <Link
+              href={`/planner/architecture?project=${projectId}`}
+              className="text-xs font-mono text-purple-600 dark:text-purple-400 hover:underline inline-flex items-center gap-1"
+            >
+              <span>View Full Visual Diagram</span>
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+        </aside>
+
+        {/* ── CENTER PANE: EXECUTION TERMINAL & PROMPT (col-span-6) ── */}
+        <main className="lg:col-span-6 bg-white dark:bg-[#08080c] p-6 overflow-y-auto space-y-6 relative">
+          
+          {/* Phase Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200/80 dark:border-white/10">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-mono uppercase bg-purple-500/10 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded font-bold">
+                  Step {currentPhase?.phase_number} of {phases.length}
+                </span>
+                <span className="text-xs font-mono text-neutral-400">
+                  {currentPhase?.duration || 'Estimated: 2h'}
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-serif font-bold text-neutral-900 dark:text-white">
+                {currentPhase?.name}
+              </h2>
+            </div>
+
+            {/* Validation CTA */}
+            <button
+              onClick={markDone}
+              disabled={currentPhase?.status === 'done'}
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl transition-all ${
+                currentPhase?.status === 'done'
+                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 cursor-default'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md'
+              }`}
+            >
+              <CheckCircle2 size={14} />
+              <span>{currentPhase?.status === 'done' ? 'Milestone Complete' : 'Mark Milestone Done'}</span>
             </button>
           </div>
-        )}
-      </div>
 
-      {/* RIGHT PANE: Project Brain */}
-      <div style={{ background: '#eef3f4', borderLeft: '1px solid rgba(38,69,72,.1)', padding: '20px', overflowY: 'auto' }}>
-        <div style={{ fontSize: '11px', color: '#8a9a9d', fontFamily: 'DM Mono, monospace', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '20px' }}>
-          Project Brain
-        </div>
-
-        {/* DB Schema */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#172326' }}>
-            <Database size={14} color="#10b981" />
-            <span style={{ fontSize: '13px', fontWeight: 700 }}>Database Schema</span>
+          {/* AI IDE Target Selector */}
+          <div>
+            <label className="block text-[11px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
+              Generate Prompt Tailored For:
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              {TOOLS.map(t => {
+                const active = selectedTool === t.name
+                return (
+                  <button
+                    key={t.name}
+                    onClick={() => switchTool(t.name)}
+                    className={`text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 border transition-all ${
+                      active
+                        ? 'bg-purple-600 text-white border-purple-600 font-semibold shadow-sm'
+                        : 'bg-neutral-50 dark:bg-white/[0.03] border-neutral-200 dark:border-white/10 text-neutral-700 dark:text-neutral-300 hover:border-purple-400'
+                    }`}
+                  >
+                    <span>{t.icon}</span>
+                    <span>{t.name}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <div style={{ background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '10px', padding: '12px' }}>
-            {['users', 'projects', 'tasks', 'profiles'].map(table => (
-              <div key={table} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '8px', borderRadius: '6px', fontSize: '12px', fontFamily: 'DM Mono, monospace',
-                background: (currentPhase?.name.toLowerCase().includes('auth') && table === 'users') ? 'rgba(16,185,129,.15)' : 'transparent',
-                border: (currentPhase?.name.toLowerCase().includes('auth') && table === 'users') ? '1px solid rgba(16,185,129,.3)' : '1px solid transparent',
-                color: (currentPhase?.name.toLowerCase().includes('auth') && table === 'users') ? '#10b981' : '#607276',
-                marginBottom: '4px'
-              }}>
-                <span>{table}</span>
-                <span style={{ fontSize: '10px', color: '#8a9a9d' }}>table</span>
+
+          {/* Master Prompt Console */}
+          <div className="bg-neutral-900 text-neutral-100 rounded-2xl border border-neutral-800 overflow-hidden shadow-xl">
+            {/* Console Header Bar */}
+            <div className="flex items-center justify-between px-4 py-3 bg-neutral-950 border-b border-neutral-800">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="text-xs font-mono text-neutral-400 ml-2">master_prompt_{selectedTool.toLowerCase()}.md</span>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Folder Tree */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#172326' }}>
-            <Folder size={14} color="#06b6d4" />
-            <span style={{ fontSize: '13px', fontWeight: 700 }}>File Structure</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={copyPrompt}
+                  className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors"
+                >
+                  {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                  <span>{copied ? 'Copied' : 'Copy'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Prompt Body */}
+            <div className="p-4 sm:p-6 max-h-80 overflow-y-auto font-mono text-xs leading-relaxed text-neutral-200">
+              {generating ? (
+                <div className="py-12 text-center space-y-3">
+                  <div className="w-6 h-6 border-2 border-purple-500/40 border-t-purple-400 rounded-full animate-spin mx-auto" />
+                  <p className="text-xs text-neutral-400">Crafting optimal prompt for {selectedTool}...</p>
+                </div>
+              ) : (
+                <pre className="whitespace-pre-wrap font-mono break-words">
+                  {prompt || 'Select a phase to generate an AI builder prompt.'}
+                </pre>
+              )}
+            </div>
+
+            {/* Prompt Actions Footer */}
+            <div className="p-3 bg-neutral-950 border-t border-neutral-800 flex items-center justify-between gap-3 text-xs font-mono">
+              <span className="text-neutral-500">
+                Optimized for code adherence & test passing
+              </span>
+              <button
+                onClick={() => openInTool(selectedTool)}
+                className="text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1"
+              >
+                <span>Launch in {selectedTool}</span>
+                <ExternalLink size={12} />
+              </button>
+            </div>
           </div>
-          <div style={{ background: 'rgba(255,255,255,.62)', border: '1px solid rgba(38,69,72,.1)', borderRadius: '10px', padding: '12px', fontSize: '12px', color: '#607276', fontFamily: 'DM Mono, monospace', lineHeight: '2' }}>
-            <div>📁 app/</div>
-            <div style={{ paddingLeft: '16px' }}>📄 layout.tsx</div>
-            <div style={{ paddingLeft: '16px' }}>📄 page.tsx</div>
-            <div style={{ paddingLeft: '16px' }}>📁 api/</div>
-            <div>📁 components/</div>
-            <div style={{ paddingLeft: '16px' }}>📄 ui.tsx</div>
-            <div>📁 lib/</div>
-            <div style={{ paddingLeft: '16px' }}>📄 utils.ts</div>
+
+          {/* Process Guide / Steps */}
+          <div className="bg-neutral-50 dark:bg-white/[0.02] border border-neutral-200/80 dark:border-white/5 rounded-2xl p-5 space-y-3">
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <Sparkles size={15} className="text-purple-500" />
+              <span>Recommended Phase Workflow</span>
+            </h3>
+            <ol className="space-y-2 text-xs text-neutral-600 dark:text-neutral-300 font-sans list-decimal list-inside leading-relaxed">
+              <li>Copy the Master Prompt above into your {selectedTool} chat window.</li>
+              <li>Let the agent scaffold the required files in your repository.</li>
+              <li>Run <code className="text-purple-600 dark:text-purple-400 font-mono bg-purple-500/10 px-1 py-0.5 rounded">npm run dev</code> to verify runtime compilation.</li>
+              <li>Click &ldquo;Mark Milestone Done&rdquo; above to advance your Torus streak.</li>
+            </ol>
           </div>
-        </div>
+
+          {/* Floating Robot Debugger Trigger */}
+          <button
+            onClick={() => setShowRobot(!showRobot)}
+            className="fixed bottom-6 right-8 z-40 w-12 h-12 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+            title="Open Error Fixer Bot"
+          >
+            <Bot size={22} />
+          </button>
+
+          {/* Floating Robot Fixer Modal */}
+          {showRobot && (
+            <div className="fixed bottom-20 right-8 z-50 w-96 bg-white dark:bg-[#0e101a] border border-rose-500/30 rounded-2xl p-5 shadow-2xl animate-fade-up">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 text-rose-500 font-bold text-sm">
+                  <Bot size={18} />
+                  <span>Robot Debug Assistant</span>
+                </div>
+                <button onClick={() => setShowRobot(false)} className="text-xs text-neutral-400 hover:text-white">✕</button>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+                Hit an error in {selectedTool}? Paste your stack trace below for an immediate recovery prompt.
+              </p>
+              <textarea
+                value={errorLog}
+                onChange={e => setErrorLog(e.target.value)}
+                placeholder="Paste terminal log or exception trace..."
+                rows={4}
+                className="w-full p-2.5 rounded-xl bg-neutral-100 dark:bg-black/40 border border-neutral-200 dark:border-white/10 text-xs font-mono text-neutral-900 dark:text-white outline-none resize-none mb-3"
+              />
+              <button
+                onClick={generateFixPrompt}
+                disabled={!errorLog || fixing}
+                className="w-full py-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-lg text-xs transition-colors disabled:opacity-40"
+              >
+                {fixing ? 'Generating Fix Prompt...' : 'Generate IDE Fix Prompt'}
+              </button>
+            </div>
+          )}
+
+        </main>
+
+        {/* ── RIGHT PANE: PROJECT BRAIN & SCHEMA (col-span-3) ── */}
+        <aside className="lg:col-span-3 bg-white/70 dark:bg-[#0c0d15]/60 border-l border-neutral-200/80 dark:border-white/10 p-4 overflow-y-auto space-y-6">
+          
+          <div className="flex items-center justify-between pb-3 border-b border-neutral-200/60 dark:border-white/5">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+              Project Topology
+            </span>
+            <Database size={13} className="text-emerald-500" />
+          </div>
+
+          {/* Database Entities */}
+          <div>
+            <div className="flex items-center gap-2 mb-2 text-xs font-bold text-neutral-900 dark:text-white">
+              <Database size={14} className="text-emerald-500" />
+              <span>Data Collections</span>
+            </div>
+            <div className="space-y-1.5 font-mono text-xs">
+              {['users', 'projects', 'phases', 'features', 'telemetry'].map(table => (
+                <div
+                  key={table}
+                  className="p-2 rounded-lg bg-neutral-50 dark:bg-white/[0.02] border border-neutral-200/70 dark:border-white/5 flex items-center justify-between"
+                >
+                  <span className="text-neutral-800 dark:text-neutral-200">{table}</span>
+                  <span className="text-[10px] text-neutral-400">firestore</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Directory Tree Spec */}
+          <div>
+            <div className="flex items-center gap-2 mb-2 text-xs font-bold text-neutral-900 dark:text-white">
+              <Folder size={14} className="text-cyan-500" />
+              <span>Architecture Structure</span>
+            </div>
+            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-white/[0.02] border border-neutral-200/70 dark:border-white/5 font-mono text-xs text-neutral-600 dark:text-neutral-400 space-y-1 leading-relaxed">
+              <div>📁 app/</div>
+              <div className="pl-3">📁 (app)/dashboard/</div>
+              <div className="pl-3">📁 planner/</div>
+              <div className="pl-3">📁 api/ai/</div>
+              <div>📁 components/</div>
+              <div className="pl-3">📄 Navbar.tsx</div>
+              <div className="pl-3">📄 Sidebar.tsx</div>
+              <div>📁 lib/</div>
+              <div className="pl-3">📄 groq.ts</div>
+              <div className="pl-3">📄 searxng.ts</div>
+            </div>
+          </div>
+
+          {/* Tech Stack Specs */}
+          <div>
+            <div className="flex items-center gap-2 mb-2 text-xs font-bold text-neutral-900 dark:text-white">
+              <Layers size={14} className="text-purple-500" />
+              <span>Stack Primitives</span>
+            </div>
+            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-white/[0.02] border border-neutral-200/70 dark:border-white/5 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Framework:</span>
+                <span className="font-semibold text-neutral-900 dark:text-white">Next.js 14 App Router</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Engine:</span>
+                <span className="font-semibold text-purple-600 dark:text-purple-400">Groq Llama 3.3 70B</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Grounding:</span>
+                <span className="font-semibold text-neutral-900 dark:text-white">SearXNG Search</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Database:</span>
+                <span className="font-semibold text-neutral-900 dark:text-white">Firebase Firestore</span>
+              </div>
+            </div>
+          </div>
+
+        </aside>
+
       </div>
 
-      <style>{`
-        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
-        </div>
-      </div>
     </div>
   )
 }
 
 export default function WorkspacePage() {
   return (
-    <Suspense fallback={<div style={{ padding: '20px', color: '#172326' }}>Loading Workspace...</div>}>
+    <Suspense fallback={<div className="p-8 text-xs font-mono text-neutral-400">Loading Workspace...</div>}>
       <WorkspaceContent />
     </Suspense>
   )

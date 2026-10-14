@@ -17,9 +17,13 @@ build/
 .env.production.local
 
 # Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Generated outputs
+outputs/
 
 # OS
 .DS_Store

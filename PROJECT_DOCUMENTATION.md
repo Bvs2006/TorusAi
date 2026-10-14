@@ -42,7 +42,7 @@ Torus AI solves this by generating a structured project plan from a simple idea.
 
 ## 4. Technologies
 
-Next.js 14, React 18, TypeScript, Tailwind CSS, Firebase, Supabase, Groq SDK, Gemini API, OpenRouter API, SearXNG, ReactFlow, Recharts, Lucide React, html2canvas, jsPDF, PostgreSQL, Vercel, Node.js, npm
+Next.js 14, React 18, TypeScript, Tailwind CSS, Firebase, Groq SDK, Gemini API, OpenRouter API, SearXNG, ReactFlow, Recharts, Lucide React, html2canvas, jsPDF, Vercel, Node.js, npm
 
 ---
 
@@ -58,11 +58,11 @@ flowchart LR
     API --> Search["SearXNG"]
     API --> Groq["Groq AI"]
     API --> Fallbacks["Gemini / OpenRouter"]
-    API --> Database["Firebase / Supabase"]
+    API --> Database["Firebase Firestore"]
     Dashboard --> Database
 ```
 
-The frontend is built with Next.js and React. API routes handle AI planning, feature generation, prompts, error fixing, streaks, and team workflows. Firebase and Supabase utilities support authentication and data storage. Groq is used as the primary AI provider, with Gemini and OpenRouter as fallback options.
+The frontend is built with Next.js and React. API routes handle AI planning, feature generation, prompts, error fixing, streaks, and team workflows. Firebase utilities support authentication and data storage. Groq is used as the primary AI provider, with Gemini and OpenRouter as fallback options.
 
 ---
 

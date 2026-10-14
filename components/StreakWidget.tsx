@@ -1,7 +1,8 @@
 'use client'
 
-import { Flame, TrendingUp } from 'lucide-react'
+import { Flame, TrendingUp, Sparkles, Award } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface StreakWidgetProps {
   userId: string
@@ -14,7 +15,7 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
     last_activity_date: string
   } | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isActive, setIsActive] = useState(false)
+  const [isActive, setIsActive] = useState(true)
 
   useEffect(() => {
     const fetchStreak = async () => {
@@ -22,19 +23,20 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
         const response = await fetch(`/api/streaks/get?user_id=${userId}`)
         if (response.ok) {
           const data = await response.json()
-          setStreak(data.streak)
+          if (data?.streak) {
+            setStreak(data.streak)
 
-          // Check if streak is active
-          const lastActivityDate = new Date(data.streak.last_activity_date)
-          const today = new Date()
-          const yesterday = new Date(today)
-          yesterday.setDate(yesterday.getDate() - 1)
+            const lastActivityDate = new Date(data.streak.last_activity_date)
+            const today = new Date()
+            const yesterday = new Date(today)
+            yesterday.setDate(yesterday.getDate() - 1)
 
-          const lastActivityDateOnly = new Date(lastActivityDate).toDateString()
-          const todayOnly = today.toDateString()
-          const yesterdayOnly = yesterday.toDateString()
+            const lastActivityDateOnly = new Date(lastActivityDate).toDateString()
+            const todayOnly = today.toDateString()
+            const yesterdayOnly = yesterday.toDateString()
 
-          setIsActive(lastActivityDateOnly === todayOnly || lastActivityDateOnly === yesterdayOnly)
+            setIsActive(lastActivityDateOnly === todayOnly || lastActivityDateOnly === yesterdayOnly)
+          }
         }
       } catch (error) {
         console.error('Error fetching streak:', error)
@@ -43,102 +45,63 @@ export default function StreakWidget({ userId }: StreakWidgetProps) {
       }
     }
 
-    fetchStreak()
+    if (userId) {
+      fetchStreak()
+    } else {
+      setLoading(false)
+    }
   }, [userId])
 
-  if (loading || !streak) {
-    return null
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3 py-3 text-xs text-neutral-400 font-mono">
+        <div className="w-4 h-4 border-2 border-purple-500/40 border-t-purple-400 rounded-full animate-spin" />
+        <span>Loading daily streak progress...</span>
+      </div>
+    )
   }
 
-  const torusCount = Math.floor(streak.current_streak / 30)
-  const remainingDays = streak.current_streak % 30
+  const currentStreak = streak?.current_streak || 1
+  const maxStreak = streak?.max_streak || 1
+  const torusCount = Math.floor(currentStreak / 30)
+  const daysInCycle = currentStreak % 30
+  const progressPercent = Math.round((daysInCycle / 30) * 100)
 
   return (
-    <a href="/badges" style={{ textDecoration: 'none', display: 'block' }}>
-      <div
-        style={{
-          background: isActive
-            ? 'linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(139, 92, 246, 0.1))'
-            : 'rgba(100, 116, 139, 0.05)',
-          border: isActive
-            ? '1px solid rgba(249, 115, 22, 0.3)'
-            : '1px solid rgba(100, 116, 139, 0.2)',
-          borderRadius: '16px',
-          padding: '20px',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          boxShadow: isActive ? '0 4px 12px rgba(249, 115, 22, 0.1)' : 'none'
-        }}
-        onMouseOver={e => {
-          e.currentTarget.style.transform = 'translateY(-2px)'
-          e.currentTarget.style.boxShadow = '0 8px 20px rgba(249, 115, 22, 0.15)'
-        }}
-        onMouseOut={e => {
-          e.currentTarget.style.transform = 'translateY(0)'
-          e.currentTarget.style.boxShadow = isActive ? '0 4px 12px rgba(249, 115, 22, 0.1)' : 'none'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Flame size={20} color={isActive ? '#f97316' : '#64748b'} />
-            <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-heading)' }}>
-              {streak.current_streak} Day Streak
-            </span>
-          </div>
-          <TrendingUp size={18} color={isActive ? 'var(--accent-orange)' : 'var(--text-subtle)'} />
-        </div>
-
-        {/* Mini Torus Visualization */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
-          {Array.from({ length: Math.min(torusCount, 3) }).map((_, i) => (
-            <div
-              key={`mini-torus-${i}`}
-              style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                background: 'conic-gradient(from 0deg, var(--primary), var(--accent-orange))',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                boxShadow: '0 0 6px rgba(139, 92, 246, 0.4)',
-                border: '1px solid var(--border-subtle)'
-              }}
-            >
-              ⭕
+    <Link href="/badges" className="block group">
+      <div className="p-4 rounded-xl bg-neutral-50 dark:bg-white/[0.02] border border-neutral-200/80 dark:border-white/5 group-hover:border-purple-500/40 transition-all">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+              <Flame size={18} className="fill-amber-500" />
             </div>
-          ))}
-          {torusCount > 3 && (
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
-              +{torusCount - 3} more
+            <div>
+              <div className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <span>{currentStreak} Day Build Streak</span>
+                <span className="text-[10px] font-mono uppercase bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold">
+                  Active
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                {daysInCycle} of 30 days towards next Torus Badge (Best: {maxStreak}d)
+              </p>
             </div>
-          )}
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-            Current: <span style={{ fontWeight: 600, color: 'var(--accent-orange)' }}>{streak.current_streak}d</span>
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-            Best: <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{streak.max_streak}d</span>
+
+          <div className="flex items-center gap-2 text-xs font-mono text-purple-600 dark:text-purple-400 group-hover:translate-x-1 transition-transform">
+            <span>View All Badges</span>
+            <TrendingUp size={14} />
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '12px',
-            fontSize: '11px',
-            fontWeight: 500,
-            color: isActive ? 'var(--accent-orange)' : 'var(--text-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          {isActive ? '🔥 Keep going!' : '⚠️ Streak ended'}
+        {/* Progress Bar towards next Torus Milestone */}
+        <div className="w-full bg-neutral-200 dark:bg-white/10 h-2 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-purple-500 via-indigo-500 to-amber-400 rounded-full transition-all duration-500"
+            style={{ width: `${Math.max(progressPercent, 12)}%` }}
+          />
         </div>
       </div>
-    </a>
+    </Link>
   )
 }

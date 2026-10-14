@@ -11,7 +11,7 @@ const STEPS = ['Idea', 'Features', 'Architecture', 'Prompts', 'Blueprint', 'Depl
 const COMPLEXITY_COLOR: Record<string, string> = { low: '#10b981', medium: '#f59e0b', high: '#f43f5e' }
 const STACK_ICONS: Record<string, string> = {
   Next: 'N', React: '⚛️', Vue: 'V', Svelte: 'S', Flutter: '🐦',
-  Node: '🟢', Python: '🐍', Go: '🐹', Supabase: '⚡', Firebase: '🔥',
+  Node: '🟢', Python: '🐍', Go: '🐹', Firebase: '🔥',
   Postgres: '🐘', Mongo: '🍃', Redis: '🔴', Vercel: 'V', Railway: '🚂',
   Render: '☁️', AWS: '🌩️', Groq: '⚡', OpenAI: '🧠', Gemini: '✨', Clerk: '🔐',
 }
@@ -34,6 +34,7 @@ export default function FeaturesPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [features, setFeatures] = useState<Feature[]>([])
   const [loading, setLoading] = useState(true)
+  const [aiLoading, setAiLoading] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [newFeature, setNewFeature] = useState({ name: '', description: '', priority: 'must' as 'must'|'nice', complexity: 'medium' as 'low'|'medium'|'high' })
   const [dragIdx, setDragIdx] = useState<number | null>(null)
@@ -49,46 +50,55 @@ export default function FeaturesPage() {
   }, [projectId])
 
   async function loadData() {
-    const [projSnap, featsSnap] = await Promise.all([
-      getDoc(doc(db as any, 'projects', projectId!)),
-      getDocs(query(collection(db as any, 'features'), where('project_id', '==', projectId)))
-    ])
-    const proj = projSnap.exists() ? { id: projSnap.id, ...projSnap.data() as any } : null
-    const feats = featsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }))
+    let proj: any = null
+    let feats: any[] = []
+    try {
+      const [projSnap, featsSnap] = await Promise.all([
+        getDoc(doc(db as any, 'projects', projectId!)),
+        getDocs(query(collection(db as any, 'features'), where('project_id', '==', projectId)))
+      ])
+      proj = projSnap.exists() ? { id: projSnap.id, ...projSnap.data() as any } : null
+      feats = featsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }))
+    } catch (err) {
+      console.error('Error loading project data:', err)
+      showToast('Failed to load project data')
+    }
 
-    if (!proj) { router.push('/dashboard'); return }
+    if (!proj) { router.push('/dashboard'); setLoading(false); return }
     setProject(proj as any)
-    
+
     if (!feats?.length) {
-      // Call AI to get recommended features
+      setAiLoading(true)
       try {
         const res = await fetch('/api/ai/features', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            idea: proj.idea, 
+          body: JSON.stringify({
+            idea: proj.idea,
             platform: proj.platform,
             stack: proj.stack
           })
         })
         const data = await res.json()
-        
+
+        if (!res.ok) throw new Error(data.error || 'AI request failed')
+
         if (data.features && Array.isArray(data.features)) {
           const insertedRefs = await Promise.all(
-            data.features.map((f: any, i: number) => 
-              addDoc(collection(db as any, 'features'), { 
+            data.features.map((f: any, i: number) =>
+              addDoc(collection(db as any, 'features'), {
                 ...f,
-                project_id: projectId, 
+                project_id: projectId,
                 sort_order: i,
                 why_important: f.why_important || ''
               })
             )
           )
-          const inserted = insertedRefs.map((r: any, i: number) => ({ 
-            id: r.id, 
-            ...data.features[i], 
-            project_id: projectId, 
-            sort_order: i 
+          const inserted = insertedRefs.map((r: any, i: number) => ({
+            id: r.id,
+            ...data.features[i],
+            project_id: projectId,
+            sort_order: i
           }))
           setFeatures(inserted as any)
           showToast('✓ AI recommended features for your project!')
@@ -96,6 +106,8 @@ export default function FeaturesPage() {
       } catch (err) {
         console.error('Error loading recommended features:', err)
         showToast('Could not load recommended features')
+      } finally {
+        setAiLoading(false)
       }
     } else {
       setFeatures(feats as any)
@@ -194,7 +206,7 @@ export default function FeaturesPage() {
   if (loading) return (
     <div style={{ padding: '40px', display: 'flex', alignItems: 'center', gap: '12px', color: '#607276' }}>
       <div style={{ width: '18px', height: '18px', border: '2px solid rgba(66,127,131,.3)', borderTopColor: '#427f83', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-      Loading features...
+      {aiLoading ? 'Generating features with AI...' : 'Loading features...'}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   )

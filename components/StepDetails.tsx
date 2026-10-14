@@ -115,7 +115,7 @@ const PHASES: PhaseData[] = [
         prompt: 'Help me create .env.local and .env.example for this project. Separate NEXT_PUBLIC client variables from server-only secrets. Include comments explaining each variable.',
         expected: 'Safe environment variable setup for frontend and backend services.',
         tips: ['Never commit .env.local.', 'Only expose variables with NEXT_PUBLIC when the browser needs them.'],
-        beforeStart: ['Collect Firebase/Supabase/API provider keys.', 'Check .gitignore.', 'Know which keys are client-safe.'],
+        beforeStart: ['Collect Firebase/API provider keys.', 'Check .gitignore.', 'Know which keys are client-safe.'],
         toolGuide: ['Ask Cursor to draft env files.', 'Review every variable name.', 'Do not paste real secrets into chat if avoidable.'],
         ideGuide: ['Create .env.example with placeholder values.', 'Create .env.local with real local values.', 'Restart the dev server after env changes.'],
         verify: ['.env.local is ignored by Git.', '.env.example is safe to commit.', 'The app reads env values correctly.'],

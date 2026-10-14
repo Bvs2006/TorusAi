@@ -43,11 +43,11 @@ function getFallbackResults(query: string): SearchResult[] {
       { title: 'Railway - Deploy Node.js', url: 'https://railway.app', content: 'Railway makes it easy to deploy Node.js, Python, Go backends with free $5/mo credit.' },
     ],
     'database': [
-      { title: 'Supabase - Open Source Firebase', url: 'https://supabase.com', content: 'Supabase provides PostgreSQL database, Auth, Realtime, and Storage. Free tier: 500MB, 50k users.' },
+      { title: 'Firebase', url: 'https://firebase.google.com', content: 'Firebase provides Authentication, Firestore, Storage, Hosting, and server SDKs with a useful free tier.' },
       { title: 'Neon - Serverless Postgres', url: 'https://neon.tech', content: 'Neon offers serverless PostgreSQL with branching. Free tier available.' },
     ],
     'auth': [
-      { title: 'Supabase Auth', url: 'https://supabase.com/auth', content: 'Supabase Auth supports email/password, OAuth (Google, GitHub), and magic links. Free with Supabase.' },
+      { title: 'Firebase Authentication', url: 'https://firebase.google.com/products/auth', content: 'Firebase Authentication supports email/password, Google sign-in, phone auth, and server-verified ID tokens.' },
       { title: 'Clerk - Authentication', url: 'https://clerk.com', content: 'Clerk provides complete user management. Free tier: 10,000 MAU.' },
     ],
     'ai': [
@@ -66,7 +66,7 @@ function getFallbackResults(query: string): SearchResult[] {
   }
   
   return [
-    { title: 'Supabase', url: 'https://supabase.com', content: 'Full-stack solution: DB + Auth + Storage. Free tier.' },
+    { title: 'Firebase', url: 'https://firebase.google.com', content: 'Full-stack app platform with Auth, Firestore, Storage, Hosting, and server SDKs.' },
     { title: 'Vercel', url: 'https://vercel.com', content: 'Best hosting for Next.js apps. Free tier.' },
   ]
 }

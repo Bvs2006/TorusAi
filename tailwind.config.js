@@ -26,6 +26,7 @@ module.exports = {
         display: ['General Sans', 'sans-serif'],
         body: ['DM Sans', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+        serif: ['Newsreader', 'Georgia', 'serif'],
       },
       animation: {
         'fade-up': 'fadeUp 0.5s ease both',

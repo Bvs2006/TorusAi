@@ -22,6 +22,7 @@ import {
   LockKeyhole,
   Server,
   Sparkles,
+  Terminal,
   User,
   Users,
 } from 'lucide-react'
@@ -229,6 +230,9 @@ export default function ArchitecturePage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <button onClick={() => router.push(`/workspace?project=${projectId}`)} style={{ padding: '11px 16px', background: 'var(--accent-teal)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '0 8px 24px rgba(168,85,247,.25)' }}>
+              <Terminal size={15} /> Open Cockpit <ArrowRight size={14} />
+            </button>
             <button onClick={handleDownloadPdf} disabled={exporting} style={{ padding: '11px 16px', background: 'var(--bg-2)', color: 'var(--text-heading)', border: '1px solid var(--border-subtle)', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: exporting ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, opacity: exporting ? 0.8 : 1 }}>
               <Download size={15} /> {exporting ? 'Preparing PDF…' : 'Download PDF'}
             </button>

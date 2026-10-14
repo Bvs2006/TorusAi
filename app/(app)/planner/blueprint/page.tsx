@@ -38,8 +38,8 @@ export default function BlueprintPage() {
 
   const stack = project.stack
   const fe = stack?.frontend?.name || 'Next.js'
-  const dbName = stack?.database?.name || 'Supabase'
-  const authName = stack?.auth?.name || 'Supabase Auth'
+  const dbName = stack?.database?.name || 'Firestore'
+  const authName = stack?.auth?.name || 'Firebase Auth'
   const slg = project.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 
   const fileStructure = `${slg}/
@@ -53,14 +53,14 @@ export default function BlueprintPage() {
 │   │   └── [feature]/page.tsx
 │   ├── api/
 │   │   ├── [route]/route.ts
-│   │   └── auth/callback/route.ts
+│   │   └── auth/session/route.ts
 │   ├── globals.css
 │   └── layout.tsx
 ├── components/
 │   ├── ui/
 │   └── [Feature].tsx
 ├── lib/
-│   ├── supabase.ts
+│   ├── firebase.ts
 │   └── utils.ts
 ├── types/
 │   └── index.ts
@@ -80,36 +80,38 @@ export default function BlueprintPage() {
     { method: 'POST', route: '/api/projects/[id]/features', description: 'Add feature', auth: 'Required' },
   ]
 
-  const dbSchema = `-- Core tables for ${project.name}
+  const dbSchema = `// Firestore collections for ${project.name}
 
-CREATE TABLE profiles (
-  id UUID REFERENCES auth.users PRIMARY KEY,
-  username TEXT UNIQUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+profiles/{userId} {
+  username: string
+  email: string
+  created_at: string
+}
 
-CREATE TABLE items (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  description TEXT,
-  status TEXT DEFAULT 'active',
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+projects/{projectId} {
+  user_id: string
+  title: string
+  description: string
+  status: "active" | "archived"
+  created_at: string
+}
 
--- Row Level Security
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE items ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users own data"
-  ON items FOR ALL USING (auth.uid() = user_id);`
+projects/{projectId}/features/{featureId} {
+  title: string
+  status: "todo" | "in_progress" | "done"
+  created_at: string
+}`
 
   const envVars = `# ${project.name} — Environment Variables
 
-# ${dbName}
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...
+# Firebase
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+FIREBASE_SERVICE_ACCOUNT_JSON={...}
 
 # AI (Groq)
 GROQ_API_KEY=gsk_...

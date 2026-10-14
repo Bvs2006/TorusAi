@@ -39,7 +39,7 @@ Example tools by category:
 - Image Generation: DALL-E 3, Midjourney, Stable Diffusion, Leonardo.Ai
 - Speech-to-Text: Whisper, Rev, Descript
 - Search: Tavily, Perplexity, You.com Search
-- Vector DB: Pinecone, Weaviate, Supabase Vector, Milvus
+- Vector DB: Pinecone, Weaviate, Qdrant, Milvus
 - Code: GitHub Copilot, Tabnine, Cursor
 - Embeddings: OpenAI Embeddings, Cohere, Hugging Face
 

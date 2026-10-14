@@ -2,20 +2,28 @@
 import { auth } from '@/utils/firebase/client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Sparkles, ArrowUp, Briefcase, Cpu, Layers, Wand2 } from 'lucide-react'
+import { Sparkles, ArrowUp, Briefcase, Cpu, Layers, Wand2, Globe, Smartphone, Server, Bot, CheckCircle2 } from 'lucide-react'
 import { showToast } from '@/components/ui'
 
 const SUGGESTIONS = [
-  'A SaaS dashboard for tracking team performance with AI insights',
-  'An e-commerce platform with personalized product recommendations',
-  'A real-time collaboration tool for remote engineering teams',
-  'A mobile-first habit tracker with streak analytics',
+  'A real-time AI collaborative canvas with multi-user presence and vector search',
+  'An automated developer telemetry dashboard with error alerts and LLM diagnostics',
+  'A mobile-first habit tracker with daily streaks, Firebase sync, and milestone badges',
+  'An autonomous research agent MCP server for Cursor and Claude Desktop',
+]
+
+const PLATFORMS = [
+  { id: 'web', label: 'Web App', icon: Globe },
+  { id: 'mobile', label: 'Mobile App', icon: Smartphone },
+  { id: 'api', label: 'API / Backend', icon: Server },
+  { id: 'mcp', label: 'MCP Server', icon: Bot },
 ]
 
 export default function PlannerPage() {
   const router = useRouter()
   const [idea, setIdea] = useState('')
   const [experience, setExperience] = useState('intermediate')
+  const [platform, setPlatform] = useState('web')
   const [loading, setLoading] = useState(false)
   const [focused, setFocused] = useState(false)
 
@@ -29,11 +37,11 @@ export default function PlannerPage() {
       const res = await fetch('/api/ai/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idea, experience, platform: 'web', userId: user?.uid || null })
+        body: JSON.stringify({ idea, experience, platform, userId: user?.uid || null })
       })
       const plan = await res.json()
       if (plan.error) throw new Error(plan.error)
-      showToast('✓ Build plan generated! Moving to features...')
+      showToast('✓ Architecture plan generated! Moving to feature breakdown...')
       router.push(`/planner/features?project=${plan.projectId}`)
     } catch (err: any) {
       showToast(err.message || 'Something went wrong')
@@ -42,276 +50,162 @@ export default function PlannerPage() {
   }
 
   return (
-    <div style={{
-      minHeight: 'calc(100vh - 58px)',
-      background: 'var(--bg)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '48px 20px',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Dynamic Background Gradient */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(131,185,189,0.15) 0%, transparent 60%)',
-        zIndex: 0
-      }} />
-
-      {/* Subtle background torus rings */}
-      <div className="bg-ring ring-a" />
-      <div className="bg-ring ring-b" />
+    <div className="min-h-[calc(100vh-58px)] bg-neutral-50 dark:bg-[#08080c] text-neutral-900 dark:text-white/90 selection:bg-purple-500/30 selection:text-white flex flex-col items-center justify-center p-6 md:p-12 relative overflow-hidden font-sans transition-colors duration-300">
+      
+      {/* Ambient Radial Mesh Background */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-gradient-to-b from-purple-500/10 via-indigo-500/5 to-transparent dark:from-purple-600/20 dark:via-indigo-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute inset-0 dark-grid-pattern opacity-40 pointer-events-none" />
 
       {/* Header */}
-      <div style={{
-        textAlign: 'center', marginBottom: '40px',
-        animation: 'fadeSlideUp 0.5s ease both',
-        position: 'relative', zIndex: 1
-      }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '7px',
-          padding: '5px 14px',
-          background: 'rgba(66,127,131,0.08)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '20px',
-          fontSize: '11px', fontFamily: 'DM Mono, monospace', fontWeight: 600,
-          color: 'var(--accent-teal)', marginBottom: '20px',
-          textTransform: 'uppercase', letterSpacing: '1.2px'
-        }}>
-          <Wand2 size={12} />
-          AI Architecture Planner
+      <div className="text-center max-w-2xl mx-auto mb-10 relative z-10">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/20 dark:border-purple-500/30 bg-purple-50 dark:bg-purple-500/10 text-[11px] font-mono text-purple-700 dark:text-purple-300 uppercase tracking-widest mb-4">
+          <Wand2 size={13} className="text-purple-600 dark:text-purple-400" />
+          <span>Search-Grounded Architecture Engine</span>
         </div>
 
-        <h1 style={{
-          fontFamily: 'Syne, sans-serif',
-          fontSize: 'clamp(32px, 5vw, 52px)',
-          fontWeight: 800, lineHeight: 1.1,
-          letterSpacing: '-1.5px',
-          margin: '0 0 14px',
-          color: 'var(--text-heading)',
-        }}>
-          Let's build something<br />
-          <span style={{ color: 'var(--accent-teal)' }}>extraordinary.</span>
+        <h1 className="text-4xl sm:text-6xl font-serif font-normal text-neutral-900 dark:text-white tracking-tight mb-4 leading-tight">
+          Let&apos;s build something <br />
+          <span className="italic font-light text-neutral-700 dark:text-white/90">extraordinary.</span>
         </h1>
 
-        <p style={{
-          color: 'var(--text-muted)', fontSize: '16px', lineHeight: 1.6,
-          maxWidth: '480px', margin: '0 auto'
-        }}>
-          Describe your idea. Torus AI will design the perfect architecture, stack, and roadmap.
+        <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
+          Describe your product vision. Torus queries live web benchmarks to design the optimal tech stack, 7-phase roadmap, and AI IDE prompts.
         </p>
       </div>
 
-      {/* Main card */}
+      {/* Main Interactive Prompt Console */}
       <form
         onSubmit={handleGenerate}
-        style={{
-          width: '100%', maxWidth: '800px',
-          animation: 'fadeSlideUp 0.5s ease 0.1s both',
-          position: 'relative', zIndex: 1
-        }}
+        className="w-full max-w-3xl relative z-10"
       >
-        <div style={{
-          background: 'var(--surface-overlay)',
-          backdropFilter: 'var(--glass-blur)',
-          border: `1px solid ${focused ? 'var(--accent-teal)' : 'var(--border-subtle)'}`,
-          borderRadius: '24px',
-          padding: '28px 28px 20px',
-          boxShadow: focused
-            ? '0 0 0 4px rgba(66,127,131,0.08), 0 20px 48px rgba(0,0,0,0.2)'
-            : '0 20px 48px rgba(0,0,0,0.1)',
-          transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)'
-        }}>
+        <div className={`bg-white dark:bg-[#0c0d15] border rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl transition-all duration-300 ${
+          focused
+            ? 'border-purple-500/60 shadow-purple-500/10 shadow-2xl'
+            : 'border-neutral-200/90 dark:border-white/10'
+        }`}>
+          
+          {/* Status Indicator Bar */}
+          <div className="flex items-center justify-between pb-4 mb-4 border-b border-neutral-100 dark:border-white/[0.06] text-xs font-mono text-neutral-500 dark:text-neutral-400">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Groq Llama 3.3 70B · SearXNG Grounded</span>
+            </div>
+            <span className="text-[10px] uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">
+              Zero-Cost Plan
+            </span>
+          </div>
 
-          {/* Textarea */}
+          {/* Textarea Input */}
           <textarea
             value={idea}
             onChange={e => setIdea(e.target.value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            placeholder="Ask Torus AI to build an internal tool that..."
+            placeholder="Describe what you want to build (e.g., 'An AI code review agent that scans GitHub PRs, checks against architecture rules, and posts automated feedback using Next.js and Groq')..."
             rows={5}
-            style={{
-              width: '100%', background: 'transparent',
-              border: 'none', color: 'var(--text-heading)',
-              fontSize: '17px', outline: 'none', resize: 'none',
-              fontFamily: 'DM Sans, sans-serif', lineHeight: '1.7',
-              caretColor: 'var(--accent-teal)',
-            }}
+            className="w-full bg-transparent text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 text-sm sm:text-base outline-none resize-none leading-relaxed font-sans"
             autoFocus
           />
 
-          {/* Divider */}
-          <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '16px 0' }} />
-
-          {/* Bottom bar */}
-          <div style={{
-            display: 'flex', alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap', gap: '16px'
-          }}>
-
-            {/* Experience level */}
-            <div>
-              <label style={{
-                display: 'block', fontSize: '10px', color: 'var(--text-muted)',
-                fontFamily: 'DM Mono, monospace', textTransform: 'uppercase',
-                letterSpacing: '1.2px', marginBottom: '9px', fontWeight: 600
-              }}>
-                Experience Level
-              </label>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {['Beginner', 'Intermediate', 'Advanced'].map(lvl => {
-                  const active = experience === lvl.toLowerCase()
-                  return (
-                    <button
-                      key={lvl} type="button"
-                      onClick={() => setExperience(lvl.toLowerCase())}
-                      style={{
-                        padding: '7px 14px',
-                        background: active
-                          ? 'rgba(66,127,131,0.12)'
-                          : 'var(--bg-2)',
-                        border: `1px solid ${active ? 'var(--accent-teal)' : 'var(--border-subtle)'}`,
-                        borderRadius: '8px',
-                        color: active ? 'var(--accent-teal)' : 'var(--text-muted)',
-                        fontSize: '12px', fontWeight: active ? 700 : 500,
-                        cursor: 'pointer', transition: 'all 0.2s',
-                        fontFamily: 'DM Sans, sans-serif',
-                      }}
-                    >
-                      {lvl}
-                    </button>
-                  )
-                })}
+          {/* Configuration Row */}
+          <div className="pt-6 mt-4 border-t border-neutral-100 dark:border-white/[0.06] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            
+            {/* Platform & Experience Selectors */}
+            <div className="flex flex-wrap items-center gap-4">
+              
+              {/* Target Platform */}
+              <div>
+                <span className="block text-[10px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 font-medium">
+                  Platform
+                </span>
+                <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-white/[0.04] p-1 rounded-xl border border-neutral-200/80 dark:border-white/5">
+                  {PLATFORMS.map(p => {
+                    const active = platform === p.id
+                    const Icon = p.icon
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setPlatform(p.id)}
+                        className={`text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+                          active
+                            ? 'bg-neutral-950 text-white dark:bg-white dark:text-black font-semibold shadow-sm'
+                            : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                        }`}
+                      >
+                        <Icon size={12} /> {p.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
+
+              {/* Experience Level */}
+              <div>
+                <span className="block text-[10px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 font-medium">
+                  Experience
+                </span>
+                <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-white/[0.04] p-1 rounded-xl border border-neutral-200/80 dark:border-white/5">
+                  {['Beginner', 'Intermediate', 'Advanced'].map(lvl => {
+                    const active = experience === lvl.toLowerCase()
+                    return (
+                      <button
+                        key={lvl}
+                        type="button"
+                        onClick={() => setExperience(lvl.toLowerCase())}
+                        className={`text-xs px-2.5 py-1.5 rounded-lg transition-all ${
+                          active
+                            ? 'bg-purple-600 text-white font-semibold shadow-sm'
+                            : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                        }`}
+                      >
+                        {lvl}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
             </div>
 
-            {/* Submit button */}
+            {/* Submit Action Button */}
             <button
               type="submit"
               disabled={loading || !idea.trim()}
-              className="submit-btn"
-              style={{
-                width: '48px', height: '48px', flexShrink: 0,
-                background: idea.trim() && !loading
-                  ? 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))'
-                  : 'var(--bg-2)',
-                border: `1px solid ${idea.trim() && !loading ? 'var(--accent-teal)' : 'var(--border-subtle)'}`,
-                borderRadius: '14px',
-                color: idea.trim() && !loading ? '#fff' : 'var(--text-subtle)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: loading || !idea.trim() ? 'not-allowed' : 'pointer',
-                transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
-                boxShadow: idea.trim() && !loading
-                  ? '0 4px 16px rgba(66,127,131,0.3)'
-                  : 'none'
-              }}
+              className="w-12 h-12 rounded-2xl bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all shadow-md hover:scale-105"
             >
               {loading ? (
-                <div style={{
-                  width: '18px', height: '18px',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  borderTopColor: '#fff',
-                  borderRadius: '50%',
-                  animation: 'spin 0.7s linear infinite'
-                }} />
+                <div className="w-5 h-5 border-2 border-neutral-400 border-t-white dark:border-t-black rounded-full animate-spin" />
               ) : (
-                <ArrowUp size={20} />
+                <ArrowUp size={20} strokeWidth={2.5} />
               )}
             </button>
+
+          </div>
+
+        </div>
+
+        {/* Suggestion Chips */}
+        <div className="mt-5 space-y-2">
+          <span className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-widest pl-2 block">
+            Sample Project Concepts:
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {SUGGESTIONS.map((s, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIdea(s)}
+                className="text-xs text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white bg-white dark:bg-white/[0.03] hover:bg-neutral-100 dark:hover:bg-white/[0.08] border border-neutral-200/80 dark:border-white/[0.08] hover:border-purple-500/40 px-3.5 py-2 rounded-xl transition-all text-left shadow-sm dark:shadow-none"
+              >
+                &ldquo;{s}&rdquo;
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Suggestion chips */}
-        <div style={{
-          display: 'flex', gap: '8px', flexWrap: 'wrap',
-          marginTop: '14px',
-          animation: 'fadeSlideUp 0.5s ease 0.2s both'
-        }}>
-          {SUGGESTIONS.map((s, i) => (
-            <button
-              key={i} type="button"
-              onClick={() => setIdea(s)}
-              className="suggestion-chip"
-              style={{
-                padding: '6px 14px',
-                background: 'var(--surface-overlay)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '20px',
-                color: 'var(--text-muted)',
-                fontSize: '12px', cursor: 'pointer',
-                transition: 'all 0.2s',
-                fontFamily: 'DM Sans, sans-serif',
-                whiteSpace: 'nowrap', overflow: 'hidden',
-                maxWidth: '260px', textOverflow: 'ellipsis',
-                backdropFilter: 'var(--glass-blur)'
-              }}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
       </form>
 
-      {/* Footer badges */}
-      <div style={{
-        marginTop: '40px',
-        display: 'flex', gap: '24px',
-        color: 'var(--text-subtle)', fontSize: '12px',
-        fontFamily: 'DM Mono, monospace',
-        animation: 'fadeSlideUp 0.5s ease 0.3s both',
-        position: 'relative', zIndex: 1
-      }}>
-        {[
-          { icon: <Sparkles size={13} />, label: 'AI Powered Planning' },
-          { icon: <Layers size={13} />, label: 'Full Stack Architecture' },
-          { icon: <Cpu size={13} />, label: 'LLM-Optimized Prompts' },
-        ].map((b, i) => (
-          <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {b.icon} {b.label}
-          </span>
-        ))}
-      </div>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slowSpin {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        .bg-ring {
-          position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
-        }
-        .ring-a {
-          width: 500px; height: 500px;
-          border: 48px solid rgba(90,160,164,0.05);
-          top: -180px; left: -160px;
-          animation: slowSpin 40s linear infinite;
-        }
-        .ring-b {
-          width: 380px; height: 380px;
-          border: 36px solid rgba(66,127,131,0.04);
-          bottom: -120px; right: -100px;
-          animation: slowSpin 55s linear infinite reverse;
-        }
-        .submit-btn:hover:not(:disabled) {
-          transform: translateY(-2px) scale(1.05);
-          box-shadow: 0 8px 24px rgba(66,127,131,0.4) !important;
-        }
-        .suggestion-chip:hover {
-          background: rgba(66,127,131,0.08) !important;
-          border-color: var(--accent-teal) !important;
-          color: var(--accent-teal) !important;
-        }
-        ::placeholder { color: var(--text-subtle) !important; opacity: 0.5; }
-      `}</style>
     </div>
   )
 }

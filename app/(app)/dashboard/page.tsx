@@ -3,61 +3,16 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { adminAuth, adminDb } from '@/utils/firebase/admin'
-import { Plus, Zap, ArrowRight, Clock, Flame } from 'lucide-react'
+import { Plus, Zap, ArrowRight, Clock, Flame, Sparkles, Terminal, Compass, Layers } from 'lucide-react'
 import StreakWidget from '@/components/StreakWidget'
 import ActiveProjectList from '@/components/ActiveProjectList'
 
-const getPhaseProgress = (project: any) => {
-  const phases = project.phases || []
-  if (!phases.length) return 0
-  return Math.round((phases.filter((p: any) => p.status === 'done').length / phases.length) * 100)
-}
-
 const QUICK_TOOLS = [
-  { href: '/error-fix', icon: 'FX', label: 'Error Fixer', desc: 'Debug terminal output instantly' },
-  { href: '/master-prompt', icon: 'MP', label: 'Master Prompt', desc: 'Turn rough ideas into structured AI prompts' },
-  { href: '/tools', icon: 'AI', label: 'Tool Directory', desc: 'Find the best AI coding agents' },
-  { href: '/mcp', icon: 'MC', label: 'Torus MCP', desc: 'Add Torus planning directly to your IDE' }
+  { href: '/error-fix', icon: <Terminal size={18} className="text-purple-500 dark:text-purple-400" />, label: 'Error Fix Assistant', desc: 'Debug stack traces and generate fix prompts' },
+  { href: '/master-prompt', icon: <Sparkles size={18} className="text-cyan-500 dark:text-cyan-400" />, label: 'Master Prompt', desc: 'Convert rough ideas into comprehensive prompts' },
+  { href: '/tools', icon: <Compass size={18} className="text-emerald-500 dark:text-emerald-400" />, label: 'AI Tool Directory', desc: 'Browse 30+ benchmarked AI developer tools' },
+  { href: '/mcp', icon: <Layers size={18} className="text-amber-500 dark:text-amber-400" />, label: 'Torus MCP Server', desc: 'Trigger planning directly from Cursor & VS Code' }
 ]
-
-const getResumeStep = (project: any) => {
-  // First check if current_step is explicitly set
-  if (project.current_step) return project.current_step
-  
-  // Fallback: determine from phases
-  const phases = project.phases || []
-  if (!phases.length) return 'features' // default
-  
-  const stepMap: { [key: string]: string } = {
-    'features': 'features',
-    'architecture': 'architecture',
-    'prompts': 'architecture', // prompts are part of architecture
-    'blueprint': 'blueprint',
-    'deploy': 'deploy'
-  }
-  
-  // Find the highest completed phase and resume from next step
-  let lastCompletedPhase = -1
-  for (let i = 0; i < phases.length; i++) {
-    if (phases[i].status === 'done') {
-      lastCompletedPhase = i
-    }
-  }
-  
-  // If first phase (features) is done, move to architecture
-  if (lastCompletedPhase >= 0 && phases[lastCompletedPhase].name?.toLowerCase().includes('feature')) {
-    return 'architecture'
-  }
-  if (lastCompletedPhase >= 1 && phases[lastCompletedPhase].name?.toLowerCase().includes('architecture')) {
-    return 'blueprint'
-  }
-  if (lastCompletedPhase >= 2 && phases[lastCompletedPhase].name?.toLowerCase().includes('blueprint')) {
-    return 'deploy'
-  }
-  
-  // Default to features if nothing is done
-  return 'features'
-}
 
 export default async function DashboardPage({ searchParams }: { searchParams: { tab?: string } }) {
   const cookieStore = await cookies()
@@ -76,7 +31,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   const profileSnap = await adminDb.collection('profiles').doc(uid!).get()
   const profile = profileSnap.exists ? profileSnap.data() : {}
   let projects: any[] = []
-  let allPhases: any[] = []
 
   // Fetch projects
   const projectsSnap = await adminDb.collection('projects')
@@ -87,7 +41,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
     .map(d => ({ id: d.id, ...d.data() }))
     .sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
 
-  // Fetch phases for all projects to determine resume step
+  // Fetch phases for all projects
   const projectsWithPhases = await Promise.all(
     projects.map(async (proj: any) => {
       const phasesSnap = await adminDb.collection('phases')
@@ -99,198 +53,160 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   )
   projects = projectsWithPhases
 
-  const username = profile?.username || 'User'
+  const username = profile?.username || 'Builder'
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
-  if (tab === 'recent') {
-    return renderRecentProjects({ projects })
-  }
+  const totalProjects = projects?.length || 0
+  const completedProjects = projects?.filter((p: any) => p.status === 'completed').length || 0
+  const activeProjects = projects?.filter((p: any) => p.status === 'active').length || 0
+  const totalPhasesDone = projects.reduce((acc, p) => acc + (p.phases?.filter((ph: any) => ph.status === 'done').length || 0), 0)
 
-  return renderDeveloperDashboard({ greeting, username, projects, allPhases, profile, uid })
-}
-
-function renderRecentProjects({ projects }: { projects: any[] }) {
   return (
-    <div style={{ padding: '42px', maxWidth: '1240px', margin: '0 auto', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: '-120px', right: '-120px', width: '460px', height: '460px', borderRadius: '50%', background: 'linear-gradient(145deg, rgba(255,255,255,.1), rgba(66,127,131,.04))', border: '1px solid var(--border-subtle)', pointerEvents: 'none', zIndex: 0 }} />
+    <div className="p-6 md:p-12 max-w-7xl mx-auto text-neutral-900 dark:text-white/90 font-sans selection:bg-purple-500/30 selection:text-white">
       
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
-          <div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '28px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Clock color="var(--accent-teal)" size={28} /> Recent Projects
-            </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>All your recent builds and AI-planned architectures.</p>
+      {/* ─────────────────────────────────────────────────────────────
+          1. WELCOME HEADER
+          ───────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-8 border-b border-neutral-200/80 dark:border-white/[0.08]">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-[11px] font-mono text-purple-700 dark:text-purple-300 uppercase tracking-widest mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+            <span>Workspace Active</span>
           </div>
-          <Link href="/planner" style={{
-            display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px',
-            background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', borderRadius: '999px',
-            color: '#fff', textDecoration: 'none', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '14px',
-            boxShadow: '0 8px 24px rgba(66,127,131,.3)'
-          }}>
-            <Plus size={16} /> New Project
-          </Link>
+          <h1 className="text-3xl md:text-5xl font-serif font-normal text-neutral-900 dark:text-white tracking-tight">
+            {greeting}, <span className="italic font-light text-neutral-900 dark:text-white/90">{username}</span>
+          </h1>
+          <p className="text-neutral-600 dark:text-neutral-400 text-sm md:text-base mt-2">
+            Track your ongoing builds, monitor architecture phases, and generate IDE prompts.
+          </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px', maxWidth: '500px' }}>
-          <div style={{
-            background: 'var(--surface-glass)',
-            backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)',
-            borderRadius: '20px', padding: '24px', boxShadow: 'var(--card-shadow)'
-          }}>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-heading)' }}>
-              <Zap size={18} color="var(--accent-cyan)" /> Quick Tools
+        <div className="flex items-center gap-3">
+          <Link
+            href="/planner"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-white bg-neutral-950 hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 px-5 py-2.5 rounded-full transition-all duration-200 shadow-md hover:scale-[1.02]"
+          >
+            <Plus size={15} /> New Project Plan
+          </Link>
+        </div>
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. METRICS ROW (PASTEL TINTED CARDS)
+          ───────────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+        
+        {/* Total Projects (Ice Blue Tint) */}
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#131b26] border border-neutral-200/90 dark:border-[#1e2e42] shadow-sm dark:shadow-none relative overflow-hidden">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block mb-2">
+            Total Projects
+          </span>
+          <div className="text-4xl font-bold text-blue-600 dark:text-[#7ca9f4] tracking-tight">
+            {totalProjects}
+          </div>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 font-mono">
+            {completedProjects} completed · {activeProjects} active
+          </p>
+        </div>
+
+        {/* Phases Done (Sage Green Tint) */}
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#13241b] border border-neutral-200/90 dark:border-[#1e3b2c] shadow-sm dark:shadow-none relative overflow-hidden">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block mb-2">
+            Phases Completed
+          </span>
+          <div className="text-4xl font-bold text-emerald-600 dark:text-[#6ee7b7] tracking-tight">
+            {totalPhasesDone}
+          </div>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 font-mono">
+            Across all project roadmaps
+          </p>
+        </div>
+
+        {/* Torus Streak (Orchid Purple Tint) */}
+        <div className="rounded-2xl p-6 bg-white dark:bg-[#241728] border border-neutral-200/90 dark:border-[#3d2344] shadow-sm dark:shadow-none relative overflow-hidden">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block mb-2">
+            Streak Status
+          </span>
+          <div className="text-4xl font-bold text-purple-600 dark:text-[#e879f9] tracking-tight flex items-center gap-2">
+            <Flame size={32} className="text-amber-500 fill-amber-500" /> Active
+          </div>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 font-mono">
+            Daily architecture progress
+          </p>
+        </div>
+
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          3. STREAK WIDGET ROW
+          ───────────────────────────────────────────────────────────── */}
+      <div className="mb-10 bg-white dark:bg-[#0c0d15] border border-neutral-200/90 dark:border-white/10 rounded-2xl p-6 shadow-sm dark:shadow-none">
+        <div className="flex items-center gap-2 mb-4">
+          <Flame size={18} className="text-amber-500 fill-amber-500" />
+          <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Daily Torus Streak</h2>
+        </div>
+        <StreakWidget userId={uid} />
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          4. MAIN GRID: ACTIVE PROJECTS + QUICK TOOLS
+          ───────────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Active Projects (Left Column) */}
+        <div className="lg:col-span-8 bg-white dark:bg-[#0c0d15] border border-neutral-200/90 dark:border-white/10 rounded-2xl p-6 sm:p-8 shadow-sm dark:shadow-none">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-100 dark:border-white/[0.06]">
+            <div className="flex items-center gap-2.5">
+              <Clock size={18} className="text-purple-500 dark:text-purple-400" />
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Active Projects</h2>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {QUICK_TOOLS.map(action => (
-                <Link key={action.href} href={action.href} style={{
-                  display: 'flex', alignItems: 'center', gap: '14px', padding: '14px',
-                  background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)',
-                  borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s'
-                }} className="glass-row">
-                  <div style={{ fontSize: '20px' }}>{action.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-heading)' }}>{action.label}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{action.desc}</div>
+            <Link
+              href="/dashboard?tab=recent"
+              className="text-xs font-mono text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+            >
+              View all ({projects.length}) →
+            </Link>
+          </div>
+
+          <ActiveProjectList projects={projects} />
+        </div>
+
+        {/* Quick Tools & Shortcuts (Right Column) */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-white dark:bg-[#0c0d15] border border-neutral-200/90 dark:border-white/10 rounded-2xl p-6 shadow-sm dark:shadow-none">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-neutral-100 dark:border-white/[0.06]">
+              <Zap size={16} className="text-cyan-500 dark:text-cyan-400" />
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Developer Shortcuts</h3>
+            </div>
+
+            <div className="space-y-2.5">
+              {QUICK_TOOLS.map(tool => (
+                <Link
+                  key={tool.href}
+                  href={tool.href}
+                  className="flex items-center gap-3.5 p-3 rounded-xl bg-neutral-50 hover:bg-neutral-100 dark:bg-white/[0.02] dark:hover:bg-white/[0.06] border border-neutral-200/70 dark:border-white/5 hover:border-purple-500/30 transition-all group"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-white dark:bg-white/[0.04] border border-neutral-200/80 dark:border-white/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    {tool.icon}
                   </div>
-                  <ArrowRight size={14} color="var(--text-subtle)" />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-bold text-neutral-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate">
+                      {tool.label}
+                    </h4>
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+                      {tool.desc}
+                    </p>
+                  </div>
+                  <ArrowRight size={13} className="text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
                 </Link>
               ))}
             </div>
           </div>
         </div>
+
       </div>
-      <style>{`
-        .glass-row:hover {
-          background: var(--surface-glass-hover) !important;
-          border-color: var(--accent-teal) !important;
-          transform: translateX(4px);
-        }
-      `}</style>
-    </div>
-  )
-}
 
-function renderDeveloperDashboard({ greeting, username, projects, allPhases, profile, uid }: any) {
-  const totalProjects = projects?.length || 0
-  const completedProjects = projects?.filter((p: any) => p.status === 'completed').length || 0
-  const activeProjects = projects?.filter((p: any) => p.status === 'active').length || 0
-  const totalPhasesDone = allPhases?.filter((p: any) => p.status === 'done').length || 0
-
-  return (
-    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(124,58,237,.08) 0%, transparent 60%)', pointerEvents: 'none', zIndex: 0 }} />
-      <div style={{ position: 'absolute', bottom: '-200px', right: 0, width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(6,182,212,.05) 0%, transparent 60%)', pointerEvents: 'none', zIndex: 0 }} />
-
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
-          <div>
-            <div style={{ fontSize: '13px', fontFamily: 'DM Mono, monospace', color: 'var(--accent-cyan)', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600 }}>
-              Workspace Overview
-            </div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '38px', fontWeight: 800, color: 'var(--text-heading)', margin: 0, letterSpacing: '-1px' }}>
-              {greeting}, {username} 👋
-            </h1>
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ padding: '10px 16px', background: 'var(--surface-overlay)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)', borderRadius: '12px', fontSize: '13px', color: 'var(--text-muted)', boxShadow: 'var(--card-shadow)' }}>
-              <span style={{ color: 'var(--text-heading)', fontWeight: 700 }}>{activeProjects}</span> Active Projects
-            </div>
-            <Link href="/planner" style={{
-              display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px',
-              background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', borderRadius: '12px',
-              color: '#fff', textDecoration: 'none', fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '13px',
-              boxShadow: '0 8px 24px rgba(66,127,131,.3)', transition: 'transform 0.2s'
-            }}>
-              <Plus size={16} /> New Project
-            </Link>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '32px' }}>
-          {[
-            { label: 'Total Projects', value: totalProjects, sub: `${completedProjects} completed`, color: 'var(--accent-teal)', glow: 'rgba(66,127,131,.2)' },
-            { label: 'Phases Completed', value: totalPhasesDone, sub: 'across all projects', color: 'var(--accent-cyan)', glow: 'rgba(6,182,212,.2)' },
-          ].map(stat => (
-            <div key={stat.label} style={{
-              background: 'var(--surface-glass)', backdropFilter: 'var(--glass-blur)',
-              border: '1px solid var(--border-subtle)', borderTop: `2px solid ${stat.color}`,
-              borderRadius: '16px', padding: '20px', position: 'relative', overflow: 'hidden',
-              boxShadow: 'var(--card-shadow)'
-            }}>
-              <div style={{ position: 'absolute', top: 0, left: '10%', width: '80%', height: '30px', background: `radial-gradient(ellipse at top, ${stat.glow}, transparent 70%)`, pointerEvents: 'none' }} />
-              <div style={{ fontSize: '11px', fontFamily: 'DM Mono, monospace', color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '10px' }}>
-                {stat.label}
-              </div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '32px', fontWeight: 800, color: 'var(--text-heading)', textShadow: `0 0 20px ${stat.glow}` }}>
-                {stat.value}
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-subtle)', marginTop: '6px' }}>{stat.sub}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', color: 'var(--text-heading)', fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 800 }}>
-            <Flame size={18} color="var(--accent-orange)" /> Streak Torus
-          </div>
-          <div style={{ maxWidth: '560px' }}>
-            <StreakWidget userId={uid} />
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginBottom: '32px' }}>
-          <div style={{ background: 'var(--surface-glass)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)', borderRadius: '20px', padding: '24px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-heading)' }}>
-                <Clock color="var(--accent-teal)" size={20} /> Active Projects
-              </div>
-            </div>
-            <ActiveProjectList projects={projects} />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{
-              background: 'var(--surface-glass)',
-              backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)',
-              borderRadius: '20px', padding: '24px', boxShadow: 'var(--card-shadow)'
-            }}>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-heading)' }}>
-                <Zap size={18} color="var(--accent-cyan)" /> Quick Tools
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {QUICK_TOOLS.map(action => (
-                  <Link key={action.href} href={action.href} style={{
-                    display: 'flex', alignItems: 'center', gap: '14px', padding: '14px',
-                    background: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)',
-                    borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s'
-                  }} className="glass-row">
-                    <div style={{ fontSize: '20px' }}>{action.icon}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-heading)' }}>{action.label}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{action.desc}</div>
-                    </div>
-                    <ArrowRight size={14} color="var(--text-subtle)" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <style>{`
-        .glass-row:hover {
-          background: var(--surface-glass-hover) !important;
-          border-color: var(--accent-teal) !important;
-          transform: translateX(4px);
-        }
-        .active-project-card:hover {
-          background: var(--surface-glass-hover) !important;
-          border-color: var(--accent-teal) !important;
-        }
-      `}</style>
     </div>
   )
 }

@@ -66,7 +66,7 @@ function getDeploymentRecommendation(project: any): DeploymentRecommendation {
   const usesFirebase = hasText(source, ['firebase', 'firestore'])
   const usesEdge = hasText(source, ['edge', 'worker', 'cloudflare'])
   const hasBackend = hasText(source, ['express', 'node.js', 'nodejs', 'fastapi', 'django', 'api route', 'backend', 'server'])
-  const hasDatabase = hasText(source, ['postgres', 'postgresql', 'mysql', 'mongodb', 'redis', 'database', 'supabase'])
+  const hasDatabase = hasText(source, ['postgres', 'postgresql', 'mysql', 'mongodb', 'redis', 'database', 'firebase', 'firestore'])
   const hasLongRunningWork = hasText(source, ['websocket', 'queue', 'cron', 'background job', 'docker', 'worker'])
 
   if (usesFirebase && !hasLongRunningWork && !hasBackend) {

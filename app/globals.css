@@ -1,5 +1,6 @@
 /* app/globals.css */
 @import url('https://api.fontshare.com/v2/css?f[]=general-sans@600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -56,37 +57,37 @@
   --primary-hover: #6366f1;
   --secondary: #34d399;
   --neutral: #6b7280;
-  --bg: #0c0c14;
-  --bg-2: #14141f;
-  --bg-3: #1e1e2e;
-  --surface: #1a1a2e;
-  --surface-glass: rgba(26,26,46,0.72);
-  --surface-glass-hover: rgba(30,30,50,0.88);
-  --surface-overlay: rgba(20,20,35,0.92);
-  --text: #e8e8f0;
-  --text-2: #9ca3af;
-  --text-3: #6b7280;
-  --text-heading: #f1f1f6;
-  --text-muted: #9ca3af;
-  --text-subtle: #6b7280;
-  --border: #2a2a3e;
-  --border-subtle: rgba(255,255,255,0.08);
+  --bg: #08080c;
+  --bg-2: #0e0f17;
+  --bg-3: #141522;
+  --surface: #0c0d15;
+  --surface-glass: rgba(12, 13, 21, 0.72);
+  --surface-glass-hover: rgba(20, 21, 35, 0.88);
+  --surface-overlay: rgba(12, 13, 21, 0.95);
+  --text: #e2e8f0;
+  --text-2: #94a3b8;
+  --text-3: #64748b;
+  --text-heading: #ffffff;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.06);
   --success: #34d399;
   --warning: #fbbf24;
   --error: #f87171;
-  --focus: rgba(129,140,248,0.2);
-  --hover-shadow: 0 8px 30px rgba(0,0,0,0.35);
-  --card-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  --focus: rgba(139, 92, 246, 0.25);
+  --hover-shadow: 0 8px 30px rgba(0,0,0,0.45);
+  --card-shadow: 0 10px 30px rgba(0,0,0,0.3);
   --glass-blur: blur(26px) saturate(140%);
   --dot-color: rgba(255,255,255,0.06);
   --dot-mask: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent 72%);
-  --accent-teal: #2dd4bf;
-  --accent-teal-transparent: rgba(45,212,191,0.15);
+  --accent-teal: #a855f7;
+  --accent-teal-transparent: rgba(168,85,247,0.15);
   --accent-cyan: #22d3ee;
   --accent-cyan-transparent: rgba(34,211,238,0.15);
   --accent-orange: #fb923c;
   --accent-orange-transparent: rgba(251,146,60,0.15);
-  --scrollbar-thumb: #3a3a50;
+  --scrollbar-thumb: #222336;
   --scrollbar-track: transparent;
   color-scheme: dark;
 }
@@ -260,4 +261,166 @@ select {
 .theme-transition *::before,
 .theme-transition *::after {
   transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease !important;
+}
+
+/* ═══════════════════════════════════════════════
+   LUXURY AI SAAS DESIGN SYSTEM UTILITIES
+   ═══════════════════════════════════════════════ */
+.bg-obsidian {
+  background-color: #08080c;
+}
+html:not(.dark) .bg-obsidian {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+html:not(.dark) .bg-obsidian h1,
+html:not(.dark) .bg-obsidian h2,
+html:not(.dark) .bg-obsidian h3,
+html:not(.dark) .bg-obsidian h4 {
+  color: #0f172a !important;
+}
+html:not(.dark) .bg-obsidian p {
+  color: #475569;
+}
+html:not(.dark) .bg-obsidian header {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+html:not(.dark) .bg-obsidian footer {
+  background-color: #f1f5f9 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #64748b !important;
+}
+html:not(.dark) .bg-obsidian a.text-white,
+html:not(.dark) .bg-obsidian span.text-white {
+  color: #0f172a;
+}
+html:not(.dark) .bg-obsidian .bg-white.text-black,
+html:not(.dark) .bg-obsidian .bg-white.text-neutral-900 {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+html:not(.dark) .bg-obsidian .bg-white.text-black:hover,
+html:not(.dark) .bg-obsidian .bg-white.text-neutral-900:hover {
+  background-color: #1e293b !important;
+}
+html:not(.dark) .bg-obsidian .bg-\[\#0c0d15\],
+html:not(.dark) .bg-obsidian .bg-\[\#0e0f16\],
+html:not(.dark) .bg-obsidian .bg-\[\#0e101a\],
+html:not(.dark) .bg-obsidian .bg-\[\#11121b\] {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.bg-obsidian-card {
+  background-color: #0e0f16;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+html:not(.dark) .bg-obsidian-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dark-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+html:not(.dark) .dark-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+.light-dot-pattern {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.07) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.dark-dot-pattern {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Glowing Soundwave / Horizon Line */
+.soundwave-horizon {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+}
+
+.soundwave-horizon::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to top, rgba(139, 92, 246, 0.28), rgba(99, 102, 241, 0.15), transparent);
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.soundwave-bar {
+  width: 2px;
+  background: linear-gradient(to top, #ffffff, #a78bfa, #818cf8);
+  border-radius: 9999px;
+  animation: wavePulse 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes wavePulse {
+  0% { transform: scaleY(0.18); opacity: 0.35; }
+  50% { transform: scaleY(0.85); opacity: 0.9; }
+  100% { transform: scaleY(0.3); opacity: 0.5; }
+}
+
+/* Subtle float animation for hero cards */
+@keyframes softFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes softFloatReverse {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(8px); }
+}
+
+.animate-float {
+  animation: softFloat 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: softFloatReverse 7s ease-in-out infinite;
+}
+
+/* Wireframe Glowing Glyphs */
+.wireframe-box {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wireframe-box:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Isometric Folder Card Stacking */
+.folder-stack {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.folder-card {
+  transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.3s ease;
+}
+
+.folder-card:hover {
+  transform: translateY(-6px) scale(1.02);
 }

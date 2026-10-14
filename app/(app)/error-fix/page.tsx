@@ -1,33 +1,36 @@
 'use client'
 // app/(app)/error-fix/page.tsx
 import { useState } from 'react'
-import { Copy, Check, Zap } from 'lucide-react'
+import { Copy, Check, Zap, Terminal, Sparkles, AlertCircle, BookOpen, ArrowRight, CornerDownRight } from 'lucide-react'
 import { showToast } from '@/components/ui'
 
 const EXAMPLE_ERRORS = [
   {
-    label: 'Next.js hydration error',
+    label: 'Next.js 14 Hydration',
     error: `Error: Hydration failed because the initial UI does not match what was rendered on the server.
 Warning: Expected server HTML to contain a matching <div> in <div>.
 at div
 at Providers (webpack-internal:///./src/providers.tsx:15)`,
-    lang: 'Next.js 14'
+    lang: 'TypeScript/Next.js',
+    context: 'Server components rendering dynamic date vs client'
   },
   {
-    label: 'Supabase RLS error',
+    label: 'Firebase RLS Permission',
     error: `PostgrestError: new row violates row-level security policy for table "projects"
 Code: 42501
 Details: {}
 Hint: null
 Message: new row violates row-level security policy for table "projects"`,
-    lang: 'Supabase / PostgreSQL'
+    lang: 'Firebase / Firestore',
+    context: 'Inserting document with unauthenticated UID'
   },
   {
-    label: 'TypeScript cannot find module',
+    label: 'TypeScript Module Path',
     error: `Error: Cannot find module '@/components/Button' or its corresponding type declarations.
   at Object.pathToFileURL (/usr/local/lib/node_modules/ts-node/src/util.ts:50:15)
 ts(2307)`,
-    lang: 'TypeScript'
+    lang: 'TypeScript/Next.js',
+    context: 'tsconfig path alias resolution'
   },
 ]
 
@@ -60,201 +63,222 @@ export default function ErrorFixPage() {
   function loadExample(ex: typeof EXAMPLE_ERRORS[0]) {
     setErrorText(ex.error)
     setLanguage(ex.lang)
-    setContext('')
+    setContext(ex.context)
     setResult(null)
   }
 
   async function copyText(text: string, key: string) {
     await navigator.clipboard.writeText(text)
     setCopied(key)
-    showToast('✓ Copied!')
+    showToast('✓ Copied to clipboard!')
     setTimeout(() => setCopied(null), 2500)
   }
 
-  const inputBase: React.CSSProperties = {
-    width: '100%', background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)',
-    borderRadius: '12px', padding: '12px 16px', color: 'var(--text)', fontSize: '14px',
-    outline: 'none', fontFamily: 'var(--font-mono), monospace', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    backdropFilter: 'var(--glass-blur)'
-  }
-
   return (
-    <div style={{ padding: '28px 32px', maxWidth: '820px', color: 'var(--text)', fontFamily: 'DM Sans, sans-serif' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: '28px', fontWeight: 800, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-heading)', letterSpacing: '-0.5px' }}>
-          🔧 Error Fix Assistant
+    <div className="p-6 md:p-10 max-w-5xl mx-auto text-neutral-900 dark:text-white/90 font-sans selection:bg-purple-500/30 selection:text-white">
+      
+      {/* ─────────────────────────────────────────────────────────────
+          1. HEADER
+          ───────────────────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-[11px] font-mono text-purple-700 dark:text-purple-300 uppercase tracking-widest mb-3">
+          <Terminal size={12} className="text-purple-500 dark:text-purple-400" />
+          <span>Intelligent Code Diagnostics</span>
+        </div>
+        <h1 className="text-3xl md:text-5xl font-serif font-normal text-neutral-900 dark:text-white tracking-tight mb-3">
+          Error Fix Assistant
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
-          Paste any error message. Get a plain-English explanation, debug steps, and a ready-to-use fix prompt for Cursor or Windsurf.
+        <p className="text-neutral-600 dark:text-neutral-400 text-sm md:text-base max-w-2xl leading-relaxed">
+          Paste terminal outputs, compile-time errors, or unhandled exceptions. Torus analyzes root causes, provides step-by-step debug actions, and authors an exact fix prompt ready for your AI IDE.
         </p>
       </div>
 
-      {/* Examples */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace', alignSelf: 'center' }}>Try example:</span>
+      {/* ─────────────────────────────────────────────────────────────
+          2. EXAMPLES BAR
+          ───────────────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2.5 mb-6 bg-white/[0.02] border border-white/[0.06] p-3 rounded-2xl">
+        <span className="text-xs font-mono text-neutral-400 flex items-center gap-1.5 pl-2">
+          <Sparkles size={12} className="text-purple-400" /> Quick Examples:
+        </span>
         {EXAMPLE_ERRORS.map(ex => (
-          <button key={ex.label} onClick={() => loadExample(ex)} style={{
-            padding: '6px 14px', background: 'var(--surface-glass)', border: '1px solid var(--border-subtle)',
-            borderRadius: '20px', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer',
-            fontFamily: 'DM Mono, monospace', transition: 'all 0.2s'
-          }}
-            className="example-btn"
+          <button
+            key={ex.label}
+            onClick={() => loadExample(ex)}
+            className="text-xs font-mono text-neutral-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 hover:border-purple-500/40 px-3 py-1.5 rounded-full transition-all"
           >
             {ex.label}
           </button>
         ))}
       </div>
 
-      <form onSubmit={handleFix}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 240px', gap: '16px', marginBottom: '16px' }}>
-          {/* Error textarea */}
-          <div>
-            <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', fontWeight: 600 }}>
-              Error Message *
-            </label>
+      {/* ─────────────────────────────────────────────────────────────
+          3. MAIN FORM / CODE INPUT
+          ───────────────────────────────────────────────────────────── */}
+      <form onSubmit={handleFix} className="space-y-6">
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Terminal Code Window */}
+          <div className="lg:col-span-8 bg-[#0c0d15] border border-white/10 rounded-2xl overflow-hidden shadow-2xl focus-within:border-purple-500/50 transition-colors">
+            {/* Terminal Window Header Bar */}
+            <div className="flex items-center justify-between px-4 py-3 bg-white/[0.03] border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                <span className="text-xs font-mono text-neutral-400 ml-2">error_trace.log</span>
+              </div>
+              <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
+                Stack Trace
+              </span>
+            </div>
+
             <textarea
               value={errorText}
               onChange={e => setErrorText(e.target.value)}
-              placeholder="Paste your full error message here including stack trace..."
-              rows={8}
-              style={{ ...inputBase, resize: 'vertical' as const }}
-              className="error-textarea"
+              placeholder="Paste terminal error, build log, or runtime exception here..."
+              rows={9}
+              className="w-full bg-transparent p-4 text-xs sm:text-sm font-mono text-neutral-200 placeholder-neutral-600 outline-none resize-none leading-relaxed"
             />
           </div>
-          {/* Right col */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', fontWeight: 600 }}>
-                Language / Framework
-              </label>
-              <select value={language} onChange={e => setLanguage(e.target.value)}
-                style={{ ...inputBase, fontFamily: 'DM Sans, sans-serif' }}
-                className="language-select"
-              >
-                {['TypeScript/Next.js', 'JavaScript/React', 'Python/Django', 'Python/FastAPI',
-                  'Node.js/Express', 'TypeScript/NestJS', 'Supabase / PostgreSQL',
-                  'React Native / Expo', 'Go', 'Rust'].map(l => (
-                    <option key={l} value={l} style={{ background: 'var(--surface)', color: 'var(--text)' }}>{l}</option>
+
+          {/* Configuration Sidebar */}
+          <div className="lg:col-span-4 flex flex-col justify-between gap-4 bg-[#0c0d15] border border-white/10 rounded-2xl p-5 shadow-2xl">
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-neutral-400 mb-2 font-medium">
+                  Runtime / Framework
+                </label>
+                <select
+                  value={language}
+                  onChange={e => setLanguage(e.target.value)}
+                  className="w-full bg-[#141522] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-purple-500 font-sans"
+                >
+                  {['TypeScript/Next.js', 'JavaScript/React', 'Python/Django', 'Python/FastAPI',
+                    'Node.js/Express', 'TypeScript/NestJS', 'Firebase / Firestore',
+                    'React Native / Expo', 'Go', 'Rust'].map(l => (
+                    <option key={l} value={l} className="bg-[#0c0d15] text-white">{l}</option>
                   ))}
-              </select>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-neutral-400 mb-2 font-medium">
+                  Context / Action (Optional)
+                </label>
+                <textarea
+                  value={context}
+                  onChange={e => setContext(e.target.value)}
+                  placeholder="What code or CLI command were you running?"
+                  rows={4}
+                  className="w-full bg-[#141522] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-neutral-600 outline-none resize-none focus:border-purple-500 font-sans"
+                />
+              </div>
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', fontWeight: 600 }}>
-                Context (optional)
-              </label>
-              <textarea
-                value={context}
-                onChange={e => setContext(e.target.value)}
-                placeholder="What were you trying to do?"
-                rows={5}
-                style={{ ...inputBase, resize: 'none' as const }}
-                className="error-textarea"
-              />
-            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !errorText.trim()}
+              className="w-full inline-flex items-center justify-center gap-2 text-xs font-semibold text-black bg-white hover:bg-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed py-3 rounded-xl transition-all shadow-md hover:shadow-white/20"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-neutral-400 border-t-black rounded-full animate-spin" />
+                  <span>Analyzing Stack Trace...</span>
+                </>
+              ) : (
+                <>
+                  <Zap size={15} className="fill-black" />
+                  <span>Analyze & Author Fix</span>
+                </>
+              )}
+            </button>
+
           </div>
+
         </div>
 
-        <button type="submit" disabled={loading || !errorText.trim()} style={{
-          padding: '12px 32px', 
-          background: 'linear-gradient(135deg, var(--accent-teal), var(--accent-cyan))', 
-          border: 'none', borderRadius: '12px',
-          color: '#fff', fontFamily: 'Syne, sans-serif', fontSize: '15px', fontWeight: 800,
-          cursor: loading || !errorText.trim() ? 'not-allowed' : 'pointer',
-          opacity: !errorText.trim() ? 0.5 : 1,
-          display: 'flex', alignItems: 'center', gap: '10px',
-          boxShadow: '0 8px 24px rgba(66,127,131,0.25)',
-          transition: 'all 0.2s'
-        }}
-        onMouseOver={e => !loading && errorText.trim() && (e.currentTarget.style.transform = 'translateY(-2px)')}
-        onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          {loading ? (
-            <><div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />Analyzing error...</>
-          ) : (
-            <><Zap size={16} strokeWidth={2.5} /> Analyze & Fix Error</>
-          )}
-        </button>
       </form>
 
-      {/* Results */}
+      {/* ─────────────────────────────────────────────────────────────
+          4. RESULTS PRESENTATION
+          ───────────────────────────────────────────────────────────── */}
       {result && (
-        <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeUp 0.4s ease both' }}>
-          {/* Explanation */}
-          <div style={{ background: 'var(--surface-glass)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 700, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-heading)' }}>
-              💡 What went wrong
+        <div className="mt-12 space-y-6 animate-fade-up">
+          
+          {/* Explanation Card */}
+          <div className="bg-[#0c0d15] border border-white/10 rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+            <div className="flex items-center gap-2.5 mb-3 text-purple-300">
+              <AlertCircle size={18} />
+              <h3 className="text-base font-semibold text-white">Root Cause Analysis</h3>
             </div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.7' }}>{result.explanation}</p>
+            <p className="text-sm text-neutral-300 leading-relaxed">
+              {result.explanation}
+            </p>
           </div>
 
-          {/* Debug steps */}
-          <div style={{ background: 'var(--surface-glass)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)', borderRadius: '16px', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: 'var(--text-heading)' }}>
-              🔍 Debug Steps
-            </div>
-            {result.steps?.map((step, i) => (
-              <div key={i} style={{ display: 'flex', gap: '16px', marginBottom: '12px', alignItems: 'flex-start' }}>
-                <div style={{ width: '26px', height: '26px', background: 'var(--focus)', border: '1px solid var(--border-subtle)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontFamily: 'DM Mono, monospace', color: 'var(--primary)', flexShrink: 0, fontWeight: 700 }}>
-                  {i + 1}
+          {/* Debug Steps Card */}
+          <div className="bg-[#0c0d15] border border-white/10 rounded-2xl p-6 sm:p-8">
+            <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400" /> Resolution Steps
+            </h3>
+            <div className="space-y-3">
+              {result.steps?.map((step, i) => (
+                <div key={i} className="flex items-start gap-3.5 bg-white/[0.02] border border-white/5 p-3.5 rounded-xl">
+                  <div className="w-6 h-6 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center text-xs font-mono font-bold shrink-0">
+                    {i + 1}
+                  </div>
+                  <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed pt-0.5">
+                    {step}
+                  </p>
                 </div>
-                <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6', margin: 0, paddingTop: '2px' }}>{step}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          {/* Fixed prompt */}
-          <div style={{ background: 'var(--surface-overlay)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--border-subtle)', borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--hover-shadow)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'var(--surface-glass)', borderBottom: '1px solid var(--border-subtle)' }}>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-heading)' }}>
-                ✨ Fixed Prompt
-                <span style={{ fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'DM Mono, monospace', fontWeight: 400 }}>
-                  — paste into Cursor or Windsurf
+          {/* Fixed Prompt Card (The Core Value) */}
+          <div className="bg-[#0c0d15] border border-purple-500/40 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 bg-purple-500/10 border-b border-purple-500/20">
+              <div className="flex items-center gap-2">
+                <Sparkles size={16} className="text-purple-400" />
+                <span className="text-sm font-semibold text-white">Tailored IDE Fix Prompt</span>
+                <span className="hidden sm:inline text-xs font-mono text-purple-300/70">
+                  — Copy & paste directly into Cursor or Windsurf
                 </span>
               </div>
-              <button onClick={() => copyText(result.fixedPrompt, 'prompt')} style={{
-                padding: '8px 16px', background: copied === 'prompt' ? 'rgba(16,185,129,.1)' : 'var(--focus)',
-                border: `1px solid ${copied === 'prompt' ? 'var(--success)' : 'var(--border-subtle)'}`,
-                borderRadius: '8px', color: copied === 'prompt' ? 'var(--success)' : 'var(--primary)',
-                fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                fontFamily: 'DM Mono, monospace', fontWeight: 600, transition: 'all 0.2s'
-              }}>
-                {copied === 'prompt' ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy</>}
+              <button
+                onClick={() => copyText(result.fixedPrompt, 'prompt')}
+                className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold px-4 py-1.5 rounded-full bg-white text-black hover:bg-neutral-200 transition-all shadow-sm"
+              >
+                {copied === 'prompt' ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Copy Prompt</>}
               </button>
             </div>
-            <pre style={{ 
-              padding: '24px', 
-              fontSize: '13px', 
-              color: 'var(--text)', 
-              fontFamily: 'var(--font-mono), monospace', 
-              lineHeight: '1.8', 
-              whiteSpace: 'pre-wrap', 
-              wordBreak: 'break-word', 
-              margin: 0,
-              background: 'var(--surface-overlay)'
-            }}>
+
+            <pre className="p-6 text-xs sm:text-sm font-mono text-purple-200/90 bg-[#08080d] leading-relaxed overflow-x-auto whitespace-pre-wrap">
               {result.fixedPrompt}
             </pre>
           </div>
 
+          {/* Docs Link */}
           {result.relatedDocs && (
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'flex', gap: '8px' }}>
-              📚 Related docs:
-              <a href={result.relatedDocs} target="_blank" rel="noopener noreferrer"
-                style={{ color: 'var(--accent-teal)', textDecoration: 'none', fontWeight: 600 }}>
+            <div className="flex items-center gap-2 text-xs text-neutral-400 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+              <BookOpen size={14} className="text-purple-400" />
+              <span>Official Documentation:</span>
+              <a
+                href={result.relatedDocs}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-300 hover:text-white underline font-mono flex items-center gap-1"
+              >
                 {result.relatedDocs}
               </a>
             </div>
           )}
+
         </div>
       )}
-      <style>{`
-        .example-btn:hover { border-color: var(--accent-teal) !important; color: var(--text-heading) !important; background: var(--surface-glass-hover) !important; }
-        .error-textarea:focus { border-color: var(--accent-teal) !important; box-shadow: 0 0 0 3px var(--focus) !important; }
-        .language-select:focus { border-color: var(--accent-teal) !important; box-shadow: 0 0 0 3px var(--focus) !important; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
+
     </div>
   )
 }

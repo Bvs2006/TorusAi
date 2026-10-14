@@ -42,17 +42,15 @@ export const TECH_TOOLS: TechTool[] = [
   { id: 'nextapi', name: 'Next.js API', category: 'backend', emoji: 'N', color: '#aaaaaa', bg: 'rgba(255,255,255,0.07)', aiRecommended: 'Next.js Route Handlers', whyThisTool: 'Collocated API with your frontend, no separate server.', alternative: 'Hono', costPerMonth: '$0', performanceScore: 4 },
 
   // Database
-  { id: 'postgresql', name: 'PostgreSQL', category: 'database', emoji: '🐘', color: '#336791', bg: 'rgba(51,103,145,0.1)', aiRecommended: 'Supabase Postgres', whyThisTool: 'Best free tier (500MB) + Realtime built in.', alternative: 'Neon + Drizzle', costPerMonth: '$0', performanceScore: 5 },
+  { id: 'postgresql', name: 'PostgreSQL', category: 'database', emoji: '🐘', color: '#336791', bg: 'rgba(51,103,145,0.1)', aiRecommended: 'Neon Postgres', whyThisTool: 'Strong relational model with a generous serverless free tier.', alternative: 'Firestore', costPerMonth: '$0', performanceScore: 5 },
   { id: 'mongodb', name: 'MongoDB', category: 'database', emoji: '🍃', color: '#47A248', bg: 'rgba(71,162,72,0.1)', aiRecommended: 'MongoDB Atlas M0', whyThisTool: 'Flexible JSON schema, great for rapid iteration.', alternative: 'PlanetScale', costPerMonth: '$0', performanceScore: 4 },
-  { id: 'supabase-db', name: 'Supabase DB', category: 'database', emoji: '⚡', color: '#3ECF8E', bg: 'rgba(62,207,142,0.1)', aiRecommended: 'Supabase Postgres', whyThisTool: 'Best free tier (500MB) + Realtime built in.', alternative: 'Neon + Drizzle', costPerMonth: '$0', performanceScore: 5 },
-  { id: 'firebase-db', name: 'Firestore', category: 'database', emoji: '🔥', color: '#FFCA28', bg: 'rgba(255,202,40,0.1)', aiRecommended: 'Firestore Native Mode', whyThisTool: 'Offline-first, real-time sync for mobile.', alternative: 'Supabase', costPerMonth: '$0', performanceScore: 4 },
+  { id: 'firebase-db', name: 'Firestore', category: 'database', emoji: '🔥', color: '#FFCA28', bg: 'rgba(255,202,40,0.1)', aiRecommended: 'Firestore Native Mode', whyThisTool: 'Offline-first, real-time sync for web and mobile.', alternative: 'Neon Postgres', costPerMonth: '$0', performanceScore: 4 },
   { id: 'redis', name: 'Redis', category: 'database', emoji: '🔴', color: '#DC382D', bg: 'rgba(220,56,45,0.1)', aiRecommended: 'Upstash Redis (Serverless)', whyThisTool: 'Sub-millisecond caching, rate limiting, queues.', alternative: 'Memcached', costPerMonth: '$0', performanceScore: 5 },
 
   // Auth
-  { id: 'supabase-auth', name: 'Supabase Auth', category: 'auth', emoji: '⚡', color: '#3ECF8E', bg: 'rgba(62,207,142,0.1)', aiRecommended: 'Supabase Auth + OAuth', whyThisTool: 'Free 50k MAU, built-in OAuth, Row Level Security.', alternative: 'Clerk', costPerMonth: '$0', performanceScore: 5 },
   { id: 'clerk', name: 'Clerk', category: 'auth', emoji: '🔐', color: '#6C47FF', bg: 'rgba(108,71,255,0.1)', aiRecommended: 'Clerk Dev Plan', whyThisTool: 'Drop-in auth UI, MFA, org management built-in.', alternative: 'Auth0', costPerMonth: '$0', performanceScore: 5 },
   { id: 'nextauth', name: 'NextAuth', category: 'auth', emoji: '🛡️', color: '#9d93c4', bg: 'rgba(157,147,196,0.1)', aiRecommended: 'NextAuth v5 (Auth.js)', whyThisTool: 'Open source, runs in Edge, all major providers.', alternative: 'Lucia', costPerMonth: '$0', performanceScore: 4 },
-  { id: 'firebase-auth', name: 'Firebase Auth', category: 'auth', emoji: '🔥', color: '#FFCA28', bg: 'rgba(255,202,40,0.1)', aiRecommended: 'Firebase Authentication', whyThisTool: 'Free 10k/month auth, Google Sign-In, phone auth.', alternative: 'Supabase Auth', costPerMonth: '$0', performanceScore: 4 },
+  { id: 'firebase-auth', name: 'Firebase Auth', category: 'auth', emoji: '🔥', color: '#FFCA28', bg: 'rgba(255,202,40,0.1)', aiRecommended: 'Firebase Authentication', whyThisTool: 'Free 10k/month auth, Google Sign-In, phone auth.', alternative: 'Clerk', costPerMonth: '$0', performanceScore: 4 },
 
   // AI Service
   { id: 'groq', name: 'Groq', category: 'ai', emoji: '⚡', color: '#f55036', bg: 'rgba(245,80,54,0.1)', aiRecommended: 'Groq Llama 3.3 70B', whyThisTool: 'Fastest inference (500 tok/s), free tier 14,400 req/day.', alternative: 'OpenAI GPT-4o Mini', costPerMonth: '$0', performanceScore: 5 },
@@ -64,7 +62,6 @@ export const TECH_TOOLS: TechTool[] = [
   // Storage
   { id: 's3', name: 'AWS S3', category: 'storage', emoji: '🪣', color: '#FF9900', bg: 'rgba(255,153,0,0.1)', aiRecommended: 'S3 Standard', whyThisTool: 'Industry standard, 5GB free, 11 9s durability.', alternative: 'Cloudflare R2', costPerMonth: '$0', performanceScore: 5 },
   { id: 'r2', name: 'Cloudflare R2', category: 'storage', emoji: '☁️', color: '#F38020', bg: 'rgba(243,128,32,0.1)', aiRecommended: 'R2 (S3-compatible)', whyThisTool: 'Zero egress fees, S3 API compatible, 10GB free.', alternative: 'AWS S3', costPerMonth: '$0', performanceScore: 5 },
-  { id: 'supabase-storage', name: 'Supabase Storage', category: 'storage', emoji: '⚡', color: '#3ECF8E', bg: 'rgba(62,207,142,0.1)', aiRecommended: 'Supabase Storage', whyThisTool: 'Integrated with your Supabase DB + RLS support.', alternative: 'AWS S3', costPerMonth: '$0', performanceScore: 4 },
 
   // CDN
   { id: 'cloudflare-cdn', name: 'Cloudflare', category: 'cdn', emoji: '🌤️', color: '#F38020', bg: 'rgba(243,128,32,0.1)', aiRecommended: 'Cloudflare Free', whyThisTool: '330 PoPs globally, DDoS protection, free plan.', alternative: 'Fastly', costPerMonth: '$0', performanceScore: 5 },

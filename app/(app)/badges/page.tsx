@@ -1,6 +1,6 @@
 'use client'
 
-import { Trophy, Flame } from 'lucide-react'
+import { Trophy, Flame, Sparkles, Award, ShieldCheck, CheckCircle2, Calendar } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import TorusStreak from '@/components/TorusStreak'
 import { auth } from '@/utils/firebase/client'
@@ -25,12 +25,12 @@ interface StreakData {
   }>
 }
 
-const TORUS_BADGE_META: Record<string, { label: string; color: string }> = {
-  '1_month': { label: '1 Month', color: '#60a5fa' },
-  '3_months': { label: '3 Months', color: '#8b5cf6' },
-  '6_months': { label: '6 Months', color: '#ec4899' },
-  '12_months': { label: '1 Year', color: '#f59e0b' },
-  '24_months': { label: '2 Years', color: '#ef4444' },
+const TORUS_BADGE_META: Record<string, { label: string; color: string; desc: string }> = {
+  '1_month': { label: '30-Day Pioneer', color: '#60a5fa', desc: '1 month of consistent software engineering' },
+  '3_months': { label: 'Quarterly Builder', color: '#8b5cf6', desc: '90-day streak of active project planning' },
+  '6_months': { label: 'Architect Master', color: '#ec4899', desc: 'Half a year of uninterrupted code execution' },
+  '12_months': { label: 'Annual Legend', color: '#f59e0b', desc: '365 days of relentless building' },
+  '24_months': { label: 'Torus Sovereign', color: '#ef4444', desc: '2 years of mastery on the Torus ecosystem' },
 }
 
 export default function BadgesPage() {
@@ -70,118 +70,117 @@ export default function BadgesPage() {
   }, [])
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', color: '#172326' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '40px' }}>
-        <div style={{
-          width: '56px', height: '56px', borderRadius: '16px',
-          background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 8px 32px rgba(239, 68, 68, 0.2)'
-        }}>
-          <Trophy size={28} color="#fff" />
-        </div>
+    <div className="p-6 md:p-12 max-w-6xl mx-auto text-neutral-900 dark:text-white/90 font-sans selection:bg-purple-500/30 selection:text-white">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-8 border-b border-neutral-200/80 dark:border-white/[0.08]">
         <div>
-          <h1 style={{ fontSize: '32px', fontWeight: 800, margin: 0, fontFamily: 'Syne, sans-serif', letterSpacing: '-0.5px' }}>Your Badges & Streaks</h1>
-          <p style={{ color: '#607276', margin: '6px 0 0', fontSize: '15px' }}>Complete milestones, maintain streaks, and unlock achievements in your Torus journey.</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-[11px] font-mono text-purple-700 dark:text-purple-300 uppercase tracking-widest mb-3">
+            <Trophy size={13} className="text-purple-500 dark:text-purple-400" />
+            <span>Developer Achievements</span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-serif font-normal text-neutral-900 dark:text-white tracking-tight">
+            Your Badges & Streaks
+          </h1>
+          <p className="text-neutral-600 dark:text-neutral-400 text-sm md:text-base mt-2">
+            Complete milestones, sustain daily engineering momentum, and unlock radiant Torus badges.
+          </p>
         </div>
       </div>
 
-      {/* Streak Section */}
+      {/* Loading & Error States */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#8a9a9d' }}>
-          <p>Loading streak information...</p>
-        </div>
-      )}
-
-      {!loading && streakData && (
-        <div style={{ marginBottom: '40px' }}>
-          <TorusStreak streak={streakData.streak} badges={streakData.badges} />
+        <div className="text-center py-20 text-neutral-400 font-mono text-sm">
+          <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin mx-auto mb-3" />
+          <span>Synchronizing streak telemetry...</span>
         </div>
       )}
 
       {error && (
-        <div style={{ 
-          background: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          borderRadius: '12px',
-          padding: '16px',
-          marginBottom: '40px',
-          color: '#ef4444'
-        }}>
+        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-300 p-4 rounded-2xl mb-8 text-sm font-mono">
           {error}
         </div>
       )}
 
-      {!loading && streakData?.badges?.length ? (
-        <div style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '20px', color: '#172326' }}>Torus Badges</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
-            {streakData.badges.map(badge => {
-              const meta = TORUS_BADGE_META[badge.badge_type] || { label: badge.badge_type, color: '#8b5cf6' }
-              return (
-                <div key={badge.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px',
-                  padding: '16px',
-                  borderRadius: '18px',
-                  background: `linear-gradient(135deg, ${meta.color}16, rgba(14, 12, 26, 0.96))`,
-                  border: `1px solid ${meta.color}40`,
-                  boxShadow: `0 12px 32px ${meta.color}14`
-                }}>
-                  <div style={{
-                    width: '54px',
-                    height: '54px',
-                    borderRadius: '50%',
-                    background: `conic-gradient(from 0deg, ${meta.color}, ${meta.color}80, ${meta.color})`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: `0 0 18px ${meta.color}40`
-                  }}>
-                    <div style={{
-                      width: '34px',
-                      height: '34px',
-                      borderRadius: '50%',
-                      background: '#0e0c1a',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: meta.color,
-                      fontSize: '11px',
-                      fontWeight: 800
-                    }}>
-                      {meta.label.replace('Month', 'M')}
-                    </div>
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{meta.label} Torus</div>
-                    <div style={{ fontSize: '12px', color: '#8a9a9d', marginTop: '4px' }}>
-                      Earned on {new Date(badge.earned_at).toLocaleDateString()}
-                    </div>
+      {/* Streak Visualization */}
+      {!loading && streakData && (
+        <div className="mb-12 bg-white dark:bg-[#0c0d15] border border-neutral-200/90 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-sm dark:shadow-2xl">
+          <TorusStreak streak={streakData.streak} badges={streakData.badges} />
+        </div>
+      )}
+
+      {/* Badges Grid */}
+      <div className="mb-12">
+        <div className="flex items-center gap-2 mb-6">
+          <Award size={20} className="text-purple-500 dark:text-purple-400" />
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Torus Milestones</h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {Object.entries(TORUS_BADGE_META).map(([type, meta]) => {
+            const earned = streakData?.badges?.some(b => b.badge_type === type)
+            return (
+              <div
+                key={type}
+                className={`relative rounded-2xl p-6 border transition-all duration-300 flex items-center gap-5 ${
+                  earned
+                    ? 'bg-[#12131d] border-purple-500/40 shadow-lg shadow-purple-500/10'
+                    : 'bg-[#0a0b10] border-white/[0.06] opacity-60'
+                }`}
+              >
+                {/* Torus Ring Graphic */}
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 p-[2px]"
+                  style={{
+                    background: earned
+                      ? `conic-gradient(from 0deg, ${meta.color}, ${meta.color}80, ${meta.color})`
+                      : 'rgba(255,255,255,0.1)'
+                  }}
+                >
+                  <div className="w-full h-full rounded-full bg-[#08080c] flex items-center justify-center">
+                    <span className="font-mono text-xs font-bold" style={{ color: earned ? meta.color : '#888' }}>
+                      {type.split('_')[0]}M
+                    </span>
                   </div>
                 </div>
-              )
-            })}
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-sm font-bold text-white truncate">{meta.label}</h3>
+                    {earned && (
+                      <span className="text-[10px] font-mono uppercase bg-emerald-500/15 text-emerald-400 px-1.5 py-0.2 rounded border border-emerald-500/30">
+                        Earned
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
+                    {meta.desc}
+                  </p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Rules & Guidelines */}
+      <div className="bg-[#0c0d15] border border-white/10 rounded-2xl p-6 sm:p-8 text-neutral-300 text-xs sm:text-sm">
+        <div className="flex items-center gap-2.5 mb-4 text-purple-300 font-semibold text-base">
+          <Flame size={18} />
+          <span>Streak Mechanics & Verification</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-neutral-400">
+          <div className="flex items-start gap-2 bg-white/[0.02] p-3 rounded-xl border border-white/5">
+            <CheckCircle2 size={15} className="text-purple-400 shrink-0 mt-0.5" />
+            <span>Actions that advance streaks: Generating plans, adding features, completing build phases, and fixing errors.</span>
+          </div>
+          <div className="flex items-start gap-2 bg-white/[0.02] p-3 rounded-xl border border-white/5">
+            <Calendar size={15} className="text-cyan-400 shrink-0 mt-0.5" />
+            <span>Daily cadence resets at midnight UTC. Log at least one development milestone per 24 hours.</span>
           </div>
         </div>
-      ) : null}
-
-      {/* Streak Information */}
-      <div style={{ marginTop: '40px', padding: '24px', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-          <Flame size={20} color="#8b5cf6" />
-          <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', margin: 0 }}>About Streaks</h3>
-        </div>
-        <ul style={{ margin: 0, paddingLeft: '24px', color: '#8a9a9d', lineHeight: '1.8' }}>
-          <li>🟦 <strong>Torus Badges</strong>: One torus badge earned for every 30 consecutive days of activity</li>
-          <li>⭐ <strong>Milestone Badges</strong>: Special badges unlocked at 1, 3, 6, 12, and 24 month streaks</li>
-          <li>🔥 <strong>Streaks</strong>: Activity on at least one day per day keeps your streak alive</li>
-          <li>⚠️ <strong>Streak Reset</strong>: Miss a day and your streak resets to 0 - start a new one!</li>
-          <li>📊 <strong>Activities That Count</strong>: Creating projects, adding features, completing phases, and more</li>
-        </ul>
       </div>
+
     </div>
   )
 }

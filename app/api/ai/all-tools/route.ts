@@ -36,7 +36,7 @@ Agents (8-12): AutoGPT, AgentGPT, LangChain, CrewAI, n8n, Zapier, Make, etc.
 Image Generation (8-12): DALL-E 3, Midjourney, Stable Diffusion, Leonardo.Ai, Adobe Firefly, Hugging Face Spaces, etc.
 Speech-to-Text (5-8): Whisper, Rev, Descript, Google Speech-to-Text, Azure Speech, etc.
 Search (5-8): Tavily, Perplexity, You.com, DuckDuckGo API, Bing Search, etc.
-Vector DB (6-10): Pinecone, Weaviate, Supabase Vector, Milvus, Qdrant, Chroma, etc.
+Vector DB (6-10): Pinecone, Weaviate, Qdrant, Milvus, Chroma, etc.
 Code (8-12): GitHub Copilot, Tabnine, Cursor, CodePilot, Codeium, Replit Ghost, etc.
 Embeddings (5-8): OpenAI Embeddings, Cohere Embeddings, Hugging Face, SentenceTransformers, etc.
 Video (5-8): Synthesia, Runway ML, Pika Labs, Descript, Adobe Firefly, etc.

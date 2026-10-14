@@ -44,8 +44,8 @@ Respond with ONLY valid JSON, no markdown:
   "stack": {
     "frontend": {"name": "Next.js", "reason": "Best for web with built-in routing and Vercel deployment", "free": true},
     "backend": {"name": "Next.js API Routes", "reason": "Zero extra setup, deploys with frontend", "free": true},
-    "database": {"name": "Supabase", "reason": "Free 500MB + Auth + Realtime included", "free": true},
-    "auth": {"name": "Supabase Auth", "reason": "Free OAuth + email, integrated with DB", "free": true},
+    "database": {"name": "Firestore", "reason": "Free tier, realtime sync, and Firebase integration", "free": true},
+    "auth": {"name": "Firebase Auth", "reason": "Free OAuth and email login with Firebase", "free": true},
     "ai": {"name": "Groq", "reason": "14,400 free req/day, fastest inference", "free": true},
     "deployment": {"name": "Vercel", "reason": "Zero-config Next.js, free tier", "free": true}
   },
